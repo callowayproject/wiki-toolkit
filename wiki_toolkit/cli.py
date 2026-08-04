@@ -8,7 +8,16 @@ from pathlib import Path
 
 import click
 
-from wiki_toolkit.core import apply_source_scan, build_catalog, lint_wiki, run_doctor, scan_sources, write_jsonl
+from wiki_toolkit.core import (
+    apply_source_scan,
+    build_catalog,
+    lint_wiki,
+    read_jsonl,
+    run_doctor,
+    scan_sources,
+    search_catalog,
+    write_jsonl,
+)
 
 
 @click.group()
@@ -91,3 +100,19 @@ def source_scan(update_manifest: bool, accept_covered: bool) -> None:
 
     if result.needs_attention:
         raise SystemExit(1)
+
+
+@cli.command("search-catalog")
+@click.option("--query", required=True, help="Text to search for in catalog entry titles and paths.")
+def search_catalog_cmd(query: str) -> None:
+    """Search docs/catalog.jsonl for entries matching --query."""
+    docs_dir = Path.cwd() / "docs"
+    entries = read_jsonl(docs_dir / "catalog.jsonl")
+    matches = search_catalog(query, entries)
+
+    if not matches:
+        click.echo("No matches found.")
+        return
+
+    for entry in matches:
+        click.echo(f"{entry.get('title', '')} ({entry.get('path', '')})")

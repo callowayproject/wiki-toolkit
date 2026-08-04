@@ -13,9 +13,12 @@ from wiki_toolkit.core import (
     check_shallow_clone,
     lint_wiki,
     parse_tag_taxonomy,
+    read_jsonl,
     run_doctor,
     scan_sources,
+    search_catalog,
     validate_jsonl,
+    write_jsonl,
 )
 
 if TYPE_CHECKING:
@@ -401,3 +404,39 @@ def test_lint_clean_note_has_no_violations(make_docs_tree: Callable[[], Path], m
 
     assert result.violations == []
     assert result.ok is True
+
+
+def test_read_jsonl_missing_file_returns_empty(tmp_path: Path) -> None:
+    """A missing JSONL file reads as an empty list, not an error."""
+    assert read_jsonl(tmp_path / "missing.jsonl") == []
+
+
+def test_read_jsonl_round_trips_write_jsonl(tmp_path: Path) -> None:
+    """read_jsonl parses exactly what write_jsonl wrote."""
+    path = tmp_path / "f.jsonl"
+    records = [{"a": 1}, {"b": 2}]
+
+    write_jsonl(path, records)
+
+    assert read_jsonl(path) == records
+
+
+def test_search_catalog_matches_title_case_insensitively() -> None:
+    """A query matching part of an entry's title, in any case, is returned."""
+    entries = [{"title": "Auth Middleware", "path": "docs/wiki/auth.md"}]
+
+    assert search_catalog("auth", entries) == entries
+
+
+def test_search_catalog_matches_path() -> None:
+    """A query matching part of an entry's path is returned even if the title doesn't match."""
+    entries = [{"title": "Overview", "path": "docs/wiki/billing/overview.md"}]
+
+    assert search_catalog("billing", entries) == entries
+
+
+def test_search_catalog_no_match_returns_empty_list() -> None:
+    """A query with no matches returns an empty list, not an error."""
+    entries = [{"title": "Auth Middleware", "path": "docs/wiki/auth.md"}]
+
+    assert search_catalog("nonexistent", entries) == []
