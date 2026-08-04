@@ -7,7 +7,7 @@ from pathlib import Path
 
 import click
 
-from wiki_toolkit.core import run_doctor
+from wiki_toolkit.core import apply_source_scan, run_doctor, scan_sources
 
 
 @click.group()
@@ -39,4 +39,28 @@ def doctor() -> None:
             click.echo(f"  [MALFORMED] docs/{name}: {error}")
 
     if not report.ok:
+        raise SystemExit(1)
+
+
+@cli.command("source-scan")
+@click.option("--update", "update_manifest", is_flag=True, help="Write results into docs/source-manifest.jsonl.")
+@click.option("--accept-covered", is_flag=True, help="Accept updates to sources already covered by a wiki note.")
+def source_scan(update_manifest: bool, accept_covered: bool) -> None:
+    """Classify docs/sources/ files as new, update, or duplicate."""
+    docs_dir = Path.cwd() / "docs"
+    result = scan_sources(docs_dir, accept_covered=accept_covered)
+
+    for entry in result.entries:
+        click.echo(f"[{entry.classification.upper()}] {entry.path} ({entry.source})")
+        if entry.needs_accept_covered:
+            click.echo(f"  needs --accept-covered: {entry.source} is covered by a wiki note")
+
+    for path in result.skipped:
+        click.echo(f"[skip] {path} (version-controlled)")
+
+    if update_manifest:
+        written = apply_source_scan(docs_dir, result)
+        click.echo(f"Wrote {written} entries to docs/source-manifest.jsonl")
+
+    if result.needs_attention:
         raise SystemExit(1)

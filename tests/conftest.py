@@ -11,19 +11,22 @@ if TYPE_CHECKING:
 
 
 @pytest.fixture
-def make_source(tmp_path: Path) -> Callable[..., Path]:
-    """Build a minimal Raw source manifest entry under a temp directory.
+def make_source() -> Callable[..., Path]:
+    """Build a Raw source file under a docs/ tree's `sources/` directory.
 
-    Returns a factory that writes a single frontmatter-only markdown file for
-    `source` (e.g. "github", "jira") and returns its path. Each call is
-    self-contained; tests should not assume a shared "golden wiki" layout.
+    Returns a factory that writes a single frontmatter markdown file keyed on
+    the `source` identifier and returns its path. Each call is self-contained;
+    tests should not assume a shared "golden wiki" layout.
     """
 
-    def _make_source(source: str, stable_id: str = "test-id", status: str = "resolved", **fields: object) -> Path:
-        raw_dir = tmp_path / "Raw" / source
-        raw_dir.mkdir(parents=True, exist_ok=True)
-        post = frontmatter.Post("", stable_id=stable_id, status=status, **fields)
-        path = raw_dir / f"{stable_id}.md"
+    def _make_source(
+        docs_dir: Path, source: str, *, filename: str | None = None, processed: bool = False, **fields: object
+    ) -> Path:
+        sources_dir = docs_dir / "sources"
+        sources_dir.mkdir(parents=True, exist_ok=True)
+        post = frontmatter.Post("", source=source, processed=processed, **fields)
+        name = filename or f"{source.replace('/', '-').replace(':', '-')}.md"
+        path = sources_dir / name
         path.write_bytes(frontmatter.dumps(post).encode())
         return path
 
