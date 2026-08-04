@@ -11,6 +11,8 @@ from wiki_toolkit.core import (
     apply_source_scan,
     build_catalog,
     check_shallow_clone,
+    lint_wiki,
+    parse_tag_taxonomy,
     run_doctor,
     scan_sources,
     validate_jsonl,
@@ -323,3 +325,79 @@ def test_build_catalog_empty_wiki_dir(make_docs_tree: Callable[[], Path]) -> Non
     docs_dir = make_docs_tree()
 
     assert build_catalog(docs_dir) == []
+
+
+def test_parse_tag_taxonomy_reads_bullets_under_heading() -> None:
+    """Bullet items between `## Tag Taxonomy` and the next heading are the allowed tags."""
+    text = "# Wiki Schema\n\n## Tag Taxonomy\n\n- infra\n- security\n\n## Other Section\n\n- not-a-tag\n"
+
+    assert parse_tag_taxonomy(text) == {"infra", "security"}
+
+
+def test_parse_tag_taxonomy_missing_section_is_empty() -> None:
+    """No `## Tag Taxonomy` heading means no allowed tags."""
+    assert parse_tag_taxonomy("# Wiki Schema\n\nsome prose\n") == set()
+
+
+def test_lint_flags_malformed_frontmatter(make_docs_tree: Callable[[], Path]) -> None:
+    """A note with unparsable YAML frontmatter is flagged, not raised."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "schema.md").write_text("## Tag Taxonomy\n\n- infra\n")
+    (docs_dir / "wiki" / "bad.md").write_text("---\ntitle: [unclosed\n---\nbody")
+
+    result = lint_wiki(docs_dir)
+
+    assert len(result.violations) == 1
+    assert "malformed frontmatter" in result.violations[0].message
+    assert result.ok is False
+
+
+def test_lint_flags_disallowed_tag(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
+    """A tag not in the schema's Tag Taxonomy is flagged."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "schema.md").write_text("## Tag Taxonomy\n\n- infra\n")
+    make_wiki_note(docs_dir, "a.md", tags=["infra", "bogus"])
+
+    result = lint_wiki(docs_dir)
+
+    assert len(result.violations) == 1
+    assert "bogus" in result.violations[0].message
+
+
+def test_lint_flags_unresolved_source(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
+    """A `sources:` entry with no matching source-manifest entry is flagged."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "source-manifest.jsonl").write_text("")
+    make_wiki_note(docs_dir, "a.md", sources=["jira:ABC-1"])
+
+    result = lint_wiki(docs_dir)
+
+    assert len(result.violations) == 1
+    assert "jira:ABC-1" in result.violations[0].message
+
+
+def test_lint_flags_mismatched_source_count(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
+    """A `source_count` that doesn't match the length of `sources:` is flagged."""
+    docs_dir = make_docs_tree()
+    manifest_entry = orjson.dumps({"source": "jira:ABC-1"}).decode()
+    (docs_dir / "source-manifest.jsonl").write_text(manifest_entry + "\n")
+    make_wiki_note(docs_dir, "a.md", sources=["jira:ABC-1"], source_count=2)
+
+    result = lint_wiki(docs_dir)
+
+    assert len(result.violations) == 1
+    assert "source_count" in result.violations[0].message
+
+
+def test_lint_clean_note_has_no_violations(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
+    """A well-formed note with valid tags, resolved sources, and correct source_count passes clean."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "schema.md").write_text("## Tag Taxonomy\n\n- infra\n")
+    manifest_entry = orjson.dumps({"source": "jira:ABC-1"}).decode()
+    (docs_dir / "source-manifest.jsonl").write_text(manifest_entry + "\n")
+    make_wiki_note(docs_dir, "a.md", tags=["infra"], sources=["jira:ABC-1"], source_count=1)
+
+    result = lint_wiki(docs_dir)
+
+    assert result.violations == []
+    assert result.ok is True

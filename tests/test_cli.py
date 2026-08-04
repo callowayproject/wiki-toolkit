@@ -112,6 +112,32 @@ def test_source_scan_update_writes_manifest(tmp_path: Path, monkeypatch, make_do
     assert "jira:ABC-1" in manifest
 
 
+def test_lint_exits_zero_on_clean_wiki(tmp_path: Path, monkeypatch, make_docs_tree, make_wiki_note) -> None:
+    """Lint exits 0 and reports no violations against a clean docs/wiki/ tree."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "schema.md").write_text("## Tag Taxonomy\n\n- infra\n")
+    make_wiki_note(docs_dir, "a.md", tags=["infra"], sources=[])
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["lint"])
+
+    assert result.exit_code == 0
+    assert "No lint violations" in result.output
+
+
+def test_lint_reports_violation_and_exits_nonzero(tmp_path: Path, monkeypatch, make_docs_tree, make_wiki_note) -> None:
+    """Lint reports a disallowed tag and exits nonzero."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "schema.md").write_text("## Tag Taxonomy\n\n- infra\n")
+    make_wiki_note(docs_dir, "a.md", tags=["bogus"], sources=[])
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["lint"])
+
+    assert result.exit_code == 1
+    assert "bogus" in result.output
+
+
 def test_source_scan_flags_duplicate_with_nonzero_exit(
     tmp_path: Path, monkeypatch, make_docs_tree, make_source
 ) -> None:

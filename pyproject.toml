@@ -77,6 +77,10 @@ path = "wiki_toolkit/__init__.py"
 module = "frontmatter"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "yaml"
+ignore_missing_imports = true
+
 [tool.uv]
 default-groups = ["dev", "test", "docs"]
 
