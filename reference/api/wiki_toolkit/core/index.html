@@ -1286,6 +1286,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.CatalogEntry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CatalogEntry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#wiki_toolkit.core.DoctorReport" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1449,6 +1460,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.build_catalog" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;build_catalog
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#wiki_toolkit.core.check_shallow_clone" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1486,6 +1508,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;validate_jsonl
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.write_jsonl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;write_jsonl
       
     </span>
   </a>
@@ -1752,6 +1785,19 @@
       </thead>
       <tbody>
           <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            CatalogEntry
+
+
+  
+      dataclass
+   (wiki_toolkit.core.CatalogEntry)" href="#wiki_toolkit.core.CatalogEntry">CatalogEntry</a></code></td>
+            <td class="doc-class-details">
+              <div class="doc-md-description">
+                <p>A single <code>docs/wiki/</code> note&rsquo;s catalog entry.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
             <td><code><a class="autorefs autorefs-internal" title="            DoctorReport
 
 
@@ -1813,6 +1859,14 @@
               </td>
             </tr>
             <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            build_catalog (wiki_toolkit.core.build_catalog)" href="#wiki_toolkit.core.build_catalog">build_catalog</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Walk <code>docs_dir/wiki/</code>, parsing frontmatter into a catalog entry per note.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
               <td><code><a class="autorefs autorefs-internal" title="            check_shallow_clone (wiki_toolkit.core.check_shallow_clone)" href="#wiki_toolkit.core.check_shallow_clone">check_shallow_clone</a></code></td>
               <td class="doc-function-details">
                 <div class="doc-md-description">
@@ -1844,6 +1898,14 @@
                 </div>
               </td>
             </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            write_jsonl (wiki_toolkit.core.write_jsonl)" href="#wiki_toolkit.core.write_jsonl">write_jsonl</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Write <code>records</code> to <code>path</code> as JSONL, one object per line.</p>
+                </div>
+              </td>
+            </tr>
       </tbody>
     </table>
 
@@ -1860,6 +1922,68 @@
 
 
 <h2 id="wiki_toolkit.core-classes">Classes<a href="#wiki_toolkit.core-classes" class="headerlink" title="Permanent link">&para;</a></h2>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="wiki_toolkit.core.CatalogEntry" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">CatalogEntry</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#wiki_toolkit.core.CatalogEntry" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">CatalogEntry</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
+    <span class="n">title</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
+    <span class="n">updated</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
+    <span class="n">sources</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">],</span>
+    <span class="n">status</span><span class="p">:</span> <span class="n"><span title="typing.Literal">Literal</span></span><span class="p">[</span><span class="s2">&quot;resolved&quot;</span><span class="p">,</span> <span class="s2">&quot;proposed&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>A single <code>docs/wiki/</code> note&rsquo;s catalog entry.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-class">
 
@@ -2247,6 +2371,34 @@ Returns the number of manifest entries written.</p>
 <div class="doc doc-object doc-function">
 
 
+<h3 id="wiki_toolkit.core.build_catalog" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">build_catalog</span>
+
+
+<a href="#wiki_toolkit.core.build_catalog" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">build_catalog</span><span class="p">(</span><span class="n">docs_dir</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            CatalogEntry
+
+
+  
+      dataclass
+   (wiki_toolkit.core.CatalogEntry)" href="#wiki_toolkit.core.CatalogEntry">CatalogEntry</a></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Walk <code>docs_dir/wiki/</code>, parsing frontmatter into a catalog entry per note.</p>
+<p><code>status</code> is <code>resolved</code> iff every source the note references is <code>resolved</code>
+in the source manifest (vacuously true for a note with no sources), else
+<code>proposed</code>.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h3 id="wiki_toolkit.core.check_shallow_clone" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">check_shallow_clone</span>
 
@@ -2335,6 +2487,26 @@ scan order, until a human resolves it via <code>source-dedupe</code>.</p>
     <div class="doc doc-contents ">
 
         <p>Return a list of error messages for malformed lines in a JSONL file, empty if well-formed.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wiki_toolkit.core.write_jsonl" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">write_jsonl</span>
+
+
+<a href="#wiki_toolkit.core.write_jsonl" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">write_jsonl</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n">records</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="dict">dict</span></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Write <code>records</code> to <code>path</code> as JSONL, one object per line.</p>
 
 
     </div>
