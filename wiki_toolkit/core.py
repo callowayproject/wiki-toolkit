@@ -340,6 +340,28 @@ def search_catalog(query: str, entries: list[dict]) -> list[dict]:
     return [e for e in entries if needle in e.get("title", "").lower() or needle in e.get("path", "").lower()]
 
 
+LogAction = Literal["ingest", "update", "lint", "create", "archive", "delete"]
+ALLOWED_LOG_ACTIONS: tuple[LogAction, ...] = ("ingest", "update", "lint", "create", "archive", "delete")
+
+
+def build_log_entry(action: str, message: str, details: str) -> dict:
+    """Build a `log.jsonl` entry. Raises ValueError if `action` isn't in the allowed set."""
+    if action not in ALLOWED_LOG_ACTIONS:
+        raise ValueError(f"invalid action {action!r}; must be one of {ALLOWED_LOG_ACTIONS}")
+    return {
+        "date": datetime.now(UTC).isoformat(),
+        "action": action,
+        "message": message,
+        "details": details,
+    }
+
+
+def append_log_entry(docs_dir: Path, entry: dict) -> None:
+    """Append `entry` as one JSONL line to `docs_dir/log.jsonl`, never rewriting existing lines."""
+    with (docs_dir / "log.jsonl").open("a", encoding="utf-8") as f:
+        f.write(orjson.dumps(entry).decode() + "\n")
+
+
 def _stamp_frontmatter(path: Path, **fields: object) -> None:
     """Merge `fields` into a source file's frontmatter and write it back."""
     post = frontmatter.loads(path.read_text(encoding="utf-8"))

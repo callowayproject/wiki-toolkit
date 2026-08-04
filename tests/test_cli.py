@@ -188,3 +188,49 @@ def test_search_catalog_requires_query_option(tmp_path: Path, monkeypatch, make_
     result = CliRunner().invoke(cli, ["search-catalog"])
 
     assert result.exit_code != 0
+
+
+def test_log_appends_entry(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
+    """Log writes one well-formed entry to docs/log.jsonl and exits 0."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "log.jsonl").write_text("")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(
+        cli, ["log", "--title", "Ingested ticket", "--details", "jira:ABC-1", "--action", "ingest"]
+    )
+
+    assert result.exit_code == 0
+    lines = (docs_dir / "log.jsonl").read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 1
+    entry = orjson.loads(lines[0])
+    assert entry["action"] == "ingest"
+    assert entry["message"] == "Ingested ticket"
+    assert entry["details"] == "jira:ABC-1"
+    assert entry["date"]
+
+
+def test_log_preserves_existing_entries(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
+    """Log never rewrites or reorders existing docs/log.jsonl entries."""
+    docs_dir = make_docs_tree()
+    first_entry = {"date": "2026-01-01T00:00:00", "action": "create", "message": "first", "details": ""}
+    (docs_dir / "log.jsonl").write_text(orjson.dumps(first_entry).decode() + "\n")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["log", "--title", "second", "--details", "", "--action", "update"])
+
+    assert result.exit_code == 0
+    lines = (docs_dir / "log.jsonl").read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 2
+    assert orjson.loads(lines[0])["message"] == "first"
+    assert orjson.loads(lines[1])["message"] == "second"
+
+
+def test_log_rejects_invalid_action(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
+    """An --action outside the allowed set is a usage error, not a crash."""
+    make_docs_tree()
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["log", "--title", "x", "--details", "y", "--action", "bogus"])
+
+    assert result.exit_code != 0
