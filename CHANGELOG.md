@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.6.0 (2026-08-04)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.5.0...0.6.0)
+
+### New
+
+- Address code review: LogEntry dataclass, auto-create docs/, output assertions. [c9998b1](https://github.com/callowayproject/wiki-toolkit/commit/c9998b18ab31510dec1594926d5f0b500a08d6e4)
+
+  Matches the existing pattern (CatalogEntry, SourceScanEntry) instead of a
+  bare dict; append_log_entry now creates docs/ if missing rather than
+  crashing on a first-run log call.
+
+- Add log command to append entries to docs/log.jsonl. [83b71b3](https://github.com/callowayproject/wiki-toolkit/commit/83b71b32706b9b08f40ec63a100066dd8bf23e30)
+
+  Implements issue #15: build_log_entry/append_log_entry are pure functions
+  independent of Click, validating action against the allowed set and
+  appending without rewriting existing lines. The `log` CLI command delegates
+  to them.
+
 ## 0.5.0 (2026-08-04)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.4.0...0.5.0)
