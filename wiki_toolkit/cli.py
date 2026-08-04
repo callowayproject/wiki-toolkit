@@ -14,6 +14,7 @@ from wiki_toolkit.core import (
     apply_source_scan,
     build_catalog,
     build_log_entry,
+    lint_sources,
     lint_wiki,
     read_jsonl,
     run_doctor,
@@ -102,6 +103,26 @@ def source_scan(update_manifest: bool, accept_covered: bool) -> None:
         click.echo(f"Wrote {written} entries to docs/source-manifest.jsonl")
 
     if result.needs_attention:
+        raise SystemExit(1)
+
+
+@cli.command("source-lint")
+def source_lint() -> None:
+    """Validate docs/sources/ frontmatter and report processed-but-uncovered sources."""
+    docs_dir = Path.cwd() / "docs"
+    result = lint_sources(docs_dir)
+
+    for violation in result.violations:
+        click.echo(f"[VIOLATION] {violation.path}: {violation.message}")
+
+    if result.backlog:
+        click.echo("Processed but not yet covered by a wiki note:")
+        for source_id in result.backlog:
+            click.echo(f"  [backlog] {source_id}")
+
+    if result.ok:
+        click.echo("No lint violations found.")
+    else:
         raise SystemExit(1)
 
 
