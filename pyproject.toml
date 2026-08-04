@@ -20,6 +20,7 @@ dependencies = [
     "pydantic-settings>=2.8.1",
     "click",
     "python-frontmatter",
+    "pyyaml",
 ]
 authors = [
     { name = "Corey Oordt", email = "coreyoordt@gmail.com" },
@@ -75,6 +76,10 @@ path = "wiki_toolkit/__init__.py"
 
 [[tool.mypy.overrides]]
 module = "frontmatter"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "yaml"
 ignore_missing_imports = true
 
 [tool.uv]

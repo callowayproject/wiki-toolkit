@@ -8,7 +8,7 @@ from pathlib import Path
 
 import click
 
-from wiki_toolkit.core import apply_source_scan, build_catalog, run_doctor, scan_sources, write_jsonl
+from wiki_toolkit.core import apply_source_scan, build_catalog, lint_wiki, run_doctor, scan_sources, write_jsonl
 
 
 @click.group()
@@ -52,6 +52,21 @@ def build() -> None:
     write_jsonl(docs_dir / "catalog.jsonl", [asdict(entry) for entry in entries])
 
     click.echo(f"Wrote {len(entries)} entries to docs/catalog.jsonl")
+
+
+@cli.command()
+def lint() -> None:
+    """Validate wiki note frontmatter, allowed tags, source links, and source_count."""
+    docs_dir = Path.cwd() / "docs"
+    result = lint_wiki(docs_dir)
+
+    for violation in result.violations:
+        click.echo(f"[VIOLATION] {violation.path}: {violation.message}")
+
+    if result.ok:
+        click.echo("No lint violations found.")
+    else:
+        raise SystemExit(1)
 
 
 @cli.command("source-scan")

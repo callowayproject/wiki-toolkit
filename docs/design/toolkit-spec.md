@@ -108,6 +108,7 @@ The schema (`schema.md`) provides instructions to the AI agent on how to manage 
   updated: YYYY-MM-DD
   tags: [from taxonomy below]
   sources: [source_id]
+  source_count: 1  # must equal len(sources); checked by `lint`
   status: resolved  # or `proposed` for speculative pages ingested ahead of any code change
   ---
   ```
