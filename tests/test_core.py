@@ -9,6 +9,7 @@ import orjson
 from wiki_toolkit.core import (
     DOCS_STRUCTURE,
     apply_source_scan,
+    build_catalog,
     check_shallow_clone,
     run_doctor,
     scan_sources,
@@ -233,3 +234,92 @@ def test_apply_source_scan_skips_unaccepted_covered_update(make_docs_tree: Calla
 
     assert written == 0
     assert "processed: true" not in path.read_text(encoding="utf-8")
+
+
+def test_build_catalog_entry_fields(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
+    """Each note yields an entry with path, title, updated, and sources."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "a.md", title="A Page", updated="2026-01-01", sources=["jira:ABC-1"])
+
+    entries = build_catalog(docs_dir)
+
+    assert len(entries) == 1
+    entry = entries[0]
+    assert entry.path == "docs/wiki/a.md"
+    assert entry.title == "A Page"
+    assert entry.updated == "2026-01-01"
+    assert entry.sources == ["jira:ABC-1"]
+
+
+def test_build_catalog_falls_back_to_filename_for_missing_title(
+    make_docs_tree: Callable[[], Path], make_wiki_note
+) -> None:
+    """A note without a `title` field falls back to its filename stem."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "untitled.md")
+
+    entries = build_catalog(docs_dir)
+
+    assert entries[0].title == "untitled"
+
+
+def test_build_catalog_status_resolved_when_all_sources_resolved(
+    make_docs_tree: Callable[[], Path], make_wiki_note
+) -> None:
+    """A note is `resolved` when every referenced source is `resolved` in the manifest."""
+    docs_dir = make_docs_tree()
+    manifest_entry = {"source": "jira:ABC-1", "status": "resolved"}
+    (docs_dir / "source-manifest.jsonl").write_text(orjson.dumps(manifest_entry).decode() + "\n")
+    make_wiki_note(docs_dir, "a.md", sources=["jira:ABC-1"])
+
+    entries = build_catalog(docs_dir)
+
+    assert entries[0].status == "resolved"
+
+
+def test_build_catalog_status_proposed_when_any_source_proposed(
+    make_docs_tree: Callable[[], Path], make_wiki_note
+) -> None:
+    """A note is `proposed` if any referenced source is not `resolved` in the manifest."""
+    docs_dir = make_docs_tree()
+    manifest_lines = [
+        orjson.dumps({"source": "jira:ABC-1", "status": "resolved"}).decode(),
+        orjson.dumps({"source": "jira:ABC-2", "status": "proposed"}).decode(),
+    ]
+    (docs_dir / "source-manifest.jsonl").write_text("\n".join(manifest_lines) + "\n")
+    make_wiki_note(docs_dir, "a.md", sources=["jira:ABC-1", "jira:ABC-2"])
+
+    entries = build_catalog(docs_dir)
+
+    assert entries[0].status == "proposed"
+
+
+def test_build_catalog_status_proposed_when_source_missing_from_manifest(
+    make_docs_tree: Callable[[], Path], make_wiki_note
+) -> None:
+    """A note referencing a source with no manifest entry at all is `proposed`."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "source-manifest.jsonl").write_text("")
+    make_wiki_note(docs_dir, "a.md", sources=["jira:ABC-1"])
+
+    entries = build_catalog(docs_dir)
+
+    assert entries[0].status == "proposed"
+
+
+def test_build_catalog_note_with_no_sources_is_resolved(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
+    """A note referencing no sources is trivially `resolved`."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "a.md")
+
+    entries = build_catalog(docs_dir)
+
+    assert entries[0].sources == []
+    assert entries[0].status == "resolved"
+
+
+def test_build_catalog_empty_wiki_dir(make_docs_tree: Callable[[], Path]) -> None:
+    """An empty docs/wiki/ produces an empty catalog, nothing crashes."""
+    docs_dir = make_docs_tree()
+
+    assert build_catalog(docs_dir) == []

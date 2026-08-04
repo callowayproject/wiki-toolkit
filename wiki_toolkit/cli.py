@@ -3,11 +3,12 @@
 Commands parse arguments and delegate to wiki_toolkit.core; no business logic lives here.
 """
 
+from dataclasses import asdict
 from pathlib import Path
 
 import click
 
-from wiki_toolkit.core import apply_source_scan, run_doctor, scan_sources
+from wiki_toolkit.core import apply_source_scan, build_catalog, run_doctor, scan_sources, write_jsonl
 
 
 @click.group()
@@ -40,6 +41,17 @@ def doctor() -> None:
 
     if not report.ok:
         raise SystemExit(1)
+
+
+@cli.command()
+def build() -> None:
+    """Regenerate docs/catalog.jsonl from the current docs/wiki/ notes."""
+    docs_dir = Path.cwd() / "docs"
+    entries = build_catalog(docs_dir)
+
+    write_jsonl(docs_dir / "catalog.jsonl", [asdict(entry) for entry in entries])
+
+    click.echo(f"Wrote {len(entries)} entries to docs/catalog.jsonl")
 
 
 @cli.command("source-scan")
