@@ -9,8 +9,11 @@ from pathlib import Path
 import click
 
 from wiki_toolkit.core import (
+    ALLOWED_LOG_ACTIONS,
+    append_log_entry,
     apply_source_scan,
     build_catalog,
+    build_log_entry,
     lint_wiki,
     read_jsonl,
     run_doctor,
@@ -116,3 +119,16 @@ def search_catalog_cmd(query: str) -> None:
 
     for entry in matches:
         click.echo(f"{entry.get('title', '')} ({entry.get('path', '')})")
+
+
+@cli.command()
+@click.option("--title", "message", required=True, help="Short message describing the event.")
+@click.option("--details", required=True, help="Additional detail about the event.")
+@click.option("--action", type=click.Choice(ALLOWED_LOG_ACTIONS), required=True, help="Event category.")
+def log(message: str, details: str, action: str) -> None:
+    """Append a structured entry to docs/log.jsonl."""
+    docs_dir = Path.cwd() / "docs"
+    entry = build_log_entry(action, message, details)
+    append_log_entry(docs_dir, entry)
+
+    click.echo(f"Appended {action} entry to docs/log.jsonl")
