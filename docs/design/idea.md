@@ -30,7 +30,7 @@
     - Renovate
 
 ## Solution: one combined system
-- [LLM-Wiki](llm-wiki.md) is the workflow: ingest/query/lint operations keep that bundle current as the repo changes.
+- [LLM-Wiki](Reference/llm-wiki.md) is the workflow: ingest/query/lint operations keep that bundle current as the repo changes.
 - GitHub webhooks are the trigger: `pull_request: opened/synchronize`, not merge. That's what lets the doc diff land in the same PR the reviewer is already looking at, before it merges.
 - A hosted agent harness (Agent) is the receiver: it updates the docs based on received GitHub events. Piloting this mainly requires wiring up webhooks to it, not building a new service.
 - Review model: no new process. Agent pushes the doc update as a commit onto the same PR branch (not a separate PR); the same reviewer approves both diffs.
