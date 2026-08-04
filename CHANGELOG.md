@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.4.0 (2026-08-04)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.3.0...0.4.0)
+
+### New
+
+- Add lint: validate wiki note frontmatter, tags, source links, source_count. [0bc00c6](https://github.com/callowayproject/wiki-toolkit/commit/0bc00c6006f006adaf31cb311a6b1f9c78454a01)
+
+  Closes #13
+
+### Other
+
+- Declare pyyaml explicitly, document source_count in frontmatter template. [c35cd9b](https://github.com/callowayproject/wiki-toolkit/commit/c35cd9be97a17a210aa6d7ace3570782d7355ad6)
+
+  Review follow-up: lint's yaml.YAMLError catch relied on python-frontmatter's
+  transitive pyyaml dependency without declaring it; source_count had no
+  documented home in the wiki note frontmatter template despite lint checking it.
+
 ## 0.3.0 (2026-08-04)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.2.0...0.3.0)
