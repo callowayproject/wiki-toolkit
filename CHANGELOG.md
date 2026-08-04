@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.7.0 (2026-08-04)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.6.0...0.7.0)
+
+### New
+
+- Add source-lint command to validate source frontmatter and coverage. [1756d19](https://github.com/callowayproject/wiki-toolkit/commit/1756d191306bcc7e7c7a098d64f04a64f0296cdc)
+
+  Flags missing `source` field and invalid processed/duplicate values as
+  hard errors; reports processed-but-not-covered_by sources as a backlog
+  list, distinct from errors, per issue #16.
+
 ## 0.6.0 (2026-08-04)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.5.0...0.6.0)
