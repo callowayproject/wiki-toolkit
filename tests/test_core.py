@@ -448,10 +448,10 @@ def test_build_log_entry_has_expected_fields() -> None:
     """A built log entry has date, action, message, and details."""
     entry = build_log_entry("ingest", "Ingested a source", "details here")
 
-    assert entry["action"] == "ingest"
-    assert entry["message"] == "Ingested a source"
-    assert entry["details"] == "details here"
-    assert entry["date"]
+    assert entry.action == "ingest"
+    assert entry.message == "Ingested a source"
+    assert entry.details == "details here"
+    assert entry.date
 
 
 def test_build_log_entry_rejects_disallowed_action() -> None:

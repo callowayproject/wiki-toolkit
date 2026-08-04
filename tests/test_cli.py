@@ -201,6 +201,7 @@ def test_log_appends_entry(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
     )
 
     assert result.exit_code == 0
+    assert "Appended ingest entry to docs/log.jsonl" in result.output
     lines = (docs_dir / "log.jsonl").read_text(encoding="utf-8").splitlines()
     assert len(lines) == 1
     entry = orjson.loads(lines[0])
@@ -208,6 +209,16 @@ def test_log_appends_entry(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
     assert entry["message"] == "Ingested ticket"
     assert entry["details"] == "jira:ABC-1"
     assert entry["date"]
+
+
+def test_log_creates_docs_dir_if_missing(tmp_path: Path, monkeypatch) -> None:
+    """Log succeeds even if docs/ doesn't exist yet, rather than crashing."""
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["log", "--title", "x", "--details", "y", "--action", "create"])
+
+    assert result.exit_code == 0
+    assert (tmp_path / "docs" / "log.jsonl").is_file()
 
 
 def test_log_preserves_existing_entries(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
