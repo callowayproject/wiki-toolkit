@@ -1,6 +1,6 @@
 # LLM Wiki Toolkit — Spec
 
-Specifies the AI skills and helper tools that implement [llm-wiki.md](llm-wiki.md) as a general-purpose toolkit.
+Specifies the AI skills and helper tools that implement [llm-wiki.md](Reference/llm-wiki.md) as a general-purpose toolkit.
 An AI Agent harness operates this toolkit; the toolkit itself is domain-agnostic.
 
 ## Wiki structure

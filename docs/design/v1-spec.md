@@ -1,6 +1,6 @@
 # wiki_toolkit v1 — Build Spec
 
-Consolidates [toolkit-spec.md](toolkit-spec.md) (target design), `Reference/llm-breakdown.md` Step 04 (base `wiki_tool.py` command set), and [Issue #2](https://github.com/callowayproject/wiki-toolkit/issues/2)'s resolved decisions (#3–#7) into one implementation-ready reference. Where this doc and toolkit-spec.md disagree, **this doc wins for v1** — toolkit-spec.md describes the full eventual toolkit including adapters; this is the narrower slice being built now. See [CONTEXT.md](../../CONTEXT.md) for terminology.
+Consolidates [toolkit-spec.md](toolkit-spec.md) (target design), `Reference/llm-breakdown.md` Step 04 (base `wiki_tool.py` command set), and [Issue #2](https://github.com/callowayproject/wiki-toolkit/issues/2)'s resolved decisions (#3–#7) into one implementation-ready reference. Where this doc and toolkit-spec.md disagree, **this doc wins for v1** — toolkit-spec.md describes the full eventual toolkit including adapters; this is the narrower slice being built now. See [CONTEXT.md](CONTEXT.md) for terminology.
 
 ## Scope
 
@@ -92,7 +92,7 @@ Every wiki write goes through a PR — no direct commits, for either agent-autho
 
 ## Command surface
 
-All commands are keyed off `source` (frontmatter field, formerly called `source_id`/`stable_id` in earlier drafts — see [CONTEXT.md](../../CONTEXT.md)). No adapter arguments in v1.
+All commands are keyed off `source` (frontmatter field, formerly called `source_id`/`stable_id` in earlier drafts — see [CONTEXT.md](CONTEXT.md)). No adapter arguments in v1.
 
 | Command | Contract |
 |---|---|
