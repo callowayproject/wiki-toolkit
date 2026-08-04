@@ -35,6 +35,7 @@ Here is a simple API client in `api_client.py`
 # api_client.py
 import requests
 
+
 class APIClient:
     def get_data(self, url: str):
         response = requests.get(url)
@@ -50,21 +51,22 @@ from api_client import APIClient
 
 class TestGetData:
     "Tests for the APIClient.get_data method."
+
     def test_returns_json_object(self, mocker):
         """The result of a successful get_data call is a JSON object."""
         # Arrange
         mock_response = mocker.Mock()
         mock_response.status_code = 200
-        mock_response.json.return_value = {'key': 'value'}
+        mock_response.json.return_value = {"key": "value"}
 
         # Patch 'requests.get' to return the mock response
-        mock_get = mocker.patch('requests.get', return_value=mock_response)
+        mock_get = mocker.patch("requests.get", return_value=mock_response)
 
         # Act
         client = APIClient()
-        result = client.get_data('http://example.com/api')
+        result = client.get_data("http://example.com/api")
 
         # Assert
-        assert result == {'key': 'value'}
-        mock_get.assert_called_once_with('http://example.com/api')
+        assert result == {"key": "value"}
+        mock_get.assert_called_once_with("http://example.com/api")
 ```

@@ -23,6 +23,7 @@ Without this, each async test function requires `@pytest.mark.asyncio` explicitl
 # test_async.py
 import pytest
 
+
 @pytest.mark.asyncio
 async def test_some_asyncio_code():
     res = await library.do_something()
@@ -40,12 +41,14 @@ import pytest_asyncio
 from typing import AsyncGenerator
 from my_client import AsyncClient
 
+
 @pytest_asyncio.fixture
 async def client() -> AsyncGenerator[AsyncClient, None]:
     c = AsyncClient()
     await c.connect()
     yield c
     await c.disconnect()
+
 
 async def test_fetch_returns_data(client: AsyncClient):
     result = await client.fetch("/data")
@@ -63,6 +66,7 @@ Use `AsyncMock` when the code under test `await`s a dependency:
 import pytest
 from unittest.mock import AsyncMock
 from my_service import DataService
+
 
 async def test_process_calls_fetch_and_returns_result(mocker):
     # Arrange

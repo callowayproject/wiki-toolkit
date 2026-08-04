@@ -14,6 +14,7 @@ For example, the code file `database.py`:
 ```python
 # database.py
 
+
 class Database:
     """Simple database class."""
 
@@ -62,14 +63,15 @@ def db() -> Generator[Database, None, None]:
 
 class TestQuery:
     """Tests for the `Database.query` method."""
+
     def test_returns_one_record(self, db: Database):
         """The query method should return a single record."""
         # Arrange
         expected = [{"id": 1, "name": "Test"}]
-        
+
         # Act
         results = db.query("SELECT * FROM users")
-        
+
         # Assert
         assert results == expected
 ```
