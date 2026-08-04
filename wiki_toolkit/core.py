@@ -201,6 +201,53 @@ def scan_sources(docs_dir: Path, *, accept_covered: bool = False) -> SourceScanR
     return result
 
 
+@dataclass
+class CatalogEntry:
+    """A single `docs/wiki/` note's catalog entry."""
+
+    path: str
+    title: str
+    updated: str
+    sources: list[str]
+    status: Literal["resolved", "proposed"]
+
+
+def build_catalog(docs_dir: Path) -> list[CatalogEntry]:
+    """Walk `docs_dir/wiki/`, parsing frontmatter into a catalog entry per note.
+
+    `status` is `resolved` iff every source the note references is `resolved`
+    in the source manifest (vacuously true for a note with no sources), else
+    `proposed`.
+    """
+    manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
+    wiki_dir = docs_dir / "wiki"
+    entries = []
+
+    paths = sorted(wiki_dir.rglob("*.md")) if wiki_dir.is_dir() else []
+    for path in paths:
+        post = frontmatter.loads(path.read_text(encoding="utf-8"))
+        sources = post.get("sources") or []
+        resolved = all(manifest.get(source_id, {}).get("status") == "resolved" for source_id in sources)
+
+        entries.append(
+            CatalogEntry(
+                path=str(path.relative_to(docs_dir.parent)),
+                title=post.get("title") or path.stem,
+                updated=post.get("updated", ""),
+                sources=sources,
+                status="resolved" if resolved else "proposed",
+            )
+        )
+
+    return entries
+
+
+def write_jsonl(path: Path, records: list[dict]) -> None:
+    """Write `records` to `path` as JSONL, one object per line."""
+    lines = [orjson.dumps(record).decode() for record in records]
+    path.write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
+
+
 def _stamp_frontmatter(path: Path, **fields: object) -> None:
     """Merge `fields` into a source file's frontmatter and write it back."""
     post = frontmatter.loads(path.read_text(encoding="utf-8"))
@@ -245,8 +292,6 @@ def apply_source_scan(docs_dir: Path, result: SourceScanResult) -> int:
         }
         written += 1
 
-    manifest_path = docs_dir / SOURCE_MANIFEST_FILENAME
-    lines = [orjson.dumps(manifest[key]).decode() for key in manifest]
-    manifest_path.write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
+    write_jsonl(docs_dir / SOURCE_MANIFEST_FILENAME, [manifest[key] for key in manifest])
 
     return written

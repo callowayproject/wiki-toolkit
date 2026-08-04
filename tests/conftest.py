@@ -34,6 +34,25 @@ def make_source() -> Callable[..., Path]:
 
 
 @pytest.fixture
+def make_wiki_note() -> Callable[..., Path]:
+    """Build a wiki note under a docs/ tree's `wiki/` directory.
+
+    Returns a factory that writes a single frontmatter markdown file and
+    returns its path. Each call is self-contained.
+    """
+
+    def _make_wiki_note(docs_dir: Path, filename: str, *, title: str | None = None, **fields: object) -> Path:
+        wiki_dir = docs_dir / "wiki"
+        wiki_dir.mkdir(parents=True, exist_ok=True)
+        post = frontmatter.Post("", title=title, **fields)
+        path = wiki_dir / filename
+        path.write_bytes(frontmatter.dumps(post).encode())
+        return path
+
+    return _make_wiki_note
+
+
+@pytest.fixture
 def make_docs_tree(tmp_path: Path) -> Callable[[], Path]:
     """Build a minimal, well-formed docs/ tree (all structure elements present, JSONL valid)."""
 

@@ -2,6 +2,7 @@
 
 from typing import TYPE_CHECKING
 
+import orjson
 from click.testing import CliRunner
 
 from wiki_toolkit.cli import cli
@@ -45,6 +46,43 @@ def test_doctor_exits_zero_on_healthy_docs_tree(tmp_path: Path, monkeypatch, mak
     assert result.exit_code == 0
     assert "MISSING" not in result.output
     assert "MALFORMED" not in result.output
+
+
+def test_build_writes_catalog(tmp_path: Path, monkeypatch, make_docs_tree, make_wiki_note) -> None:
+    """Build writes one catalog entry per note in docs/wiki/ and exits 0."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "a.md", title="A Page", updated="2026-01-01", sources=[])
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["build"])
+
+    assert result.exit_code == 0
+    assert "Wrote 1 entries" in result.output
+    lines = (docs_dir / "catalog.jsonl").read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 1
+    entry = orjson.loads(lines[0])
+    assert entry == {
+        "path": "docs/wiki/a.md",
+        "title": "A Page",
+        "updated": "2026-01-01",
+        "sources": [],
+        "status": "resolved",
+    }
+
+
+def test_build_overwrites_existing_catalog(tmp_path: Path, monkeypatch, make_docs_tree, make_wiki_note) -> None:
+    """Build regenerates docs/catalog.jsonl from scratch rather than appending."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "catalog.jsonl").write_text('{"path": "stale.md"}\n')
+    make_wiki_note(docs_dir, "a.md", title="A Page")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["build"])
+
+    assert result.exit_code == 0
+    catalog = (docs_dir / "catalog.jsonl").read_text(encoding="utf-8")
+    assert "stale.md" not in catalog
+    assert "A Page" in catalog
 
 
 def test_source_scan_reports_new_source(tmp_path: Path, monkeypatch, make_docs_tree, make_source) -> None:
