@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.0 (2026-08-04)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.2.0...0.3.0)
+
+### New
+
+- Add build: generate catalog.jsonl from wiki notes. [b90af21](https://github.com/callowayproject/wiki-toolkit/commit/b90af21c647df6d924b426b58a1691bbd12f7ace)
+
+  wiki-toolkit build walks docs/wiki/, parses each note's frontmatter into
+  a CatalogEntry (path, title, updated, sources, status), and writes
+  docs/catalog.jsonl. status is resolved iff every referenced source is
+  resolved in the source manifest, else proposed.
+
+  Closes #12
+
 ## 0.2.0 (2026-08-04)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.1.0...0.2.0)
