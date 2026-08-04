@@ -1,6 +1,6 @@
 """Generate documentation stubs."""
+
 from pathlib import Path
-from typing import Set
 
 import mkdocs_gen_files
 
