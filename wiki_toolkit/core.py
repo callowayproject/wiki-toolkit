@@ -327,6 +327,19 @@ def write_jsonl(path: Path, records: list[dict]) -> None:
     path.write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
 
 
+def read_jsonl(path: Path) -> list[dict]:
+    """Read a JSONL file into a list of dicts. Returns an empty list if the file doesn't exist."""
+    if not path.is_file():
+        return []
+    return [orjson.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+
+def search_catalog(query: str, entries: list[dict]) -> list[dict]:
+    """Return catalog entries whose title or path contains `query`, case-insensitively."""
+    needle = query.lower()
+    return [e for e in entries if needle in e.get("title", "").lower() or needle in e.get("path", "").lower()]
+
+
 def _stamp_frontmatter(path: Path, **fields: object) -> None:
     """Merge `fields` into a source file's frontmatter and write it back."""
     post = frontmatter.loads(path.read_text(encoding="utf-8"))

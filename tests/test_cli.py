@@ -151,3 +151,40 @@ def test_source_scan_flags_duplicate_with_nonzero_exit(
 
     assert result.exit_code == 1
     assert "DUPLICATE" in result.output
+
+
+def test_search_catalog_returns_matching_entry(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
+    """search-catalog finds an entry by title and exits 0."""
+    docs_dir = make_docs_tree()
+    entry = {"path": "docs/wiki/auth.md", "title": "Auth Middleware", "sources": [], "updated": "", "status": "ok"}
+    (docs_dir / "catalog.jsonl").write_text(orjson.dumps(entry).decode() + "\n")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["search-catalog", "--query", "auth"])
+
+    assert result.exit_code == 0
+    assert "Auth Middleware" in result.output
+    assert "docs/wiki/auth.md" in result.output
+
+
+def test_search_catalog_no_matches_is_not_an_error(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
+    """A query with no matches prints a clear empty result and exits 0."""
+    docs_dir = make_docs_tree()
+    entry = {"path": "docs/wiki/auth.md", "title": "Auth Middleware", "sources": [], "updated": "", "status": "ok"}
+    (docs_dir / "catalog.jsonl").write_text(orjson.dumps(entry).decode() + "\n")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["search-catalog", "--query", "nonexistent"])
+
+    assert result.exit_code == 0
+    assert "No matches found." in result.output
+
+
+def test_search_catalog_requires_query_option(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
+    """Omitting --query is a usage error, not a crash."""
+    make_docs_tree()
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["search-catalog"])
+
+    assert result.exit_code != 0
