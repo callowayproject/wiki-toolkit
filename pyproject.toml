@@ -16,16 +16,11 @@ dynamic = ["version"]
 license = { file = "LICENSE" }
 requires-python = ">=3.14"
 dependencies = [
-    "opentelemetry-sdk>=1.32.0",
     "orjson>=3.8.12",
-    "opentelemetry-exporter-otlp",
-    "structlog>=23.1.0",
-    "opentelemetry-api>=1.32.0",
-    "opentelemetry-api",
-    "opentelemetry-sdk",
-    "fastapi[standard]",
-    "opentelemetry-instrumentation-fastapi",
-    "pydantic-settings>=2.8.1", ]
+    "pydantic-settings>=2.8.1",
+    "click",
+    "python-frontmatter",
+]
 authors = [
     { name = "Corey Oordt", email = "coreyoordt@gmail.com" },
 ]
@@ -72,11 +67,15 @@ docs = [
 ]
 
 
-#[project.scripts]
-#wiki-toolkit = wiki_toolkit.cli:cli
+[project.scripts]
+wiki-toolkit = "wiki_toolkit.cli:cli"
 
 [tool.hatch.version]
 path = "wiki_toolkit/__init__.py"
+
+[[tool.mypy.overrides]]
+module = "frontmatter"
+ignore_missing_imports = true
 
 [tool.uv]
 default-groups = ["dev", "test", "docs"]

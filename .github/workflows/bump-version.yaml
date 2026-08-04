@@ -61,6 +61,9 @@ jobs:
               ;;
           esac
 
+        env:
+          GH_TOKEN: ${{ github.token }}
+
   call-build-python:
     needs: bump-version
     if: ${{ needs.bump-version.outputs.build_package == 'true' }}
