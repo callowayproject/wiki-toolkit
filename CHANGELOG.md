@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.5.0 (2026-08-04)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.4.0...0.5.0)
+
+### New
+
+- Add search-catalog command to search compiled wiki notes. [7e5d113](https://github.com/callowayproject/wiki-toolkit/commit/7e5d113ee61d9aa7dd50b4ab58a16c65c2051e1f)
+
+  Internal search logic (search_catalog) is a pure function independent
+  of Click; the search-catalog CLI command delegates and formats results.
+
+  Closes #14
+
 ## 0.4.0 (2026-08-04)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.3.0...0.4.0)
