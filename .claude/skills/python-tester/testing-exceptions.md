@@ -15,6 +15,7 @@ To test the code:
 ```python
 # divide.py
 
+
 def divide(a: float, b: float) -> float:
     """Divide a by b."""
     if b == 0:
@@ -35,29 +36,29 @@ from divide import divide
 from contextlib import nullcontext as does_not_raise
 
 
-@pytest.mark.parametrize(  
-    "num1, num2, expectation, expected_result",  
-    [  
-        param(30, 2.5, does_not_raise(), 12.0, id="divides by non-zero value"),  
-        param(  
-            10,  
-            0,  
-            pytest.raises(ZeroDivisionError, match="Division by zero"),  
-            None,  
-            id="raises exception when denominator is zero",  
-        ),  
-        param(  
-            "a",  
-            2,  
-            pytest.raises(TypeError, match="must be numbers"),  
-            None,  
-            id="raises exception when non-numeric argument",  
-        ),  
-    ],  
-)  
-def test_divide_cases(num1, num2, expectation, expected_result):  
-    """Test divide function with various cases."""  
-    with expectation:  
-        result = divide(num1, num2)  
+@pytest.mark.parametrize(
+    "num1, num2, expectation, expected_result",
+    [
+        param(30, 2.5, does_not_raise(), 12.0, id="divides by non-zero value"),
+        param(
+            10,
+            0,
+            pytest.raises(ZeroDivisionError, match="Division by zero"),
+            None,
+            id="raises exception when denominator is zero",
+        ),
+        param(
+            "a",
+            2,
+            pytest.raises(TypeError, match="must be numbers"),
+            None,
+            id="raises exception when non-numeric argument",
+        ),
+    ],
+)
+def test_divide_cases(num1, num2, expectation, expected_result):
+    """Test divide function with various cases."""
+    with expectation:
+        result = divide(num1, num2)
         assert result == expected_result
 ```

@@ -13,14 +13,17 @@ import pytest
 from pytest import param
 
 
-@pytest.mark.parametrize("email,expected", [
-    param("user@example.com", True, id="contains user and domain"),
-    param("test.user@domain.co.uk", True, id="accepts dots in user"),
-    param("invalid.email", False, id="missing user and @ fails"),
-    param("@example.com", False, id="missing user fails"),
-    param("user@domain", False, id="missing top-level domain fails"),
-    param("", False, id="empty address fails"),
-])
+@pytest.mark.parametrize(
+    "email,expected",
+    [
+        param("user@example.com", True, id="contains user and domain"),
+        param("test.user@domain.co.uk", True, id="accepts dots in user"),
+        param("invalid.email", False, id="missing user and @ fails"),
+        param("@example.com", False, id="missing user fails"),
+        param("user@domain", False, id="missing top-level domain fails"),
+        param("", False, id="empty address fails"),
+    ],
+)
 def test_is_valid_email(email: str, expected: bool):
     """Test email validation with various inputs."""
     assert is_valid_email(email) == expected

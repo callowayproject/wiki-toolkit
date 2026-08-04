@@ -10,6 +10,7 @@ It is a [`pathlib.Path`](https://docs.python.org/3/library/pathlib.html#pathlib.
 import pytest
 from pathlib import Path
 
+
 def save_data(filepath: Path, data: str):
     """Save data to file."""
     filepath.write_text(data)
