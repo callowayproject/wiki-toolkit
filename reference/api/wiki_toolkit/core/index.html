@@ -1398,6 +1398,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.LogEntry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LogEntry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#wiki_toolkit.core.SourceScanEntry" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1505,6 +1516,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.append_log_entry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;append_log_entry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#wiki_toolkit.core.apply_source_scan" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1520,6 +1542,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;build_catalog
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.build_log_entry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;build_log_entry
       
     </span>
   </a>
@@ -1937,6 +1970,19 @@
             </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            LogEntry
+
+
+  
+      dataclass
+   (wiki_toolkit.core.LogEntry)" href="#wiki_toolkit.core.LogEntry">LogEntry</a></code></td>
+            <td class="doc-class-details">
+              <div class="doc-md-description">
+                <p>A single <code>docs/log.jsonl</code> entry.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
             <td><code><a class="autorefs autorefs-internal" title="            SourceScanEntry
 
 
@@ -1977,6 +2023,14 @@
       </thead>
       <tbody>
             <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            append_log_entry (wiki_toolkit.core.append_log_entry)" href="#wiki_toolkit.core.append_log_entry">append_log_entry</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Append <code>entry</code> as one JSONL line to <code>docs_dir/log.jsonl</code>, never rewriting existing lines.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
               <td><code><a class="autorefs autorefs-internal" title="            apply_source_scan (wiki_toolkit.core.apply_source_scan)" href="#wiki_toolkit.core.apply_source_scan">apply_source_scan</a></code></td>
               <td class="doc-function-details">
                 <div class="doc-md-description">
@@ -1989,6 +2043,14 @@
               <td class="doc-function-details">
                 <div class="doc-md-description">
                   <p>Walk <code>docs_dir/wiki/</code>, parsing frontmatter into a catalog entry per note.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            build_log_entry (wiki_toolkit.core.build_log_entry)" href="#wiki_toolkit.core.build_log_entry">build_log_entry</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Build a <code>log.jsonl</code> entry. Raises ValueError if <code>action</code> isn&rsquo;t in the allowed set.</p>
                 </div>
               </td>
             </tr>
@@ -2437,6 +2499,62 @@
 
 
 
+<h3 id="wiki_toolkit.core.LogEntry" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">LogEntry</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#wiki_toolkit.core.LogEntry" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">LogEntry</span><span class="p">(</span><span class="n">date</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n"><span title="wiki_toolkit.core.LogAction">LogAction</span></span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">details</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>A single <code>docs/log.jsonl</code> entry.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
 <h3 id="wiki_toolkit.core.SourceScanEntry" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">SourceScanEntry</span>
 
@@ -2673,6 +2791,31 @@
 <div class="doc doc-object doc-function">
 
 
+<h3 id="wiki_toolkit.core.append_log_entry" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">append_log_entry</span>
+
+
+<a href="#wiki_toolkit.core.append_log_entry" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">append_log_entry</span><span class="p">(</span><span class="n">docs_dir</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n">entry</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            LogEntry
+
+
+  
+      dataclass
+   (wiki_toolkit.core.LogEntry)" href="#wiki_toolkit.core.LogEntry">LogEntry</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Append <code>entry</code> as one JSONL line to <code>docs_dir/log.jsonl</code>, never rewriting existing lines.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h3 id="wiki_toolkit.core.apply_source_scan" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">apply_source_scan</span>
 
@@ -2720,6 +2863,31 @@ Returns the number of manifest entries written.</p>
 <p><code>status</code> is <code>resolved</code> iff every source the note references is <code>resolved</code>
 in the source manifest (vacuously true for a note with no sources), else
 <code>proposed</code>.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wiki_toolkit.core.build_log_entry" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">build_log_entry</span>
+
+
+<a href="#wiki_toolkit.core.build_log_entry" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">build_log_entry</span><span class="p">(</span><span class="n">action</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">details</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            LogEntry
+
+
+  
+      dataclass
+   (wiki_toolkit.core.LogEntry)" href="#wiki_toolkit.core.LogEntry">LogEntry</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Build a <code>log.jsonl</code> entry. Raises ValueError if <code>action</code> isn&rsquo;t in the allowed set.</p>
 
 
     </div>
