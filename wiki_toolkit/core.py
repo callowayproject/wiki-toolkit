@@ -321,6 +321,55 @@ def lint_wiki(docs_dir: Path) -> LintResult:
     return result
 
 
+@dataclass
+class SourceLintResult:
+    """The full result of a `source-lint` pass."""
+
+    violations: list[LintViolation] = field(default_factory=list)
+    backlog: list[str] = field(default_factory=list)  # source ids: processed but not yet covered_by any note
+
+    @property
+    def ok(self) -> bool:
+        """True if no violations were found. Backlog entries don't affect this."""
+        return not self.violations
+
+
+def lint_sources(docs_dir: Path) -> SourceLintResult:
+    """Validate every file in `docs_dir/sources/`: required `source` field, `processed`/`duplicate` types.
+
+    Also reports `processed` sources with no `covered_by` entry in `docs_dir/source-manifest.jsonl`
+    as a backlog list, distinct from hard errors.
+    """
+    result = SourceLintResult()
+    manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
+
+    sources_dir = docs_dir / "sources"
+    paths = sorted(sources_dir.rglob("*.md")) if sources_dir.is_dir() else []
+    for path in paths:
+        rel_path = str(path.relative_to(docs_dir.parent))
+
+        try:
+            post = frontmatter.loads(path.read_text(encoding="utf-8"))
+        except yaml.YAMLError as e:
+            result.violations.append(LintViolation(rel_path, f"malformed frontmatter: {e}"))
+            continue
+
+        source_id = post.get("source")
+        if not source_id:
+            result.violations.append(LintViolation(rel_path, "missing required `source` field"))
+            continue
+
+        for field_name in ("processed", "duplicate"):
+            value = post.get(field_name)
+            if value is not None and not isinstance(value, bool):
+                result.violations.append(LintViolation(rel_path, f"`{field_name}` must be a boolean, got {value!r}"))
+
+        if post.get("processed") and not manifest.get(source_id, {}).get("covered_by"):
+            result.backlog.append(source_id)
+
+    return result
+
+
 def write_jsonl(path: Path, records: list[dict]) -> None:
     """Write `records` to `path` as JSONL, one object per line."""
     lines = [orjson.dumps(record).decode() for record in records]

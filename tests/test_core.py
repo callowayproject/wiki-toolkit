@@ -13,6 +13,7 @@ from wiki_toolkit.core import (
     build_catalog,
     build_log_entry,
     check_shallow_clone,
+    lint_sources,
     lint_wiki,
     parse_tag_taxonomy,
     read_jsonl,
@@ -405,6 +406,79 @@ def test_lint_clean_note_has_no_violations(make_docs_tree: Callable[[], Path], m
     result = lint_wiki(docs_dir)
 
     assert result.violations == []
+    assert result.ok is True
+
+
+def test_lint_sources_flags_missing_source_field(make_docs_tree: Callable[[], Path]) -> None:
+    """A source file with no `source` frontmatter field is flagged."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "sources" / "a.md").write_text("---\ntitle: no source id\n---\nbody")
+
+    result = lint_sources(docs_dir)
+
+    assert len(result.violations) == 1
+    assert "missing required `source` field" in result.violations[0].message
+    assert result.ok is False
+
+
+def test_lint_sources_flags_invalid_processed_value(make_docs_tree: Callable[[], Path], make_source) -> None:
+    """A `processed` field that isn't a boolean is flagged."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:ABC-1", processed="yes")
+
+    result = lint_sources(docs_dir)
+
+    assert len(result.violations) == 1
+    assert "`processed` must be a boolean" in result.violations[0].message
+
+
+def test_lint_sources_flags_invalid_duplicate_value(make_docs_tree: Callable[[], Path], make_source) -> None:
+    """A `duplicate` field that isn't a boolean is flagged."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:ABC-1", duplicate="nope")
+
+    result = lint_sources(docs_dir)
+
+    assert len(result.violations) == 1
+    assert "`duplicate` must be a boolean" in result.violations[0].message
+
+
+def test_lint_sources_reports_processed_uncovered_as_backlog_not_violation(
+    make_docs_tree: Callable[[], Path], make_source
+) -> None:
+    """A `processed` source with no `covered_by` entry is a backlog item, not a hard error."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "source-manifest.jsonl").write_text(orjson.dumps({"source": "jira:ABC-1"}).decode() + "\n")
+    make_source(docs_dir, "jira:ABC-1", processed=True)
+
+    result = lint_sources(docs_dir)
+
+    assert result.violations == []
+    assert result.backlog == ["jira:ABC-1"]
+    assert result.ok is True
+
+
+def test_lint_sources_covered_source_not_in_backlog(make_docs_tree: Callable[[], Path], make_source) -> None:
+    """A `processed` source that already has a `covered_by` entry is not in the backlog."""
+    docs_dir = make_docs_tree()
+    manifest_entry = {"source": "jira:ABC-1", "covered_by": ["docs/wiki/foo.md"]}
+    (docs_dir / "source-manifest.jsonl").write_text(orjson.dumps(manifest_entry).decode() + "\n")
+    make_source(docs_dir, "jira:ABC-1", processed=True)
+
+    result = lint_sources(docs_dir)
+
+    assert result.backlog == []
+
+
+def test_lint_sources_clean_tree_has_no_violations_or_backlog(make_docs_tree: Callable[[], Path], make_source) -> None:
+    """A well-formed, unprocessed source passes clean with no backlog entries."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:ABC-1")
+
+    result = lint_sources(docs_dir)
+
+    assert result.violations == []
+    assert result.backlog == []
     assert result.ok is True
 
 

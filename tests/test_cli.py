@@ -153,6 +153,44 @@ def test_source_scan_flags_duplicate_with_nonzero_exit(
     assert "DUPLICATE" in result.output
 
 
+def test_source_lint_exits_zero_on_clean_tree(tmp_path: Path, monkeypatch, make_docs_tree, make_source) -> None:
+    """source-lint exits 0 and reports no violations against a clean docs/sources/ tree."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:ABC-1")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["source-lint"])
+
+    assert result.exit_code == 0
+    assert "No lint violations" in result.output
+
+
+def test_source_lint_flags_violation_and_exits_nonzero(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
+    """source-lint reports a missing `source` field and exits nonzero."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "sources" / "a.md").write_text("---\ntitle: no source id\n---\nbody")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["source-lint"])
+
+    assert result.exit_code == 1
+    assert "missing required" in result.output
+
+
+def test_source_lint_reports_backlog_without_failing(tmp_path: Path, monkeypatch, make_docs_tree, make_source) -> None:
+    """source-lint lists processed-but-uncovered sources as backlog and still exits 0."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "source-manifest.jsonl").write_text(orjson.dumps({"source": "jira:ABC-1"}).decode() + "\n")
+    make_source(docs_dir, "jira:ABC-1", processed=True)
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["source-lint"])
+
+    assert result.exit_code == 0
+    assert "jira:ABC-1" in result.output
+    assert "backlog" in result.output.lower()
+
+
 def test_search_catalog_returns_matching_entry(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
     """search-catalog finds an entry by title and exits 0."""
     docs_dir = make_docs_tree()
