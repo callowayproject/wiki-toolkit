@@ -224,6 +224,19 @@ def test_source_dedupe_never_modifies_files(tmp_path: Path, monkeypatch, make_do
     assert path_b.read_text(encoding="utf-8") == before_b
 
 
+def test_source_dedupe_reports_violations_and_exits_nonzero(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
+    """source-dedupe prints malformed-frontmatter violations and exits nonzero, even with no duplicate groups."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "sources" / "bad.md").write_text("---\nsource: [unclosed\n---\nbody")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["source-dedupe"])
+
+    assert result.exit_code == 1
+    assert "[VIOLATION] docs/sources/bad.md" in result.output
+    assert "malformed frontmatter" in result.output
+
+
 def test_source_lint_exits_zero_on_clean_tree(tmp_path: Path, monkeypatch, make_docs_tree, make_source) -> None:
     """source-lint exits 0 and reports no violations against a clean docs/sources/ tree."""
     docs_dir = make_docs_tree()
