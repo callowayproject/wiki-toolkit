@@ -182,7 +182,7 @@ def source_snapshot(source: str, units: str) -> None:
         click.echo(str(e))
         raise SystemExit(1) from e
 
-    click.echo(f"Wrote {result.units} snapshot for {result.source} ({result.path})")
+    click.echo(f"Wrote {result.units} snapshot for {result.source} ({result.path}), update_sha={result.update_sha}")
 
 
 @cli.command("search-catalog")

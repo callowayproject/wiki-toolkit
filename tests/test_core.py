@@ -761,23 +761,34 @@ def test_compute_source_delta_works_against_a_shallow_clone(tmp_path: Path, make
     assert delta.changed_fields == {"status": ("open", "closed")}
 
 
-def test_write_source_snapshot_fields_resets_processed(make_docs_tree: Callable[[], Path], make_source) -> None:
-    """--units fields resets `processed` on the source file, signaling it needs reprocessing."""
+def test_write_source_snapshot_fields_resets_processed_and_stamps_manifest(
+    make_docs_tree: Callable[[], Path], make_source
+) -> None:
+    """--units fields resets `processed` and records a fresh update_sha/updated in the manifest."""
     docs_dir = make_docs_tree()
     make_source(docs_dir, "jira:ABC-1", filename="abc-1.md", processed=True, status="closed")
-    (docs_dir / "source-manifest.jsonl").write_text(
-        orjson.dumps({"source": "jira:ABC-1", "path": "docs/sources/abc-1.md"}).decode() + "\n"
-    )
+    manifest_entry = {
+        "source": "jira:ABC-1",
+        "path": "docs/sources/abc-1.md",
+        "updated": "2020-01-01T00:00:00",
+        "update_sha": "",
+    }
+    (docs_dir / "source-manifest.jsonl").write_text(orjson.dumps(manifest_entry).decode() + "\n")
 
     result = write_source_snapshot(docs_dir, "jira:ABC-1", "fields")
 
     assert result.source == "jira:ABC-1"
     assert result.path == "docs/sources/abc-1.md"
     assert result.units == "fields"
+    assert result.update_sha
 
     post = frontmatter.loads((docs_dir / "sources" / "abc-1.md").read_text(encoding="utf-8"))
     assert post["processed"] is False
     assert post["status"] == "closed"
+
+    manifest_entry = orjson.loads((docs_dir / "source-manifest.jsonl").read_text(encoding="utf-8").splitlines()[0])
+    assert manifest_entry["update_sha"] == result.update_sha
+    assert manifest_entry["updated"] != "2020-01-01T00:00:00"
 
 
 def test_write_source_snapshot_comments_writes_against_materialized_content(
@@ -793,6 +804,7 @@ def test_write_source_snapshot_comments_writes_against_materialized_content(
     result = write_source_snapshot(docs_dir, "jira:ABC-1#c1", "comments")
 
     assert result.units == "comments"
+    assert result.update_sha
     post = frontmatter.loads((docs_dir / "sources" / "abc-1-c1.md").read_text(encoding="utf-8"))
     assert post["processed"] is False
     assert post["body"] == "a new comment"
