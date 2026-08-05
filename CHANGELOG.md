@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.12.3 (2026-08-05)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.12.2...0.12.3)
+
+### Other
+
+- Move lint_sources/source_coverage into sources.py onto shared walk helper. [88ca812](https://github.com/callowayproject/wiki-toolkit/commit/88ca8123757fd18132313b8aa6125b723886378c)
+
+  Rewrites both to call \_iter_markdown/\_is_canonical_source instead of
+  duplicating the directory-walk and canonical-source logic (#40), which
+  also fixes source_coverage's malformed-frontmatter crash. Relocates
+  their tests to test_sources.py and adds a malformed-frontmatter case
+  for source_coverage.
+
+  Closes #41
+
+### Updates
+
+- Update settings.local.json: add support for "Bash(xargs cat)". [976a114](https://github.com/callowayproject/wiki-toolkit/commit/976a11408f0d597891cd6c342e92073ba9e71ec9)
+
 ## 0.12.2 (2026-08-05)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.12.1...0.12.2)
