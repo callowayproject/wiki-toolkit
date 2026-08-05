@@ -1,6 +1,6 @@
 """Command-line interface for wiki_toolkit.
 
-Commands parse arguments and delegate to wiki_toolkit.core; no business logic lives here.
+Commands parse arguments and delegate to wiki_toolkit's domain modules; no business logic lives here.
 """
 
 from dataclasses import asdict
@@ -9,7 +9,6 @@ from pathlib import Path
 import click
 
 from wiki_toolkit._io import read_jsonl, write_jsonl
-from wiki_toolkit.core import build_catalog, lint_wiki, search_catalog
 from wiki_toolkit.doctor import run_doctor
 from wiki_toolkit.log import ALLOWED_LOG_ACTIONS, append_log_entry, build_log_entry
 from wiki_toolkit.sources import (
@@ -22,6 +21,7 @@ from wiki_toolkit.sources import (
     suggest_dedupe,
     write_source_snapshot,
 )
+from wiki_toolkit.wiki import build_catalog, lint_wiki, search_catalog
 from wiki_toolkit.write_gate import ALLOWED_FRAMES, propose_pr
 
 
@@ -61,11 +61,11 @@ def doctor() -> None:
 def build() -> None:
     """Regenerate docs/catalog.jsonl from the current docs/wiki/ notes."""
     docs_dir = Path.cwd() / "docs"
-    entries = build_catalog(docs_dir)
+    result = build_catalog(docs_dir)
 
-    write_jsonl(docs_dir / "catalog.jsonl", [asdict(entry) for entry in entries])
+    write_jsonl(docs_dir / "catalog.jsonl", [asdict(entry) for entry in result.entries])
 
-    click.echo(f"Wrote {len(entries)} entries to docs/catalog.jsonl")
+    click.echo(f"Wrote {len(result.entries)} entries to docs/catalog.jsonl")
 
 
 @cli.command()
