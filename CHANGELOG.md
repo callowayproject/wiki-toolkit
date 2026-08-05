@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.13.0 (2026-08-05)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.12.5...0.13.0)
+
+### Updates
+
+- Delete core.py: business logic fully migrated to dedicated modules. [ab1d972](https://github.com/callowayproject/wiki-toolkit/commit/ab1d97232cc4aa5ed41a4837680fd980259d176c)
+
+  core.py was already an empty stub with nothing importing from it, and
+  test_core.py was a stale duplicate of test_io.py left over from the
+  \_io.py extraction. __init__.py has never re-exported anything (only
+  __version__), so there's no public surface to preserve there.
+
+  Closes #44
+
 ## 0.12.5 (2026-08-05)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.12.4...0.12.5)
