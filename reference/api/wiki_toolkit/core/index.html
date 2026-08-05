@@ -1487,6 +1487,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.ProposePrResult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ProposePrResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#wiki_toolkit.core.SnapshotResult" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1831,6 +1842,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;parse_tag_taxonomy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.propose_pr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;propose_pr
       
     </span>
   </a>
@@ -2313,6 +2335,19 @@
             </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            ProposePrResult
+
+
+  
+      dataclass
+   (wiki_toolkit.core.ProposePrResult)" href="#wiki_toolkit.core.ProposePrResult">ProposePrResult</a></code></td>
+            <td class="doc-class-details">
+              <div class="doc-md-description">
+                <p>Result of staging a wiki change as a local git branch + commit.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
             <td><code><a class="autorefs autorefs-internal" title="            SnapshotResult
 
 
@@ -2489,6 +2524,14 @@
               <td class="doc-function-details">
                 <div class="doc-md-description">
                   <p>Extract the allowed-tags list from a <code>## Tag Taxonomy</code> section in <code>schema.md</code>.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            propose_pr (wiki_toolkit.core.propose_pr)" href="#wiki_toolkit.core.propose_pr">propose_pr</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Stage <code>pages</code> as a new local git branch + commit, framed for review.</p>
                 </div>
               </td>
             </tr>
@@ -3251,6 +3294,62 @@
 
 
         <p>A single <code>docs/log.jsonl</code> entry.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="wiki_toolkit.core.ProposePrResult" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">ProposePrResult</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#wiki_toolkit.core.ProposePrResult" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">ProposePrResult</span><span class="p">(</span><span class="n">branch</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">commit_sha</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="n"><span title="wiki_toolkit.core.Frame">Frame</span></span><span class="p">,</span> <span class="n">pages</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">])</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Result of staging a wiki change as a local git branch + commit.</p>
 
 
 
@@ -4202,6 +4301,34 @@ is absent). Sources are checked against <code>docs_dir/source-manifest.jsonl</co
 
         <p>Extract the allowed-tags list from a <code>## Tag Taxonomy</code> section in <code>schema.md</code>.</p>
 <p>Reads bullet items (<code>- tag</code>) between that heading and the next <code>##</code> heading (or EOF).</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wiki_toolkit.core.propose_pr" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">propose_pr</span>
+
+
+<a href="#wiki_toolkit.core.propose_pr" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">propose_pr</span><span class="p">(</span><span class="n">root</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n">pages</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">],</span> <span class="n">frame</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            ProposePrResult
+
+
+  
+      dataclass
+   (wiki_toolkit.core.ProposePrResult)" href="#wiki_toolkit.core.ProposePrResult">ProposePrResult</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Stage <code>pages</code> as a new local git branch + commit, framed for review.</p>
+<p>This is the one write path every wiki mutation is meant to route through
+(see docs/design/idea.md&rsquo;s &ldquo;write gate&rdquo; decision). v1 stops at the local
+branch + commit: it never pushes to a remote or opens a real GitHub PR.</p>
 
 
     </div>
