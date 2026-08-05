@@ -4,6 +4,7 @@ import shutil
 import subprocess
 from typing import TYPE_CHECKING
 
+import frontmatter
 import orjson
 
 from wiki_toolkit.core import (
@@ -25,6 +26,7 @@ from wiki_toolkit.core import (
     source_coverage,
     validate_jsonl,
     write_jsonl,
+    write_source_snapshot,
 )
 
 if TYPE_CHECKING:
@@ -757,3 +759,80 @@ def test_compute_source_delta_works_against_a_shallow_clone(tmp_path: Path, make
     delta = compute_source_delta(clone_root / "docs", "jira:ABC-1")
 
     assert delta.changed_fields == {"status": ("open", "closed")}
+
+
+def test_write_source_snapshot_fields_resets_processed_and_stamps_manifest(
+    make_docs_tree: Callable[[], Path], make_source
+) -> None:
+    """--units fields resets `processed` and records a fresh update_sha/updated in the manifest."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:ABC-1", filename="abc-1.md", processed=True, status="closed")
+    manifest_entry = {
+        "source": "jira:ABC-1",
+        "path": "docs/sources/abc-1.md",
+        "updated": "2020-01-01T00:00:00",
+        "update_sha": "",
+    }
+    (docs_dir / "source-manifest.jsonl").write_text(orjson.dumps(manifest_entry).decode() + "\n")
+
+    result = write_source_snapshot(docs_dir, "jira:ABC-1", "fields")
+
+    assert result.source == "jira:ABC-1"
+    assert result.path == "docs/sources/abc-1.md"
+    assert result.units == "fields"
+    assert result.update_sha
+
+    post = frontmatter.loads((docs_dir / "sources" / "abc-1.md").read_text(encoding="utf-8"))
+    assert post["processed"] is False
+    assert post["status"] == "closed"
+
+    manifest_entry = orjson.loads((docs_dir / "source-manifest.jsonl").read_text(encoding="utf-8").splitlines()[0])
+    assert manifest_entry["update_sha"] == result.update_sha
+    assert manifest_entry["updated"] != "2020-01-01T00:00:00"
+
+
+def test_write_source_snapshot_comments_writes_against_materialized_content(
+    make_docs_tree: Callable[[], Path], make_source
+) -> None:
+    """--units comments performs the same write against a pre-materialized comment file, no live fetch needed."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:ABC-1#c1", filename="abc-1-c1.md", processed=True, body="a new comment")
+    (docs_dir / "source-manifest.jsonl").write_text(
+        orjson.dumps({"source": "jira:ABC-1#c1", "path": "docs/sources/abc-1-c1.md"}).decode() + "\n"
+    )
+
+    result = write_source_snapshot(docs_dir, "jira:ABC-1#c1", "comments")
+
+    assert result.units == "comments"
+    assert result.update_sha
+    post = frontmatter.loads((docs_dir / "sources" / "abc-1-c1.md").read_text(encoding="utf-8"))
+    assert post["processed"] is False
+    assert post["body"] == "a new comment"
+
+
+def test_write_source_snapshot_unknown_source_raises(make_docs_tree: Callable[[], Path]) -> None:
+    """A source id with no manifest entry raises rather than silently writing nothing."""
+    docs_dir = make_docs_tree()
+
+    try:
+        write_source_snapshot(docs_dir, "jira:MISSING", "fields")
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("expected ValueError for unknown source")
+
+
+def test_write_source_snapshot_invalid_units_raises(make_docs_tree: Callable[[], Path], make_source) -> None:
+    """An invalid --units value raises rather than silently writing something wrong."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:ABC-1", filename="abc-1.md")
+    (docs_dir / "source-manifest.jsonl").write_text(
+        orjson.dumps({"source": "jira:ABC-1", "path": "docs/sources/abc-1.md"}).decode() + "\n"
+    )
+
+    try:
+        write_source_snapshot(docs_dir, "jira:ABC-1", "bogus")
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("expected ValueError for invalid units")

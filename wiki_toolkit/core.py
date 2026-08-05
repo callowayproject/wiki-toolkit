@@ -618,3 +618,49 @@ def apply_source_scan(docs_dir: Path, result: SourceScanResult) -> int:
     write_jsonl(docs_dir / SOURCE_MANIFEST_FILENAME, [manifest[key] for key in manifest])
 
     return written
+
+
+SnapshotUnits = Literal["comments", "fields"]
+ALLOWED_SNAPSHOT_UNITS: tuple[SnapshotUnits, ...] = ("comments", "fields")
+
+
+@dataclass
+class SnapshotResult:
+    """Result of writing a new Raw snapshot unit for a source."""
+
+    source: str
+    path: str
+    units: SnapshotUnits
+    update_sha: str
+
+
+def write_source_snapshot(docs_dir: Path, source: str, units: str) -> SnapshotResult:
+    """Write a new Raw snapshot unit for `source`, for the given mutation type (`comments` or `fields`).
+
+    Resolves the source's path via `source-manifest.jsonl`, resets `processed: false` on the
+    file — the existing reprocessing signal (see `apply_source_scan`) — and records the current
+    on-disk content's hash and timestamp as the manifest's new `update_sha`/`updated`, giving an
+    explicit, versioned record of this mutation (the "computed SHA hash of files for mutable
+    sources" case the manifest's `update_sha` field already covers). Works entirely against
+    content already materialized on disk; v1 has no live adapter fetch to populate `units:
+    comments` from, so `units` is a bookkeeping distinction for downstream PR framing, not a
+    different write.
+    """
+    if units not in ALLOWED_SNAPSHOT_UNITS:
+        raise ValueError(f"invalid units {units!r}; must be one of {ALLOWED_SNAPSHOT_UNITS}")
+
+    manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
+    entry = manifest.get(source)
+    if entry is None:
+        raise ValueError(f"unknown source: {source!r}")
+
+    rel_path = entry["path"]
+    source_path = docs_dir.parent / rel_path
+    _stamp_frontmatter(source_path, processed=False)
+
+    now = datetime.now(UTC).isoformat()
+    update_sha = hashlib.sha256(source_path.read_bytes()).hexdigest()
+    manifest[source] = {**entry, "updated": now, "update_sha": update_sha}
+    write_jsonl(docs_dir / SOURCE_MANIFEST_FILENAME, [manifest[key] for key in manifest])
+
+    return SnapshotResult(source=source, path=rel_path, units=units, update_sha=update_sha)  # type: ignore[arg-type]

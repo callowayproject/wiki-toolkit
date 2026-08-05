@@ -10,6 +10,7 @@ import click
 
 from wiki_toolkit.core import (
     ALLOWED_LOG_ACTIONS,
+    ALLOWED_SNAPSHOT_UNITS,
     append_log_entry,
     apply_source_scan,
     build_catalog,
@@ -23,6 +24,7 @@ from wiki_toolkit.core import (
     search_catalog,
     source_coverage,
     write_jsonl,
+    write_source_snapshot,
 )
 
 
@@ -164,6 +166,23 @@ def source_delta(source: str) -> None:
             click.echo(f"[CHANGED] {field_name}: {old_value!r} -> {new_value!r}")
     for comment_id in delta.new_comment_ids:
         click.echo(f"[NEW COMMENT] {comment_id}")
+
+
+@cli.command("source-snapshot")
+@click.argument("source")
+@click.option(
+    "--units", type=click.Choice(ALLOWED_SNAPSHOT_UNITS), required=True, help="Mutation type driving this snapshot."
+)
+def source_snapshot(source: str, units: str) -> None:
+    """Write a new Raw snapshot unit for SOURCE, for a comments or fields mutation."""
+    docs_dir = Path.cwd() / "docs"
+    try:
+        result = write_source_snapshot(docs_dir, source, units)
+    except ValueError as e:
+        click.echo(str(e))
+        raise SystemExit(1) from e
+
+    click.echo(f"Wrote {result.units} snapshot for {result.source} ({result.path}), update_sha={result.update_sha}")
 
 
 @cli.command("search-catalog")
