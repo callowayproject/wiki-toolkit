@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.12.1 (2026-08-05)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.12.0...0.12.1)
+
+### New
+
+- Add documentation: Python docstring standards and coding guidelines. [04181d7](https://github.com/callowayproject/wiki-toolkit/commit/04181d792a51f8715678f92c71181f9a096c16a1)
+
+  Includes a detailed guide for Python docstrings (Google style) and project coding standards enforced via pre-commit hooks (`ruff`, `mypy`, `pydoclint`, etc.).
+
+- Add doctor integration test against a real, populated fixture repo. [c04d927](https://github.com/callowayproject/wiki-toolkit/commit/c04d927a0552031af064fef1a5fd1c0ddb507b0c)
+
+  Closes gap in issue #22's DoD sweep: the full command surface already
+  had unit + CliRunner coverage and mypy/ruff/pre-commit were already
+  clean, but no test exercised doctor end-to-end after source-scan and
+  build against a real (non-shallow) git clone.
+
+### Other
+
+- Extract JSONL read/write into wiki_toolkit/\_io.py. [a1fdbd6](https://github.com/callowayproject/wiki-toolkit/commit/a1fdbd63f992695313abfa34da31a3c2fe069cf2)
+
+  Moves write_jsonl/read_jsonl out of core.py into a small internal
+  utility module so later module-split tickets can import from it
+  instead of core.py. No behavior change; core.py re-exports both
+  names for existing callers (cli.py, tests/test_core.py).
+
+  Closes #38
+
 ## 0.12.0 (2026-08-05)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.11.0...0.12.0)
