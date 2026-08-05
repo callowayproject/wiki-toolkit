@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.12.5 (2026-08-05)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.12.4...0.12.5)
+
+### New
+
+- Add CLI-level test for build's malformed-frontmatter handling. [6d1b6cc](https://github.com/callowayproject/wiki-toolkit/commit/6d1b6ccff26b1072f5716946d145fbda20f06dc9)
+
+  Covers the new violation-surfacing behavior end-to-end through
+  CliRunner, not just at the wiki.py unit level.
+
+### Other
+
+- Extract wiki_toolkit/wiki.py: catalog, lint, and search. [d9b258e](https://github.com/callowayproject/wiki-toolkit/commit/d9b258ee62082f01e4c787242dd98ac74f178a02)
+
+  Moves build_catalog, lint_wiki, parse_tag_taxonomy, and search_catalog
+  out of core.py into a new wiki.py module. Both build_catalog and
+  lint_wiki now route through sources.py's shared \_iter_markdown walk
+  helper, fixing build_catalog's malformed-frontmatter crash (previously
+  only lint_wiki handled that case) and removing lint_wiki's own
+  duplicate walk/try-except.
+
+  build_catalog now returns a CatalogResult(entries, violations) instead
+  of a bare list so malformed frontmatter is reported rather than
+  raised; cli.py's build command unpacks .entries, its only change
+  beyond imports.
+
+  Closes #43
+
 ## 0.12.4 (2026-08-05)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.12.3...0.12.4)

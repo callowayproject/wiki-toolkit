@@ -1,3 +1,3 @@
 """Top-level package for wiki_toolkit."""
 
-__version__ = "0.12.4"
+__version__ = "0.12.5"
