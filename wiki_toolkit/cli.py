@@ -147,6 +147,9 @@ def source_dedupe() -> None:
     docs_dir = Path.cwd() / "docs"
     result = suggest_dedupe(docs_dir)
 
+    for violation in result.violations:
+        click.echo(f"[VIOLATION] {violation.path}: {violation.message}")
+
     for group in result.groups:
         click.echo(f"[GROUP] {group.source}")
         for candidate in group.candidates:
@@ -154,7 +157,7 @@ def source_dedupe() -> None:
             click.echo(f"  [{tag}] {candidate.path} (similarity={candidate.similarity:.2f})")
         click.echo(f"  suggestion: keep {group.keep} ({group.reason})")
 
-    if result.needs_attention:
+    if result.needs_attention or result.violations:
         raise SystemExit(1)
     click.echo("No duplicate groups found.")
 

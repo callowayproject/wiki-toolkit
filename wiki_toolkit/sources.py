@@ -54,6 +54,17 @@ def _iter_markdown(dir_path: Path) -> Iterator[tuple[Path, frontmatter.Post | Lo
             yield path, LoadError(message=f"malformed frontmatter: {e}")
 
 
+def _load_or_record_violation(
+    path: Path, post: frontmatter.Post | LoadError, violations: list[LintViolation], docs_dir: Path
+) -> frontmatter.Post | None:
+    """Return `post` if well-formed, else append a `LintViolation` to `violations` and return None."""
+    if isinstance(post, LoadError):
+        rel_path = str(path.relative_to(docs_dir.parent))
+        violations.append(LintViolation(rel_path, post.message))
+        return None
+    return post
+
+
 def _is_canonical_source(post: frontmatter.Post, seen: set[str]) -> bool:
     """True if `post` is the first-seen, non-duplicate-flagged file for its `source` id.
 
@@ -127,12 +138,11 @@ def scan_sources(docs_dir: Path, *, accept_covered: bool = False) -> SourceScanR
     result = SourceScanResult()
     seen: set[str] = set()
 
-    for path, post in _iter_markdown(sources_dir):
-        rel_path = str(path.relative_to(docs_dir.parent))
-
-        if isinstance(post, LoadError):
-            result.violations.append(LintViolation(rel_path, post.message))
+    for path, raw_post in _iter_markdown(sources_dir):
+        post = _load_or_record_violation(path, raw_post, result.violations, docs_dir)
+        if post is None:
             continue
+        rel_path = str(path.relative_to(docs_dir.parent))
 
         if post.get("kind") == "version_controlled":
             result.skipped.append(rel_path)
@@ -238,12 +248,11 @@ def lint_sources(docs_dir: Path) -> SourceLintResult:
     result = SourceLintResult()
     manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
 
-    for path, post in _iter_markdown(docs_dir / "sources"):
-        rel_path = str(path.relative_to(docs_dir.parent))
-
-        if isinstance(post, LoadError):
-            result.violations.append(LintViolation(rel_path, post.message))
+    for path, raw_post in _iter_markdown(docs_dir / "sources"):
+        post = _load_or_record_violation(path, raw_post, result.violations, docs_dir)
+        if post is None:
             continue
+        rel_path = str(path.relative_to(docs_dir.parent))
 
         source_id = post.get("source")
         if not source_id:
@@ -309,12 +318,11 @@ def source_coverage(docs_dir: Path) -> SourceCoverageResult:
 
     result = SourceCoverageResult()
     seen: set[str] = set()
-    for path, post in _iter_markdown(docs_dir / "sources"):
-        rel_path = str(path.relative_to(docs_dir.parent))
-
-        if isinstance(post, LoadError):
-            result.violations.append(LintViolation(rel_path, post.message))
+    for path, raw_post in _iter_markdown(docs_dir / "sources"):
+        post = _load_or_record_violation(path, raw_post, result.violations, docs_dir)
+        if post is None:
             continue
+        rel_path = str(path.relative_to(docs_dir.parent))
 
         if post.get("kind") == "version_controlled":
             continue
@@ -463,10 +471,9 @@ def suggest_dedupe(docs_dir: Path) -> DedupeResult:
 
     groups: dict[str, list[Path]] = {}
     flagged: set[str] = set()
-    for path, post in _iter_markdown(docs_dir / "sources"):
-        if isinstance(post, LoadError):
-            rel_path = str(path.relative_to(docs_dir.parent))
-            result.violations.append(LintViolation(rel_path, post.message))
+    for path, raw_post in _iter_markdown(docs_dir / "sources"):
+        post = _load_or_record_violation(path, raw_post, result.violations, docs_dir)
+        if post is None:
             continue
 
         source_id = post.get("source")
