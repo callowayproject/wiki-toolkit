@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.13.1 (2026-08-05)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.13.0...0.13.1)
+
+### Other
+
+- Extract shared LoadError-violation helper; source-dedupe reports violations. [d041a0e](https://github.com/callowayproject/wiki-toolkit/commit/d041a0eff63c2322bb617a1b57dfe2b32035a6d3)
+
+  The same 4-line \_iter_markdown/LoadError pattern was duplicated across
+  lint_sources, scan_sources, source_coverage, and suggest_dedupe. Extract
+  \_load_or_record_violation to a single helper.
+
+  source-dedupe also never read suggest_dedupe's violations, silently
+  ignoring malformed-frontmatter files with no message and a zero exit
+  code. Print them and exit nonzero, matching source-scan/source-lint.
+
+  Fixes #48
+
 ## 0.13.0 (2026-08-05)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.12.5...0.13.0)
