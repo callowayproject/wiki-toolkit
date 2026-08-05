@@ -445,6 +445,82 @@ def source_coverage(docs_dir: Path) -> SourceCoverageResult:
     return result
 
 
+BOOKKEEPING_FIELDS = {"processed", "duplicate", "source"}
+
+
+@dataclass
+class Delta:
+    """Result of diffing a source's current content against its last-known revision on `main`."""
+
+    new_comment_ids: list[str] = field(default_factory=list)
+    changed_fields: dict[str, tuple[object, object]] = field(default_factory=dict)
+
+
+def diff_content_fields(old: dict, new: dict) -> dict[str, tuple[object, object]]:
+    """Diff two frontmatter metadata dicts, excluding CLI bookkeeping fields (`processed`, `duplicate`, `source`).
+
+    Returns `{field: (old_value, new_value)}` for every field that was added, removed, or changed.
+    """
+    keys = (set(old) | set(new)) - BOOKKEEPING_FIELDS
+    changed = {}
+    for key in keys:
+        old_value = old.get(key)
+        new_value = new.get(key)
+        if old_value != new_value:
+            changed[key] = (old_value, new_value)
+    return changed
+
+
+def last_known_revision(root: Path, rel_path: str) -> str | None:
+    """Return `rel_path`'s content as of the last commit touching it on `main`, or None if never committed there."""
+    git = shutil.which("git")
+    if git is None:
+        return None
+    try:
+        log_result = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
+            [git, "log", "-1", "--format=%H", "main", "--", rel_path],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError:
+        return None
+    sha = log_result.stdout.strip()
+    if not sha:
+        return None
+    show_result = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
+        [git, "show", f"{sha}:{rel_path}"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return show_result.stdout
+
+
+def compute_source_delta(docs_dir: Path, source: str) -> Delta:
+    """Diff a source's current working-tree content against its last-known revision on `main`.
+
+    Resolves the source's path via `source-manifest.jsonl`. A source with no prior
+    commit on `main` diffs against a synthetic empty baseline (every field reports
+    as new) rather than erroring.
+    """
+    manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
+    entry = manifest.get(source)
+    if entry is None:
+        raise ValueError(f"unknown source: {source!r}")
+
+    root = docs_dir.parent
+    rel_path = entry["path"]
+    current_post = frontmatter.loads((root / rel_path).read_text(encoding="utf-8"))
+
+    old_text = last_known_revision(root, rel_path)
+    old_metadata = frontmatter.loads(old_text).metadata if old_text is not None else {}
+
+    return Delta(changed_fields=diff_content_fields(old_metadata, current_post.metadata))
+
+
 def write_jsonl(path: Path, records: list[dict]) -> None:
     """Write `records` to `path` as JSONL, one object per line."""
     lines = [orjson.dumps(record).decode() for record in records]
