@@ -163,6 +163,49 @@ def test_source_scan_flags_duplicate_with_nonzero_exit(
     assert "DUPLICATE" in result.output
 
 
+def test_source_dedupe_exits_zero_with_no_duplicates(tmp_path: Path, monkeypatch, make_docs_tree, make_source) -> None:
+    """source-dedupe reports nothing to resolve and exits 0 when there are no duplicate-flagged files."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:ABC-1")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["source-dedupe"])
+
+    assert result.exit_code == 0
+    assert "No duplicate groups found." in result.output
+
+
+def test_source_dedupe_lists_group_and_keep_suggestion(
+    tmp_path: Path, monkeypatch, make_docs_tree, make_source
+) -> None:
+    """source-dedupe groups duplicate-flagged files by source id and prints a keep/discard suggestion."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:ABC-1", filename="a-first.md")
+    make_source(docs_dir, "jira:ABC-1", filename="b-second.md", duplicate=True)
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["source-dedupe"])
+
+    assert result.exit_code == 1
+    assert "[GROUP] jira:ABC-1" in result.output
+    assert "[KEEP]" in result.output
+    assert "[DISCARD]" in result.output
+
+
+def test_source_dedupe_never_modifies_files(tmp_path: Path, monkeypatch, make_docs_tree, make_source) -> None:
+    """source-dedupe is suggestion-only: it never deletes or rewrites the files it reports on."""
+    docs_dir = make_docs_tree()
+    path_a = make_source(docs_dir, "jira:ABC-1", filename="a-first.md")
+    path_b = make_source(docs_dir, "jira:ABC-1", filename="b-second.md", duplicate=True)
+    before_a, before_b = path_a.read_text(encoding="utf-8"), path_b.read_text(encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+
+    CliRunner().invoke(cli, ["source-dedupe"])
+
+    assert path_a.read_text(encoding="utf-8") == before_a
+    assert path_b.read_text(encoding="utf-8") == before_b
+
+
 def test_source_lint_exits_zero_on_clean_tree(tmp_path: Path, monkeypatch, make_docs_tree, make_source) -> None:
     """source-lint exits 0 and reports no violations against a clean docs/sources/ tree."""
     docs_dir = make_docs_tree()

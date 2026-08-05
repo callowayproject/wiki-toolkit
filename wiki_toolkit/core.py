@@ -6,6 +6,7 @@ import subprocess
 import sys
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
+from difflib import SequenceMatcher
 from typing import TYPE_CHECKING, Literal
 
 import frontmatter
@@ -618,6 +619,91 @@ def apply_source_scan(docs_dir: Path, result: SourceScanResult) -> int:
     write_jsonl(docs_dir / SOURCE_MANIFEST_FILENAME, [manifest[key] for key in manifest])
 
     return written
+
+
+@dataclass
+class DedupeCandidate:
+    """One file within a duplicate group."""
+
+    path: str
+    mtime: float
+    similarity: float  # difflib ratio against the suggested keeper; 1.0 for the keeper itself
+
+
+@dataclass
+class DedupeGroup:
+    """All `docs/sources/` files sharing a `source` id, where at least one is flagged `duplicate: true`."""
+
+    source: str
+    keep: str  # path suggested to keep
+    reason: str
+    candidates: list[DedupeCandidate] = field(default_factory=list)
+
+
+@dataclass
+class DedupeResult:
+    """The full result of a `source-dedupe` pass."""
+
+    groups: list[DedupeGroup] = field(default_factory=list)
+
+    @property
+    def needs_attention(self) -> bool:
+        """True if any duplicate group was found."""
+        return bool(self.groups)
+
+
+def suggest_dedupe(docs_dir: Path) -> DedupeResult:
+    """Group `docs_dir/sources/` files by shared `source` id and suggest which to keep.
+
+    A group is included only for `source` ids with at least one `duplicate: true`
+    file *and* more than one file sharing the id (a lone `duplicate: true` file
+    with no sibling has nothing to compare against). The suggested keeper is the
+    file with the latest mtime; content-similarity scores (difflib ratio against
+    the keeper) are reported per candidate so a human can confirm the call. Never
+    modifies or deletes files — suggestion only.
+    """
+    sources_dir = docs_dir / "sources"
+    paths = sorted(sources_dir.rglob("*.md")) if sources_dir.is_dir() else []
+
+    groups: dict[str, list[Path]] = {}
+    flagged: set[str] = set()
+    for path in paths:
+        post = frontmatter.loads(path.read_text(encoding="utf-8"))
+        source_id = post.get("source")
+        if not source_id:
+            continue
+        groups.setdefault(source_id, []).append(path)
+        if post.get("duplicate"):
+            flagged.add(source_id)
+
+    result = DedupeResult()
+    for source_id in sorted(flagged):
+        group_paths = groups[source_id]
+        if len(group_paths) < 2:
+            continue
+
+        contents = {p: p.read_text(encoding="utf-8") for p in group_paths}
+        keeper = max(group_paths, key=lambda p: p.stat().st_mtime)
+        keeper_content = contents[keeper]
+
+        candidates = [
+            DedupeCandidate(
+                path=str(p.relative_to(docs_dir.parent)),
+                mtime=p.stat().st_mtime,
+                similarity=1.0 if p == keeper else SequenceMatcher(None, keeper_content, contents[p]).ratio(),
+            )
+            for p in group_paths
+        ]
+        result.groups.append(
+            DedupeGroup(
+                source=source_id,
+                keep=str(keeper.relative_to(docs_dir.parent)),
+                reason="most recently modified",
+                candidates=candidates,
+            )
+        )
+
+    return result
 
 
 SnapshotUnits = Literal["comments", "fields"]
