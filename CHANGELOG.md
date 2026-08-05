@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.11.0 (2026-08-05)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.10.0...0.11.0)
+
+### New
+
+- Add source-dedupe command. [5dfa86a](https://github.com/callowayproject/wiki-toolkit/commit/5dfa86ae351cbd131e143e82077fc69ff3872c41)
+
+  Rule-based (mtime + content-similarity) keep/discard suggestions for
+  docs/sources/ files sharing a source id where at least one is flagged
+  **duplicate:** true. Suggestion-only, mirroring the write-gate on
+
 ## 0.10.0 (2026-08-05)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.9.0...0.10.0)
