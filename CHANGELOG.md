@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.12.0 (2026-08-05)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.11.0...0.12.0)
+
+### Fixes
+
+- Fix propose-pr tests: set repo-local git identity, not per-command -c flags. [4410208](https://github.com/callowayproject/wiki-toolkit/commit/4410208c6da711f5375163dcebcaf1ea95240913)
+
+  CI runners have no global git user.name/user.email. The propose-pr test
+  fixture only passed identity as one-off -c flags on the initial commit,
+  so the later commit made inside propose_pr() itself (which correctly
+  doesn't hardcode a fake identity, since it should attribute to whoever
+  runs the tool) had nothing to fall back on and failed with "Author
+  identity unknown". Setting repo-local config after `git init` persists
+  the identity for every commit in the fixture, matching how a real
+  git-configured environment behaves.
+
+### New
+
+- Add propose-pr command: local branch + commit write gate. [3d30382](https://github.com/callowayproject/wiki-toolkit/commit/3d3038214ad9d4de3422f36d5ea7e93a1863b0fa)
+
+  Implements issue #21: propose-pr --pages <list> --frame routine|needs-review
+  stages a wiki change as a new local git branch and commit, never pushing or
+  opening a real GitHub PR. Commits are scoped to exactly the listed pages
+  (ignoring anything else already staged), and a failed staging attempt rolls
+  back to the original branch, deleting the stray branch.
+
+### Updates
+
+- Remove unused dependencies: `beautifulsoup4`, `decorator`, `future`, `geocoder`, `markdown-customblocks`, `ratelim`, `responses`, `setuptools`, `soupsieve`, and `yamlns`. [20a25f7](https://github.com/callowayproject/wiki-toolkit/commit/20a25f7493dc9e4de7c2b9b410e7e61dacb32290)
+
+- Update dependencies: bump `gitpython` to 3.1.58, `packaging` to 26.3, `pytest-cov` to 7.1.0; downgrade `markdown-customblocks` to 1.4.1, `urllib3` to 1.26.20; and remove `pillow` and `python-magic`. [03de695](https://github.com/callowayproject/wiki-toolkit/commit/03de695999633f79e14aef2a93dca65fa0f25381)
+
 ## 0.11.0 (2026-08-05)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.10.0...0.11.0)
