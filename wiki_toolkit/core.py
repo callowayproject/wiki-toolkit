@@ -1,11 +1,9 @@
 """Business logic for wiki_toolkit, independent of the Click CLI adapter."""
 
-import contextlib
 import hashlib
 import shutil
 import subprocess
-import sys
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from difflib import SequenceMatcher
 from typing import TYPE_CHECKING, Literal
@@ -19,91 +17,7 @@ from wiki_toolkit._io import read_jsonl, write_jsonl
 if TYPE_CHECKING:
     from pathlib import Path
 
-DOCS_DIRS = ("sources", "wiki")
 SOURCE_MANIFEST_FILENAME = "source-manifest.jsonl"
-DOCS_FILES = ("catalog.jsonl", "log.jsonl", "schema.md", SOURCE_MANIFEST_FILENAME)
-DOCS_STRUCTURE = (*DOCS_FILES, *DOCS_DIRS)
-JSONL_FILES_TO_VALIDATE = ("catalog.jsonl", SOURCE_MANIFEST_FILENAME)
-
-
-@dataclass
-class DoctorReport:
-    """Result of a `doctor` health check. Non-mutating: built entirely from reads."""
-
-    python_version: str
-    missing_structure: list[str] = field(default_factory=list)
-    present_structure: list[str] = field(default_factory=list)
-    note_count: int = 0
-    is_shallow_clone: bool | None = None
-    jsonl_errors: dict[str, list[str]] = field(default_factory=dict)
-
-    @property
-    def ok(self) -> bool:
-        """True if no missing structure, no shallow clone, and no malformed JSONL."""
-        return not self.missing_structure and not self.is_shallow_clone and not self.jsonl_errors
-
-
-def check_shallow_clone(root: Path) -> bool | None:
-    """Return True if `root` is a shallow git clone, False if not, None if not a git repo."""
-    git = shutil.which("git")
-    if git is None:
-        return None
-    try:
-        result = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
-            [git, "rev-parse", "--is-shallow-repository"],
-            cwd=root,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-    except subprocess.CalledProcessError:
-        return None
-    return result.stdout.strip() == "true"
-
-
-def validate_jsonl(path: Path) -> list[str]:
-    """Return a list of error messages for malformed lines in a JSONL file, empty if well-formed."""
-    errors = []
-    for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-        if not line.strip():
-            continue
-        try:
-            orjson.loads(line)
-        except orjson.JSONDecodeError as e:
-            errors.append(f"line {lineno}: {e}")
-    return errors
-
-
-def run_doctor(root: Path) -> DoctorReport:
-    """Run the non-mutating `doctor` health check against a wiki rooted at `root`."""
-    docs_dir = root / "docs"
-    report = DoctorReport(python_version=sys.version.split()[0])
-
-    for name in DOCS_FILES:
-        if (docs_dir / name).is_file():
-            report.present_structure.append(name)
-        else:
-            report.missing_structure.append(name)
-    for name in DOCS_DIRS:
-        if (docs_dir / name).is_dir():
-            report.present_structure.append(name)
-        else:
-            report.missing_structure.append(name)
-
-    wiki_dir = docs_dir / "wiki"
-    if wiki_dir.is_dir():
-        report.note_count = sum(1 for _ in wiki_dir.rglob("*.md"))
-
-    for name in JSONL_FILES_TO_VALIDATE:
-        jsonl_path = docs_dir / name
-        if jsonl_path.is_file():
-            errors = validate_jsonl(jsonl_path)
-            if errors:
-                report.jsonl_errors[name] = errors
-
-    report.is_shallow_clone = check_shallow_clone(root)
-
-    return report
 
 
 SourceClassification = Literal["new", "update", "duplicate"]
@@ -534,34 +448,6 @@ def search_catalog(query: str, entries: list[dict]) -> list[dict]:
     return [e for e in entries if needle in e.get("title", "").lower() or needle in e.get("path", "").lower()]
 
 
-LogAction = Literal["ingest", "update", "lint", "create", "archive", "delete"]
-ALLOWED_LOG_ACTIONS: tuple[LogAction, ...] = ("ingest", "update", "lint", "create", "archive", "delete")
-
-
-@dataclass
-class LogEntry:
-    """A single `docs/log.jsonl` entry."""
-
-    date: str
-    action: LogAction
-    message: str
-    details: str
-
-
-def build_log_entry(action: str, message: str, details: str) -> LogEntry:
-    """Build a `log.jsonl` entry. Raises ValueError if `action` isn't in the allowed set."""
-    if action not in ALLOWED_LOG_ACTIONS:
-        raise ValueError(f"invalid action {action!r}; must be one of {ALLOWED_LOG_ACTIONS}")
-    return LogEntry(date=datetime.now(UTC).isoformat(), action=action, message=message, details=details)  # type: ignore[arg-type]
-
-
-def append_log_entry(docs_dir: Path, entry: LogEntry) -> None:
-    """Append `entry` as one JSONL line to `docs_dir/log.jsonl`, never rewriting existing lines."""
-    docs_dir.mkdir(parents=True, exist_ok=True)
-    with (docs_dir / "log.jsonl").open("a", encoding="utf-8") as f:
-        f.write(orjson.dumps(asdict(entry)).decode() + "\n")
-
-
 def _stamp_frontmatter(path: Path, **fields: object) -> None:
     """Merge `fields` into a source file's frontmatter and write it back."""
     post = frontmatter.loads(path.read_text(encoding="utf-8"))
@@ -740,60 +626,3 @@ def write_source_snapshot(docs_dir: Path, source: str, units: str) -> SnapshotRe
     write_jsonl(docs_dir / SOURCE_MANIFEST_FILENAME, [manifest[key] for key in manifest])
 
     return SnapshotResult(source=source, path=rel_path, units=units, update_sha=update_sha)  # type: ignore[arg-type]
-
-
-Frame = Literal["routine", "needs-review"]
-ALLOWED_FRAMES: tuple[Frame, ...] = ("routine", "needs-review")
-
-
-@dataclass
-class ProposePrResult:
-    """Result of staging a wiki change as a local git branch + commit."""
-
-    branch: str
-    commit_sha: str
-    frame: Frame
-    pages: list[str]
-
-
-def propose_pr(root: Path, pages: list[str], frame: str) -> ProposePrResult:
-    """Stage `pages` as a new local git branch + commit, framed for review.
-
-    This is the one write path every wiki mutation is meant to route through
-    (see docs/design/idea.md's "write gate" decision). v1 stops at the local
-    branch + commit: it never pushes to a remote or opens a real GitHub PR.
-    """
-    if frame not in ALLOWED_FRAMES:
-        raise ValueError(f"invalid frame {frame!r}; must be one of {ALLOWED_FRAMES}")
-    if not pages:
-        raise ValueError("pages must not be empty")
-
-    git = shutil.which("git")
-    if git is None:
-        raise ValueError("git executable not found")
-
-    def _run(*args: str) -> subprocess.CompletedProcess:
-        return subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
-            [git, *args], cwd=root, capture_output=True, text=True, check=True
-        )
-
-    branch = f"wiki-update/{frame}-{datetime.now(UTC).strftime('%Y%m%d%H%M%S%f')}"
-    label = "Needs review" if frame == "needs-review" else "Routine"
-    message = f"{label}: update {', '.join(pages)}"
-    original_branch = _run("branch", "--show-current").stdout.strip()
-
-    try:
-        _run("checkout", "-b", branch)
-        _run("add", "--", *pages)
-        # Scope the commit to `pages` even if something else was already staged, so
-        # it contains exactly the listed pages, per the acceptance criteria.
-        _run("commit", "-m", message, "--", *pages)
-        commit_sha = _run("rev-parse", "HEAD").stdout.strip()
-    except subprocess.CalledProcessError as e:
-        if original_branch:
-            with contextlib.suppress(subprocess.CalledProcessError):
-                _run("checkout", original_branch)
-                _run("branch", "-D", branch)
-        raise ValueError(f"git staging failed: {e.stderr.strip()}") from e
-
-    return ProposePrResult(branch=branch, commit_sha=commit_sha, frame=frame, pages=list(pages))  # type: ignore[arg-type]

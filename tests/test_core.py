@@ -10,27 +10,19 @@ import frontmatter
 import orjson
 import pytest
 
+from wiki_toolkit._io import read_jsonl, write_jsonl
 from wiki_toolkit.core import (
-    DOCS_STRUCTURE,
-    append_log_entry,
     apply_source_scan,
     build_catalog,
-    build_log_entry,
-    check_shallow_clone,
     compute_source_delta,
     diff_content_fields,
     lint_sources,
     lint_wiki,
     parse_tag_taxonomy,
-    propose_pr,
-    read_jsonl,
-    run_doctor,
     scan_sources,
     search_catalog,
     source_coverage,
     suggest_dedupe,
-    validate_jsonl,
-    write_jsonl,
     write_source_snapshot,
 )
 
@@ -45,90 +37,6 @@ def _git(root: Path, *args: str) -> subprocess.CompletedProcess:
     return subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
         [GIT, *args], cwd=root, capture_output=True, text=True, check=True
     )
-
-
-def test_run_doctor_reports_all_structure_present(tmp_path: Path, make_docs_tree: Callable[[], Path]) -> None:
-    """A fully-scaffolded docs/ tree has no missing structure entries."""
-    make_docs_tree()
-
-    report = run_doctor(tmp_path)
-
-    assert report.missing_structure == []
-    assert set(report.present_structure) == set(DOCS_STRUCTURE)
-
-
-def test_run_doctor_reports_missing_structure(tmp_path: Path) -> None:
-    """Absent docs/ elements are reported by name, nothing crashes."""
-    (tmp_path / "docs").mkdir()
-
-    report = run_doctor(tmp_path)
-
-    assert set(report.missing_structure) == set(DOCS_STRUCTURE)
-    assert report.present_structure == []
-    assert report.ok is False
-
-
-def test_run_doctor_counts_wiki_notes(tmp_path: Path, make_docs_tree: Callable[[], Path]) -> None:
-    """note_count reflects the number of markdown files under docs/wiki/."""
-    docs_dir = make_docs_tree()
-    (docs_dir / "wiki" / "a.md").write_text("# a")
-    (docs_dir / "wiki" / "b.md").write_text("# b")
-
-    report = run_doctor(tmp_path)
-
-    assert report.note_count == 2
-
-
-def test_run_doctor_flags_malformed_jsonl(tmp_path: Path, make_docs_tree: Callable[[], Path]) -> None:
-    """Malformed lines in catalog.jsonl/source-manifest.jsonl are reported, not raised."""
-    docs_dir = make_docs_tree()
-    (docs_dir / "catalog.jsonl").write_text('{"path": "a.md"}\nnot json\n')
-
-    report = run_doctor(tmp_path)
-
-    assert "catalog.jsonl" in report.jsonl_errors
-    assert "line 2" in report.jsonl_errors["catalog.jsonl"][0]
-    assert report.ok is False
-
-
-def test_validate_jsonl_skips_blank_lines(tmp_path: Path) -> None:
-    """Blank lines are not treated as malformed."""
-    path = tmp_path / "f.jsonl"
-    path.write_text('{"a": 1}\n\n{"b": 2}\n')
-
-    assert validate_jsonl(path) == []
-
-
-def test_check_shallow_clone_none_when_not_a_repo(tmp_path: Path) -> None:
-    """A non-git directory reports None (unknown), not an exception."""
-    assert check_shallow_clone(tmp_path) is None
-
-
-def test_check_shallow_clone_false_for_full_clone(tmp_path: Path) -> None:
-    """A normal, fully-committed git repo is not shallow."""
-    _git(tmp_path, "init")
-    (tmp_path / "f.txt").write_text("x")
-    _git(tmp_path, "add", "f.txt")
-    _git(tmp_path, "-c", "user.email=t@t.com", "-c", "user.name=t", "commit", "-m", "init")
-
-    assert check_shallow_clone(tmp_path) is False
-
-
-def test_check_shallow_clone_true_for_depth_one_clone(tmp_path: Path) -> None:
-    """A depth-1 clone of another repo is reported as shallow."""
-    source = tmp_path / "source"
-    source.mkdir()
-    _git(source, "init")
-    (source / "f.txt").write_text("x")
-    _git(source, "add", "f.txt")
-    _git(source, "-c", "user.email=t@t.com", "-c", "user.name=t", "commit", "-m", "init")
-
-    clone = tmp_path / "clone"
-    subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
-        [GIT, "clone", "--no-local", "--depth", "1", str(source), str(clone)], capture_output=True, check=True
-    )
-
-    assert check_shallow_clone(clone) is True
 
 
 def test_scan_classifies_unknown_source_as_new(make_docs_tree: Callable[[], Path], make_source) -> None:
@@ -682,42 +590,6 @@ def test_search_catalog_no_match_returns_empty_list() -> None:
     assert search_catalog("nonexistent", entries) == []
 
 
-def test_build_log_entry_has_expected_fields() -> None:
-    """A built log entry has date, action, message, and details."""
-    entry = build_log_entry("ingest", "Ingested a source", "details here")
-
-    assert entry.action == "ingest"
-    assert entry.message == "Ingested a source"
-    assert entry.details == "details here"
-    assert entry.date
-
-
-def test_build_log_entry_rejects_disallowed_action() -> None:
-    """An action outside the allowed set raises ValueError rather than silently logging it."""
-    try:
-        build_log_entry("bogus", "msg", "details")
-    except ValueError:
-        pass
-    else:
-        raise AssertionError("expected ValueError for disallowed action")
-
-
-def test_append_log_entry_appends_without_rewriting_existing_lines(tmp_path: Path) -> None:
-    """Appending a new entry leaves prior entries untouched and in order."""
-    docs_dir = tmp_path / "docs"
-    docs_dir.mkdir()
-    first = build_log_entry("create", "first", "d1")
-    append_log_entry(docs_dir, first)
-
-    second = build_log_entry("update", "second", "d2")
-    append_log_entry(docs_dir, second)
-
-    lines = (docs_dir / "log.jsonl").read_text(encoding="utf-8").splitlines()
-    assert len(lines) == 2
-    assert orjson.loads(lines[0])["message"] == "first"
-    assert orjson.loads(lines[1])["message"] == "second"
-
-
 def test_diff_content_fields_reports_changed_added_removed() -> None:
     """diff_content_fields reports every field that changed, was added, or was removed."""
     old = {"status": "open", "assignee": "alice", "gone": "bye"}
@@ -912,115 +784,3 @@ def test_write_source_snapshot_invalid_units_raises(make_docs_tree: Callable[[],
         pass
     else:
         raise AssertionError("expected ValueError for invalid units")
-
-
-def _make_propose_pr_repo(tmp_path: Path) -> Path:
-    """Build a real git repo with a wiki page committed on main, ready to be edited and staged."""
-    (tmp_path / "docs" / "wiki").mkdir(parents=True)
-    page = tmp_path / "docs" / "wiki" / "note.md"
-    page.write_text("original\n")
-
-    _git(tmp_path, "init", "-b", "main")
-    _git(tmp_path, "config", "user.email", "t@t.com")
-    _git(tmp_path, "config", "user.name", "t")
-    _git(tmp_path, "add", ".")
-    _git(tmp_path, "commit", "-m", "init")
-
-    return tmp_path
-
-
-def test_propose_pr_creates_branch_and_commits_listed_pages(tmp_path: Path) -> None:
-    """propose_pr checks out a new branch and commits exactly the listed pages."""
-    root = _make_propose_pr_repo(tmp_path)
-    (root / "docs" / "wiki" / "note.md").write_text("updated\n")
-
-    result = propose_pr(root, ["docs/wiki/note.md"], "routine")
-
-    assert result.frame == "routine"
-    assert result.pages == ["docs/wiki/note.md"]
-    assert result.commit_sha
-
-    current_branch = _git(root, "branch", "--show-current").stdout.strip()
-    assert current_branch == result.branch
-    assert current_branch != "main"
-
-    committed_files = _git(root, "show", "--name-only", "--format=", "HEAD").stdout.split()
-    assert committed_files == ["docs/wiki/note.md"]
-
-
-def test_propose_pr_needs_review_reflects_frame_in_commit_message(tmp_path: Path) -> None:
-    """--frame needs-review is reflected in the commit message, distinct from routine."""
-    root = _make_propose_pr_repo(tmp_path)
-    (root / "docs" / "wiki" / "note.md").write_text("updated\n")
-
-    result = propose_pr(root, ["docs/wiki/note.md"], "needs-review")
-
-    commit_message = _git(root, "log", "-1", "--format=%s", result.commit_sha).stdout.strip()
-    assert "needs review" in commit_message.lower()
-
-
-def test_propose_pr_never_touches_main_or_a_remote(tmp_path: Path) -> None:
-    """propose_pr's new commit lands only on the new local branch; `main` and remotes are untouched."""
-    root = _make_propose_pr_repo(tmp_path)
-    main_sha_before = _git(root, "rev-parse", "main").stdout.strip()
-    (root / "docs" / "wiki" / "note.md").write_text("updated\n")
-
-    propose_pr(root, ["docs/wiki/note.md"], "routine")
-
-    assert _git(root, "rev-parse", "main").stdout.strip() == main_sha_before
-    assert not _git(root, "remote").stdout.strip()
-
-
-def test_propose_pr_ignores_unrelated_staged_changes(tmp_path: Path) -> None:
-    """A commit contains exactly the listed pages, even if other files were already `git add`-ed."""
-    root = _make_propose_pr_repo(tmp_path)
-    (root / "docs" / "wiki" / "note.md").write_text("updated\n")
-    other = root / "unrelated.txt"
-    other.write_text("unrelated\n")
-    _git(root, "add", "unrelated.txt")
-
-    result = propose_pr(root, ["docs/wiki/note.md"], "routine")
-
-    committed_files = _git(root, "show", "--name-only", "--format=", "HEAD").stdout.split()
-    assert committed_files == ["docs/wiki/note.md"]
-    assert result.pages == ["docs/wiki/note.md"]
-
-
-def test_propose_pr_restores_original_branch_on_failure(tmp_path: Path) -> None:
-    """A failed staging attempt (nonexistent page) leaves the repo back on its original branch, no stray branch."""
-    root = _make_propose_pr_repo(tmp_path)
-
-    try:
-        propose_pr(root, ["docs/wiki/does-not-exist.md"], "routine")
-    except ValueError:
-        pass
-    else:
-        raise AssertionError("expected ValueError for a nonexistent page path")
-
-    assert _git(root, "branch", "--show-current").stdout.strip() == "main"
-    branches = _git(root, "branch", "--list").stdout
-    assert "wiki-update" not in branches
-
-
-def test_propose_pr_invalid_frame_raises(tmp_path: Path) -> None:
-    """An invalid --frame value raises rather than silently staging with a bogus framing."""
-    root = _make_propose_pr_repo(tmp_path)
-
-    try:
-        propose_pr(root, ["docs/wiki/note.md"], "bogus")
-    except ValueError:
-        pass
-    else:
-        raise AssertionError("expected ValueError for invalid frame")
-
-
-def test_propose_pr_empty_pages_raises(tmp_path: Path) -> None:
-    """An empty pages list raises rather than creating a branch with an empty commit."""
-    root = _make_propose_pr_repo(tmp_path)
-
-    try:
-        propose_pr(root, [], "routine")
-    except ValueError:
-        pass
-    else:
-        raise AssertionError("expected ValueError for empty pages")

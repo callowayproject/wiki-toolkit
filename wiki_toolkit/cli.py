@@ -8,27 +8,23 @@ from pathlib import Path
 
 import click
 
+from wiki_toolkit._io import read_jsonl, write_jsonl
 from wiki_toolkit.core import (
-    ALLOWED_FRAMES,
-    ALLOWED_LOG_ACTIONS,
     ALLOWED_SNAPSHOT_UNITS,
-    append_log_entry,
     apply_source_scan,
     build_catalog,
-    build_log_entry,
     compute_source_delta,
     lint_sources,
     lint_wiki,
-    propose_pr,
-    read_jsonl,
-    run_doctor,
     scan_sources,
     search_catalog,
     source_coverage,
     suggest_dedupe,
-    write_jsonl,
     write_source_snapshot,
 )
+from wiki_toolkit.doctor import run_doctor
+from wiki_toolkit.log import ALLOWED_LOG_ACTIONS, append_log_entry, build_log_entry
+from wiki_toolkit.write_gate import ALLOWED_FRAMES, propose_pr
 
 
 @click.group()
