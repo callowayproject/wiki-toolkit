@@ -57,9 +57,9 @@ gaps over adding new speculative scope.
 
 ## Agent skills
 
-### Writing Python tests
+### Development branches
 
-Follow the guidelines in the python-tester skill.
+When implementing a new feature, create a development branch in the repository. Once the feature is complete and tested, create a pull request (PR) to merge the changes into the main branch.
 
 ### Issue tracker
 
