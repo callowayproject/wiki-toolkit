@@ -362,3 +362,45 @@ def test_source_delta_unknown_source_exits_nonzero(tmp_path: Path, monkeypatch, 
 
     assert result.exit_code == 1
     assert "jira:MISSING" in result.output
+
+
+def test_source_snapshot_fields_resets_processed_and_exits_zero(
+    tmp_path: Path, monkeypatch, make_docs_tree, make_source
+) -> None:
+    """source-snapshot --units fields resets processed and reports the write."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:ABC-1", filename="abc-1.md", processed=True, status="open")
+    (docs_dir / "source-manifest.jsonl").write_text(
+        orjson.dumps({"source": "jira:ABC-1", "path": "docs/sources/abc-1.md"}).decode() + "\n"
+    )
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["source-snapshot", "jira:ABC-1", "--units", "fields"])
+
+    assert result.exit_code == 0
+    assert "Wrote fields snapshot for jira:ABC-1" in result.output
+
+
+def test_source_snapshot_rejects_invalid_units(tmp_path: Path, monkeypatch, make_docs_tree, make_source) -> None:
+    """An unrecognized --units value is a usage error, not a crash."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:ABC-1", filename="abc-1.md")
+    (docs_dir / "source-manifest.jsonl").write_text(
+        orjson.dumps({"source": "jira:ABC-1", "path": "docs/sources/abc-1.md"}).decode() + "\n"
+    )
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["source-snapshot", "jira:ABC-1", "--units", "bogus"])
+
+    assert result.exit_code != 0
+
+
+def test_source_snapshot_unknown_source_exits_nonzero(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
+    """source-snapshot on a source with no manifest entry is a clean error, not a crash."""
+    make_docs_tree()
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["source-snapshot", "jira:MISSING", "--units", "comments"])
+
+    assert result.exit_code == 1
+    assert "jira:MISSING" in result.output

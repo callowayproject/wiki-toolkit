@@ -618,3 +618,39 @@ def apply_source_scan(docs_dir: Path, result: SourceScanResult) -> int:
     write_jsonl(docs_dir / SOURCE_MANIFEST_FILENAME, [manifest[key] for key in manifest])
 
     return written
+
+
+SnapshotUnits = Literal["comments", "fields"]
+ALLOWED_SNAPSHOT_UNITS: tuple[SnapshotUnits, ...] = ("comments", "fields")
+
+
+@dataclass
+class SnapshotResult:
+    """Result of writing a new Raw snapshot unit for a source."""
+
+    source: str
+    path: str
+    units: SnapshotUnits
+
+
+def write_source_snapshot(docs_dir: Path, source: str, units: str) -> SnapshotResult:
+    """Write a new Raw snapshot unit for `source`, for the given mutation type (`comments` or `fields`).
+
+    Resolves the source's path via `source-manifest.jsonl` and resets `processed: false` on
+    the file — the existing reprocessing signal (see `apply_source_scan`) — so the next
+    `source-scan`/`source-delta` picks it up as updated. Works entirely against content
+    already materialized on disk; v1 has no live adapter fetch to populate `units: comments`
+    from, so it's a bookkeeping distinction only, not a different write.
+    """
+    if units not in ALLOWED_SNAPSHOT_UNITS:
+        raise ValueError(f"invalid units {units!r}; must be one of {ALLOWED_SNAPSHOT_UNITS}")
+
+    manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
+    entry = manifest.get(source)
+    if entry is None:
+        raise ValueError(f"unknown source: {source!r}")
+
+    rel_path = entry["path"]
+    _stamp_frontmatter(docs_dir.parent / rel_path, processed=False)
+
+    return SnapshotResult(source=source, path=rel_path, units=units)  # type: ignore[arg-type]
