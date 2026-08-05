@@ -1420,6 +1420,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.SnapshotResult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;SnapshotResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#wiki_toolkit.core.SourceCoverageEntry" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1836,6 +1847,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.write_source_snapshot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;write_source_snapshot
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2174,6 +2196,19 @@
             </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            SnapshotResult
+
+
+  
+      dataclass
+   (wiki_toolkit.core.SnapshotResult)" href="#wiki_toolkit.core.SnapshotResult">SnapshotResult</a></code></td>
+            <td class="doc-class-details">
+              <div class="doc-md-description">
+                <p>Result of writing a new Raw snapshot unit for a source.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
             <td><code><a class="autorefs autorefs-internal" title="            SourceCoverageEntry
 
 
@@ -2393,6 +2428,14 @@
               <td class="doc-function-details">
                 <div class="doc-md-description">
                   <p>Write <code>records</code> to <code>path</code> as JSONL, one object per line.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            write_source_snapshot (wiki_toolkit.core.write_source_snapshot)" href="#wiki_toolkit.core.write_source_snapshot">write_source_snapshot</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Write a new Raw snapshot unit for <code>source</code>, for the given mutation type (<code>comments</code> or <code>fields</code>).</p>
                 </div>
               </td>
             </tr>
@@ -2845,6 +2888,62 @@
 
 
         <p>A single <code>docs/log.jsonl</code> entry.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="wiki_toolkit.core.SnapshotResult" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">SnapshotResult</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#wiki_toolkit.core.SnapshotResult" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">SnapshotResult</span><span class="p">(</span><span class="n">source</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="n"><span title="wiki_toolkit.core.SnapshotUnits">SnapshotUnits</span></span><span class="p">,</span> <span class="n">update_sha</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Result of writing a new Raw snapshot unit for a source.</p>
 
 
 
@@ -3906,6 +4005,41 @@ sharing a <code>source</code> id already seen in this pass.</p>
     <div class="doc doc-contents ">
 
         <p>Write <code>records</code> to <code>path</code> as JSONL, one object per line.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wiki_toolkit.core.write_source_snapshot" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">write_source_snapshot</span>
+
+
+<a href="#wiki_toolkit.core.write_source_snapshot" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">write_source_snapshot</span><span class="p">(</span>
+    <span class="n">docs_dir</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="n"><span title="str">str</span></span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            SnapshotResult
+
+
+  
+      dataclass
+   (wiki_toolkit.core.SnapshotResult)" href="#wiki_toolkit.core.SnapshotResult">SnapshotResult</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Write a new Raw snapshot unit for <code>source</code>, for the given mutation type (<code>comments</code> or <code>fields</code>).</p>
+<p>Resolves the source&rsquo;s path via <code>source-manifest.jsonl</code>, resets <code>processed: false</code> on the
+file — the existing reprocessing signal (see <code>apply_source_scan</code>) — and records the current
+on-disk content&rsquo;s hash and timestamp as the manifest&rsquo;s new <code>update_sha</code>/<code>updated</code>, giving an
+explicit, versioned record of this mutation (the &ldquo;computed SHA hash of files for mutable
+sources&rdquo; case the manifest&rsquo;s <code>update_sha</code> field already covers). Works entirely against
+content already materialized on disk; v1 has no live adapter fetch to populate <code>units:
+comments</code> from, so <code>units</code> is a bookkeeping distinction for downstream PR framing, not a
+different write.</p>
 
 
     </div>
