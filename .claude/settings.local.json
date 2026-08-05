@@ -4,7 +4,8 @@
       "Bash(gh issue *)",
       "Bash(gh label *)",
       "Bash(gh api *)",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(xargs cat)"
     ]
   }
 }
