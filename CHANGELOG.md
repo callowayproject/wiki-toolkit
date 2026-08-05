@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.9.0 (2026-08-05)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.8.0...0.9.0)
+
+### New
+
+- Address code-review findings on source-delta. [aad5929](https://github.com/callowayproject/wiki-toolkit/commit/aad592955f9f05c63abdc5eac9d5901aeced74d8)
+
+  Guard the git-show call in last_known_revision so a failure there also
+  degrades to the synthetic-empty-baseline path, matching the "never errors"
+  contract. Distinguish [NEW] fields from [CHANGED] fields in CLI output
+  for first-time sources.
+
+- Add source-delta command. [ad7d087](https://github.com/callowayproject/wiki-toolkit/commit/ad7d08778ac057d12e7c4c37d612910ce3fecdd9)
+
+  Diffs a source's current working-tree content against its last-known
+  revision on main via real git log/show, excluding processed/duplicate/source
+  bookkeeping fields. Sources with no prior commit on main diff against a
+  synthetic empty baseline instead of erroring.
+
+  Closes #18
+
 ## 0.8.0 (2026-08-05)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.7.0...0.8.0)
