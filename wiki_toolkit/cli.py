@@ -20,6 +20,7 @@ from wiki_toolkit.core import (
     run_doctor,
     scan_sources,
     search_catalog,
+    source_coverage,
     write_jsonl,
 )
 
@@ -124,6 +125,20 @@ def source_lint() -> None:
         click.echo("No lint violations found.")
     else:
         raise SystemExit(1)
+
+
+@cli.command("source-coverage")
+def source_coverage_cmd() -> None:
+    """Show which docs/sources/ files are covered by at least one wiki note."""
+    docs_dir = Path.cwd() / "docs"
+    result = source_coverage(docs_dir)
+
+    for entry in result.covered:
+        click.echo(f"[COVERED] {entry.path} ({entry.source})")
+    for entry in result.uncovered:
+        click.echo(f"[UNCOVERED] {entry.path} ({entry.source})")
+
+    click.echo(f"{len(result.covered)} covered, {len(result.uncovered)} uncovered")
 
 
 @cli.command("search-catalog")

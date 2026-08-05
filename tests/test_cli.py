@@ -191,6 +191,26 @@ def test_source_lint_reports_backlog_without_failing(tmp_path: Path, monkeypatch
     assert "backlog" in result.output.lower()
 
 
+def test_source_coverage_reports_covered_and_uncovered(
+    tmp_path: Path, monkeypatch, make_docs_tree, make_source
+) -> None:
+    """source-coverage lists covered and uncovered sources and exits 0."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "source-manifest.jsonl").write_text("")
+    make_source(docs_dir, "jira:ABC-1", filename="covered.md")
+    make_source(docs_dir, "jira:ABC-2", filename="uncovered.md")
+    entry = {"path": "docs/wiki/foo.md", "sources": ["jira:ABC-1"]}
+    (docs_dir / "catalog.jsonl").write_text(orjson.dumps(entry).decode() + "\n")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["source-coverage"])
+
+    assert result.exit_code == 0
+    assert "[COVERED] docs/sources/covered.md (jira:ABC-1)" in result.output
+    assert "[UNCOVERED] docs/sources/uncovered.md (jira:ABC-2)" in result.output
+    assert "1 covered, 1 uncovered" in result.output
+
+
 def test_search_catalog_returns_matching_entry(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
     """search-catalog finds an entry by title and exits 0."""
     docs_dir = make_docs_tree()
