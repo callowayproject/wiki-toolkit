@@ -1297,6 +1297,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.Delta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Delta
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#wiki_toolkit.core.DoctorReport" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1676,6 +1687,39 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;check_shallow_clone
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.compute_source_delta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;compute_source_delta
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.diff_content_fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;diff_content_fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.last_known_revision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;last_known_revision
       
     </span>
   </a>
@@ -2065,6 +2109,19 @@
             </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            Delta
+
+
+  
+      dataclass
+   (wiki_toolkit.core.Delta)" href="#wiki_toolkit.core.Delta">Delta</a></code></td>
+            <td class="doc-class-details">
+              <div class="doc-md-description">
+                <p>Result of diffing a source&rsquo;s current content against its last-known revision on <code>main</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
             <td><code><a class="autorefs autorefs-internal" title="            DoctorReport
 
 
@@ -2236,6 +2293,30 @@
               </td>
             </tr>
             <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            compute_source_delta (wiki_toolkit.core.compute_source_delta)" href="#wiki_toolkit.core.compute_source_delta">compute_source_delta</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Diff a source&rsquo;s current working-tree content against its last-known revision on <code>main</code>.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            diff_content_fields (wiki_toolkit.core.diff_content_fields)" href="#wiki_toolkit.core.diff_content_fields">diff_content_fields</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Diff two frontmatter metadata dicts, excluding CLI bookkeeping fields (<code>processed</code>, <code>duplicate</code>, <code>source</code>).</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            last_known_revision (wiki_toolkit.core.last_known_revision)" href="#wiki_toolkit.core.last_known_revision">last_known_revision</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Return <code>rel_path</code>&rsquo;s content as of the last commit touching it on <code>main</code>, or None if never committed there.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
               <td><code><a class="autorefs autorefs-internal" title="            lint_sources (wiki_toolkit.core.lint_sources)" href="#wiki_toolkit.core.lint_sources">lint_sources</a></code></td>
               <td class="doc-function-details">
                 <div class="doc-md-description">
@@ -2359,6 +2440,65 @@
 
 
         <p>A single <code>docs/wiki/</code> note&rsquo;s catalog entry.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="wiki_toolkit.core.Delta" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">Delta</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#wiki_toolkit.core.Delta" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">Delta</span><span class="p">(</span>
+    <span class="n">new_comment_ids</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="list">list</span></span><span class="p">(),</span>
+    <span class="n">changed_fields</span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="tuple">tuple</span></span><span class="p">[</span><span class="n"><span title="object">object</span></span><span class="p">,</span> <span class="n"><span title="object">object</span></span><span class="p">]]</span> <span class="o">=</span> <span class="n"><span title="dict">dict</span></span><span class="p">(),</span>
+<span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Result of diffing a source&rsquo;s current content against its last-known revision on <code>main</code>.</p>
 
 
 
@@ -3456,6 +3596,75 @@ in the source manifest (vacuously true for a note with no sources), else
     <div class="doc doc-contents ">
 
         <p>Return True if <code>root</code> is a shallow git clone, False if not, None if not a git repo.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wiki_toolkit.core.compute_source_delta" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">compute_source_delta</span>
+
+
+<a href="#wiki_toolkit.core.compute_source_delta" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">compute_source_delta</span><span class="p">(</span><span class="n">docs_dir</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Delta
+
+
+  
+      dataclass
+   (wiki_toolkit.core.Delta)" href="#wiki_toolkit.core.Delta">Delta</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Diff a source&rsquo;s current working-tree content against its last-known revision on <code>main</code>.</p>
+<p>Resolves the source&rsquo;s path via <code>source-manifest.jsonl</code>. A source with no prior
+commit on <code>main</code> diffs against a synthetic empty baseline (every field reports
+as new) rather than erroring.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wiki_toolkit.core.diff_content_fields" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">diff_content_fields</span>
+
+
+<a href="#wiki_toolkit.core.diff_content_fields" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">diff_content_fields</span><span class="p">(</span><span class="n">old</span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">,</span> <span class="n">new</span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="dict">dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="tuple">tuple</span></span><span class="p">[</span><span class="n"><span title="object">object</span></span><span class="p">,</span> <span class="n"><span title="object">object</span></span><span class="p">]]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Diff two frontmatter metadata dicts, excluding CLI bookkeeping fields (<code>processed</code>, <code>duplicate</code>, <code>source</code>).</p>
+<p>Returns <code>{field: (old_value, new_value)}</code> for every field that was added, removed, or changed.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wiki_toolkit.core.last_known_revision" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">last_known_revision</span>
+
+
+<a href="#wiki_toolkit.core.last_known_revision" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">last_known_revision</span><span class="p">(</span><span class="n">root</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n">rel_path</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="str">str</span></span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return <code>rel_path</code>&rsquo;s content as of the last commit touching it on <code>main</code>, or None if never committed there.</p>
 
 
     </div>
