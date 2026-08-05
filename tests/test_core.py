@@ -539,6 +539,33 @@ def test_source_coverage_excludes_duplicate_flagged_sources(make_docs_tree: Call
     assert result.entries == []
 
 
+def test_source_coverage_excludes_in_pass_duplicate_not_yet_stamped(
+    make_docs_tree: Callable[[], Path], make_source
+) -> None:
+    """A later file sharing a source id already seen in this pass is excluded, even unstamped."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "source-manifest.jsonl").write_text("")
+    (docs_dir / "catalog.jsonl").write_text("")
+    make_source(docs_dir, "jira:ABC-1", filename="a-first.md")
+    make_source(docs_dir, "jira:ABC-1", filename="b-second.md")
+
+    result = source_coverage(docs_dir)
+
+    assert [e.path.split("/")[-1] for e in result.entries] == ["a-first.md"]
+
+
+def test_source_coverage_skips_version_controlled_sources(make_docs_tree: Callable[[], Path], make_source) -> None:
+    """Version-controlled sources are skipped, consistent with scan_sources."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "source-manifest.jsonl").write_text("")
+    (docs_dir / "catalog.jsonl").write_text("")
+    make_source(docs_dir, "github:repo@sha", kind="version_controlled")
+
+    result = source_coverage(docs_dir)
+
+    assert result.entries == []
+
+
 def test_read_jsonl_missing_file_returns_empty(tmp_path: Path) -> None:
     """A missing JSONL file reads as an empty list, not an error."""
     assert read_jsonl(tmp_path / "missing.jsonl") == []

@@ -402,8 +402,9 @@ def source_coverage(docs_dir: Path) -> SourceCoverageResult:
     """Report which `docs_dir/sources/` files are covered by at least one wiki note.
 
     Cross-references `source-manifest.jsonl`'s `covered_by` field against
-    `catalog.jsonl`'s `sources` lists. Duplicate-flagged sources are excluded,
-    consistent with `scan_sources`.
+    `catalog.jsonl`'s `sources` lists. Duplicates are excluded using the same
+    rule as `scan_sources`: a file stamped `duplicate: true`, or a later file
+    sharing a `source` id already seen in this pass.
     """
     manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
     catalog = read_jsonl(docs_dir / "catalog.jsonl")
@@ -416,14 +417,19 @@ def source_coverage(docs_dir: Path) -> SourceCoverageResult:
     result = SourceCoverageResult()
     sources_dir = docs_dir / "sources"
     paths = sorted(sources_dir.rglob("*.md")) if sources_dir.is_dir() else []
+    seen: set[str] = set()
     for path in paths:
         post = frontmatter.loads(path.read_text(encoding="utf-8"))
-        if post.get("duplicate"):
+        if post.get("kind") == "version_controlled":
             continue
 
         source_id = post.get("source")
         if not source_id:
             continue
+
+        if post.get("duplicate") or source_id in seen:
+            continue
+        seen.add(source_id)
 
         notes = covering_notes.get(source_id, set()) | set(manifest.get(source_id, {}).get("covered_by", []))
         result.entries.append(
