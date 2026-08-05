@@ -256,6 +256,7 @@ typing-modules = ["typing", "types", "typing_extensions", "mypy", "mypy_extensio
     "raise-vanilla-args",
     "verbose-raise",
     "raise-within-try",
+    "import-private-name",
 ]
 
 [tool.ruff.lint.mccabe]
