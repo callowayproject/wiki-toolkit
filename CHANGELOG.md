@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.8.0 (2026-08-05)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.7.0...0.8.0)
+
+### New
+
+- Add source-coverage command. [fe391bf](https://github.com/callowayproject/wiki-toolkit/commit/fe391bfd8d900c48921621447db372ab5006b8a3)
+
+  Cross-references source-manifest.jsonl's covered_by field against
+  catalog.jsonl's sources lists to report which docs/sources/ files are
+  covered by at least one wiki note. Excludes duplicate-flagged sources,
+  consistent with source-scan.
+
+  Closes #17
+
+### Other
+
+- Align source-coverage's exclusion rule with source-scan. [ba272a3](https://github.com/callowayproject/wiki-toolkit/commit/ba272a3c6751a9af8694aeaf2cf61e66e9f7c10e)
+
+  source-coverage only checked the on-disk duplicate flag, missing the
+  in-pass case where a later file shares a source id not yet stamped.
+  Also skip version_controlled sources, as scan_sources does.
+
+  Found in code review of #17.
+
 ## 0.7.0 (2026-08-04)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.6.0...0.7.0)
