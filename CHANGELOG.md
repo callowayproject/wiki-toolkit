@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.10.0 (2026-08-05)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.9.0...0.10.0)
+
+### New
+
+- Address code-review finding: source-snapshot must produce a real record. [0df26b7](https://github.com/callowayproject/wiki-toolkit/commit/0df26b78178d888d672d6c1192a21827d4f76f99)
+
+  Resetting `processed` alone left no evidence a snapshot happened. Now also
+  stamps a fresh update_sha/updated pair into the manifest, reusing the
+  "computed SHA of files for mutable sources" case update_sha's docstring
+  already describes — giving source-snapshot an actual versioned record per
+  the spec, not just a bookkeeping flag flip.
+
+- Add source-snapshot command. [761f3f9](https://github.com/callowayproject/wiki-toolkit/commit/761f3f9530f4f941e8e97f03e78ca50027238c1f)
+
+  Writes a new Raw snapshot unit for a source under --units comments|fields,
+  resetting `processed` (the existing reprocessing signal) so the next
+  source-scan/source-delta picks it up. Works entirely against pre-materialized
+  content on disk; v1 has no live adapter fetch, so --units is a bookkeeping
+  distinction for downstream framing, not a different write.
+
+  Closes #19
+
 ## 0.9.0 (2026-08-05)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.8.0...0.9.0)
