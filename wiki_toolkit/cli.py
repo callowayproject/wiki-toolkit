@@ -158,7 +158,10 @@ def source_delta(source: str) -> None:
         return
 
     for field_name, (old_value, new_value) in delta.changed_fields.items():
-        click.echo(f"[CHANGED] {field_name}: {old_value!r} -> {new_value!r}")
+        if old_value is None:
+            click.echo(f"[NEW] {field_name}: {new_value!r}")
+        else:
+            click.echo(f"[CHANGED] {field_name}: {old_value!r} -> {new_value!r}")
     for comment_id in delta.new_comment_ids:
         click.echo(f"[NEW COMMENT] {comment_id}")
 

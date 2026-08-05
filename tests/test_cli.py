@@ -334,6 +334,25 @@ def test_source_delta_reports_changed_field(tmp_path: Path, monkeypatch, make_do
     assert "status: 'open' -> 'closed'" in result.output
 
 
+def test_source_delta_no_prior_commit_labels_fields_new(
+    tmp_path: Path, monkeypatch, make_docs_tree, make_source
+) -> None:
+    """A first-time source's fields print as [NEW], not [CHANGED], since there's no prior value."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:NEW-1", filename="new-1.md", status="open")
+    (docs_dir / "source-manifest.jsonl").write_text(
+        orjson.dumps({"source": "jira:NEW-1", "path": "docs/sources/new-1.md"}).decode() + "\n"
+    )
+    _git(tmp_path, "init", "-b", "main")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["source-delta", "jira:NEW-1"])
+
+    assert result.exit_code == 0
+    assert "[NEW] status: 'open'" in result.output
+    assert "[CHANGED]" not in result.output
+
+
 def test_source_delta_unknown_source_exits_nonzero(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
     """source-delta on a source with no manifest entry is a clean error, not a crash."""
     make_docs_tree()

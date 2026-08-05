@@ -489,13 +489,16 @@ def last_known_revision(root: Path, rel_path: str) -> str | None:
     sha = log_result.stdout.strip()
     if not sha:
         return None
-    show_result = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
-        [git, "show", f"{sha}:{rel_path}"],
-        cwd=root,
-        capture_output=True,
-        text=True,
-        check=True,
-    )
+    try:
+        show_result = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
+            [git, "show", f"{sha}:{rel_path}"],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError:
+        return None
     return show_result.stdout
 
 
