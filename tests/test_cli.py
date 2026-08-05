@@ -516,3 +516,33 @@ def test_propose_pr_never_pushes_or_opens_a_remote_pr(tmp_path: Path, monkeypatc
 
     assert result.exit_code == 0
     assert not _git(tmp_path, "remote").stdout.strip()
+
+
+def test_doctor_reports_clean_bill_of_health_on_a_populated_full_clone(
+    tmp_path: Path, monkeypatch, make_docs_tree, make_source, make_wiki_note
+) -> None:
+    """Doctor exits 0 with no warnings against a real, non-shallow repo after source-scan and build."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "github:issue-1", title="Issue 1")
+    make_wiki_note(docs_dir, "issue-1.md", title="Issue 1 Note", updated="2026-01-01", sources=["github:issue-1"])
+
+    _git(tmp_path, "init", "-b", "main")
+    _git(tmp_path, "config", "user.email", "t@t.com")
+    _git(tmp_path, "config", "user.name", "t")
+    _git(tmp_path, "add", ".")
+    _git(tmp_path, "commit", "-m", "init")
+    monkeypatch.chdir(tmp_path)
+
+    scan_result = CliRunner().invoke(cli, ["source-scan", "--update"])
+    assert scan_result.exit_code == 0
+
+    build_result = CliRunner().invoke(cli, ["build"])
+    assert build_result.exit_code == 0
+
+    result = CliRunner().invoke(cli, ["doctor"])
+
+    assert result.exit_code == 0
+    assert "MISSING" not in result.output
+    assert "MALFORMED" not in result.output
+    assert "shallow" not in result.output
+    assert "not a git repository" not in result.output
