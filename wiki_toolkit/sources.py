@@ -9,7 +9,7 @@ import frontmatter
 import orjson
 import yaml
 
-from wiki_toolkit._io import write_jsonl
+from wiki_toolkit._io import read_jsonl, write_jsonl
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -211,3 +211,124 @@ def apply_source_scan(docs_dir: Path, result: SourceScanResult) -> int:
     write_jsonl(docs_dir / SOURCE_MANIFEST_FILENAME, [manifest[key] for key in manifest])
 
     return written
+
+
+@dataclass
+class SourceLintResult:
+    """The full result of a `source-lint` pass."""
+
+    violations: list[LintViolation] = field(default_factory=list)
+    backlog: list[str] = field(default_factory=list)  # source ids: processed but not yet covered_by any note
+
+    @property
+    def ok(self) -> bool:
+        """True if no violations were found. Backlog entries don't affect this."""
+        return not self.violations
+
+
+def lint_sources(docs_dir: Path) -> SourceLintResult:
+    """Validate every file in `docs_dir/sources/`: required `source` field, `processed`/`duplicate` types.
+
+    Also reports `processed` sources with no `covered_by` entry in `docs_dir/source-manifest.jsonl`
+    as a backlog list, distinct from hard errors.
+    """
+    result = SourceLintResult()
+    manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
+
+    for path, post in _iter_markdown(docs_dir / "sources"):
+        rel_path = str(path.relative_to(docs_dir.parent))
+
+        if isinstance(post, LoadError):
+            result.violations.append(LintViolation(rel_path, post.message))
+            continue
+
+        source_id = post.get("source")
+        if not source_id:
+            result.violations.append(LintViolation(rel_path, "missing required `source` field"))
+            continue
+
+        for field_name in ("processed", "duplicate"):
+            value = post.get(field_name)
+            if value is not None and not isinstance(value, bool):
+                result.violations.append(LintViolation(rel_path, f"`{field_name}` must be a boolean, got {value!r}"))
+
+        if post.get("processed") and not manifest.get(source_id, {}).get("covered_by"):
+            result.backlog.append(source_id)
+
+    return result
+
+
+@dataclass
+class SourceCoverageEntry:
+    """A single `docs/sources/` file's coverage status."""
+
+    source: str
+    path: str
+    title: str
+    covered: bool
+    covered_by: list[str] = field(default_factory=list)
+
+
+@dataclass
+class SourceCoverageResult:
+    """The full result of a `source-coverage` pass."""
+
+    entries: list[SourceCoverageEntry] = field(default_factory=list)
+    violations: list[LintViolation] = field(default_factory=list)
+
+    @property
+    def covered(self) -> list[SourceCoverageEntry]:
+        """Entries covered by at least one wiki note."""
+        return [e for e in self.entries if e.covered]
+
+    @property
+    def uncovered(self) -> list[SourceCoverageEntry]:
+        """Entries covered by no wiki note."""
+        return [e for e in self.entries if not e.covered]
+
+
+def source_coverage(docs_dir: Path) -> SourceCoverageResult:
+    """Report which `docs_dir/sources/` files are covered by at least one wiki note.
+
+    Cross-references `source-manifest.jsonl`'s `covered_by` field against
+    `catalog.jsonl`'s `sources` lists. Duplicates are excluded using the same
+    rule as `scan_sources`: a file stamped `duplicate: true`, or a later file
+    sharing a `source` id already seen in this pass. A file with malformed
+    frontmatter is reported as a violation instead of raising.
+    """
+    manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
+    catalog = read_jsonl(docs_dir / "catalog.jsonl")
+
+    covering_notes: dict[str, set[str]] = {}
+    for entry in catalog:
+        for source_id in entry.get("sources") or []:
+            covering_notes.setdefault(source_id, set()).add(entry.get("path", ""))
+
+    result = SourceCoverageResult()
+    seen: set[str] = set()
+    for path, post in _iter_markdown(docs_dir / "sources"):
+        rel_path = str(path.relative_to(docs_dir.parent))
+
+        if isinstance(post, LoadError):
+            result.violations.append(LintViolation(rel_path, post.message))
+            continue
+
+        if post.get("kind") == "version_controlled":
+            continue
+
+        if not _is_canonical_source(post, seen):
+            continue
+
+        source_id = post.get("source")
+        notes = covering_notes.get(source_id, set()) | set(manifest.get(source_id, {}).get("covered_by", []))
+        result.entries.append(
+            SourceCoverageEntry(
+                source=source_id,
+                path=rel_path,
+                title=post.get("title") or path.stem,
+                covered=bool(notes),
+                covered_by=sorted(notes),
+            )
+        )
+
+    return result
