@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.12.2 (2026-08-05)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.12.1...0.12.2)
+
+### Other
+
+- Extract sources.py: shared markdown walk helper + canonical-source predicate. [056bdd2](https://github.com/callowayproject/wiki-toolkit/commit/056bdd2d2bc5242275c4cb97012b605b3bed83fb)
+
+  Moves scan_sources, apply_source_scan, and manifest read/write out of
+  core.py into a new sources.py, routed through a shared \_iter_markdown
+  walk helper and \_is_canonical_source predicate. Malformed frontmatter
+  in scan_sources is now reported as a violation instead of raising.
+
+- Extract log.py, write_gate.py, and doctor.py from core.py. [a2da52d](https://github.com/callowayproject/wiki-toolkit/commit/a2da52dace6c1b6807ad42236e2770a334dd022e)
+
+  Splits three mutually-independent domain modules out of core.py:
+  log.py (log.jsonl entries), write_gate.py (propose_pr, named after
+  the write-gate decision in idea.md), and doctor.py (health check).
+  cli.py's imports now point at the new modules; core.py keeps
+  SOURCE_MANIFEST_FILENAME since it's used by its other functions.
+
+  Closes #39
+
+### Updates
+
+- Update CLAUDE.md: add guidelines for development branches. [cf2afd7](https://github.com/callowayproject/wiki-toolkit/commit/cf2afd745125fdd404c12775f6fdf6e0e4caede7)
+
+  Clarifies the development process by recommending feature branch creation and PR-based merging into the main branch.
+
 ## 0.12.1 (2026-08-05)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.12.0...0.12.1)
