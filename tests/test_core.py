@@ -20,6 +20,7 @@ from wiki_toolkit.core import (
     run_doctor,
     scan_sources,
     search_catalog,
+    source_coverage,
     validate_jsonl,
     write_jsonl,
 )
@@ -480,6 +481,62 @@ def test_lint_sources_clean_tree_has_no_violations_or_backlog(make_docs_tree: Ca
     assert result.violations == []
     assert result.backlog == []
     assert result.ok is True
+
+
+def test_source_coverage_covered_via_catalog_sources(make_docs_tree: Callable[[], Path], make_source) -> None:
+    """A source referenced by a wiki note's `sources` list is reported covered."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "source-manifest.jsonl").write_text("")
+    make_source(docs_dir, "jira:ABC-1")
+    entry = {"path": "docs/wiki/foo.md", "sources": ["jira:ABC-1"]}
+    (docs_dir / "catalog.jsonl").write_text(orjson.dumps(entry).decode() + "\n")
+
+    result = source_coverage(docs_dir)
+
+    assert len(result.entries) == 1
+    assert result.entries[0].covered is True
+    assert result.entries[0].covered_by == ["docs/wiki/foo.md"]
+    assert result.covered == result.entries
+    assert result.uncovered == []
+
+
+def test_source_coverage_covered_via_manifest_covered_by(make_docs_tree: Callable[[], Path], make_source) -> None:
+    """A source with a manifest `covered_by` entry is reported covered even absent a catalog entry."""
+    docs_dir = make_docs_tree()
+    manifest_entry = {"source": "jira:ABC-1", "covered_by": ["docs/wiki/foo.md"]}
+    (docs_dir / "source-manifest.jsonl").write_text(orjson.dumps(manifest_entry).decode() + "\n")
+    (docs_dir / "catalog.jsonl").write_text("")
+    make_source(docs_dir, "jira:ABC-1")
+
+    result = source_coverage(docs_dir)
+
+    assert result.entries[0].covered is True
+
+
+def test_source_coverage_uncovered_source(make_docs_tree: Callable[[], Path], make_source) -> None:
+    """A source with no covering wiki note is reported uncovered."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "source-manifest.jsonl").write_text("")
+    (docs_dir / "catalog.jsonl").write_text("")
+    make_source(docs_dir, "jira:ABC-1")
+
+    result = source_coverage(docs_dir)
+
+    assert result.entries[0].covered is False
+    assert result.uncovered == result.entries
+    assert result.covered == []
+
+
+def test_source_coverage_excludes_duplicate_flagged_sources(make_docs_tree: Callable[[], Path], make_source) -> None:
+    """A duplicate-flagged source is excluded from the coverage report, consistent with source-scan."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "source-manifest.jsonl").write_text("")
+    (docs_dir / "catalog.jsonl").write_text("")
+    make_source(docs_dir, "jira:ABC-1", duplicate=True)
+
+    result = source_coverage(docs_dir)
+
+    assert result.entries == []
 
 
 def test_read_jsonl_missing_file_returns_empty(tmp_path: Path) -> None:

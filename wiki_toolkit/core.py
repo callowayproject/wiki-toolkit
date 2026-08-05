@@ -370,6 +370,75 @@ def lint_sources(docs_dir: Path) -> SourceLintResult:
     return result
 
 
+@dataclass
+class SourceCoverageEntry:
+    """A single `docs/sources/` file's coverage status."""
+
+    source: str
+    path: str
+    title: str
+    covered: bool
+    covered_by: list[str] = field(default_factory=list)
+
+
+@dataclass
+class SourceCoverageResult:
+    """The full result of a `source-coverage` pass."""
+
+    entries: list[SourceCoverageEntry] = field(default_factory=list)
+
+    @property
+    def covered(self) -> list[SourceCoverageEntry]:
+        """Entries covered by at least one wiki note."""
+        return [e for e in self.entries if e.covered]
+
+    @property
+    def uncovered(self) -> list[SourceCoverageEntry]:
+        """Entries covered by no wiki note."""
+        return [e for e in self.entries if not e.covered]
+
+
+def source_coverage(docs_dir: Path) -> SourceCoverageResult:
+    """Report which `docs_dir/sources/` files are covered by at least one wiki note.
+
+    Cross-references `source-manifest.jsonl`'s `covered_by` field against
+    `catalog.jsonl`'s `sources` lists. Duplicate-flagged sources are excluded,
+    consistent with `scan_sources`.
+    """
+    manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
+    catalog = read_jsonl(docs_dir / "catalog.jsonl")
+
+    covering_notes: dict[str, set[str]] = {}
+    for entry in catalog:
+        for source_id in entry.get("sources") or []:
+            covering_notes.setdefault(source_id, set()).add(entry.get("path", ""))
+
+    result = SourceCoverageResult()
+    sources_dir = docs_dir / "sources"
+    paths = sorted(sources_dir.rglob("*.md")) if sources_dir.is_dir() else []
+    for path in paths:
+        post = frontmatter.loads(path.read_text(encoding="utf-8"))
+        if post.get("duplicate"):
+            continue
+
+        source_id = post.get("source")
+        if not source_id:
+            continue
+
+        notes = covering_notes.get(source_id, set()) | set(manifest.get(source_id, {}).get("covered_by", []))
+        result.entries.append(
+            SourceCoverageEntry(
+                source=source_id,
+                path=str(path.relative_to(docs_dir.parent)),
+                title=post.get("title") or path.stem,
+                covered=bool(notes),
+                covered_by=sorted(notes),
+            )
+        )
+
+    return result
+
+
 def write_jsonl(path: Path, records: list[dict]) -> None:
     """Write `records` to `path` as JSONL, one object per line."""
     lines = [orjson.dumps(record).decode() for record in records]
