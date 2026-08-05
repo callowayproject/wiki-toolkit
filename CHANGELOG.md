@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.12.4 (2026-08-05)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.12.3...0.12.4)
+
+### Other
+
+- Move suggest_dedupe, delta, and snapshot functions into sources.py. [6bb2ad1](https://github.com/callowayproject/wiki-toolkit/commit/6bb2ad129ae698593b7bdf025dd30f1a0453fc8b)
+
+  Relocates suggest_dedupe, diff_content_fields, compute_source_delta,
+  last_known_revision, and write_source_snapshot from core.py onto
+  sources.py's shared \_iter_markdown walk helper. suggest_dedupe now
+  reports malformed frontmatter as a violation instead of crashing.
+
+  Closes #42
+
 ## 0.12.3 (2026-08-05)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.12.2...0.12.3)
