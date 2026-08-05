@@ -13,6 +13,8 @@ from wiki_toolkit.core import (
     build_catalog,
     build_log_entry,
     check_shallow_clone,
+    compute_source_delta,
+    diff_content_fields,
     lint_sources,
     lint_wiki,
     parse_tag_taxonomy,
@@ -636,3 +638,122 @@ def test_append_log_entry_appends_without_rewriting_existing_lines(tmp_path: Pat
     assert len(lines) == 2
     assert orjson.loads(lines[0])["message"] == "first"
     assert orjson.loads(lines[1])["message"] == "second"
+
+
+def test_diff_content_fields_reports_changed_added_removed() -> None:
+    """diff_content_fields reports every field that changed, was added, or was removed."""
+    old = {"status": "open", "assignee": "alice", "gone": "bye"}
+    new = {"status": "closed", "assignee": "alice", "fresh": "hi"}
+
+    changed = diff_content_fields(old, new)
+
+    assert changed == {
+        "status": ("open", "closed"),
+        "gone": ("bye", None),
+        "fresh": (None, "hi"),
+    }
+
+
+def test_diff_content_fields_excludes_bookkeeping_fields() -> None:
+    """processed/duplicate/source never appear in the diff, even when they differ."""
+    old = {"source": "jira:ABC-1", "processed": False, "duplicate": False, "status": "open"}
+    new = {"source": "jira:ABC-1", "processed": True, "duplicate": True, "status": "open"}
+
+    changed = diff_content_fields(old, new)
+
+    assert changed == {}
+
+
+def _make_delta_repo(tmp_path: Path, make_docs_tree, make_source) -> Path:
+    """Build a docs/ tree in a real git repo, with a source committed as the last-known revision on main."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:ABC-1", filename="abc-1.md", status="open", assignee="alice")
+    (docs_dir / "source-manifest.jsonl").write_text(
+        orjson.dumps({"source": "jira:ABC-1", "path": "docs/sources/abc-1.md"}).decode() + "\n"
+    )
+
+    _git(tmp_path, "init", "-b", "main")
+    _git(tmp_path, "add", ".")
+    _git(tmp_path, "-c", "user.email=t@t.com", "-c", "user.name=t", "commit", "-m", "init")
+
+    return docs_dir
+
+
+def test_compute_source_delta_reports_changed_field(
+    tmp_path: Path, make_docs_tree: Callable[[], Path], make_source
+) -> None:
+    """A field changed on disk since the last commit on main shows up in changed_fields."""
+    docs_dir = _make_delta_repo(tmp_path, make_docs_tree, make_source)
+    make_source(docs_dir, "jira:ABC-1", filename="abc-1.md", status="closed", assignee="alice")
+
+    delta = compute_source_delta(docs_dir, "jira:ABC-1")
+
+    assert delta.changed_fields == {"status": ("open", "closed")}
+    assert delta.new_comment_ids == []
+
+
+def test_compute_source_delta_no_prior_commit_reports_every_field_as_new(
+    tmp_path: Path, make_docs_tree: Callable[[], Path], make_source
+) -> None:
+    """A source never committed on main diffs against a synthetic empty baseline, not an error."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:NEW-1", filename="new-1.md", status="open")
+    (docs_dir / "source-manifest.jsonl").write_text(
+        orjson.dumps({"source": "jira:NEW-1", "path": "docs/sources/new-1.md"}).decode() + "\n"
+    )
+    _git(tmp_path, "init", "-b", "main")
+
+    delta = compute_source_delta(docs_dir, "jira:NEW-1")
+
+    assert delta.changed_fields == {"status": (None, "open")}
+
+
+def test_compute_source_delta_unknown_source_raises(make_docs_tree: Callable[[], Path]) -> None:
+    """A source id with no manifest entry raises rather than silently diffing nothing."""
+    docs_dir = make_docs_tree()
+
+    try:
+        compute_source_delta(docs_dir, "jira:MISSING")
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("expected ValueError for unknown source")
+
+
+def test_compute_source_delta_works_against_a_shallow_clone(tmp_path: Path, make_source) -> None:
+    """A depth-1 clone still resolves a normal delta when the last-touching commit is the fetched tip.
+
+    `doctor` warns operators to avoid shallow clones because a commit older
+    than the fetch depth is unreachable; this test covers the shape of repo
+    `source-delta` actually sees in that situation, per the acceptance
+    criteria's "shallow-clone case."
+    """
+    source_root = tmp_path / "source"
+    source_root.mkdir()
+    docs_dir = source_root / "docs"
+    (docs_dir / "sources").mkdir(parents=True)
+    (source_root / "unrelated.txt").write_text("x")
+    _git(source_root, "init", "-b", "main")
+    _git(source_root, "add", "unrelated.txt")
+    _git(source_root, "-c", "user.email=t@t.com", "-c", "user.name=t", "commit", "-m", "unrelated")
+
+    make_source(docs_dir, "jira:ABC-1", filename="abc-1.md", status="open")
+    (docs_dir / "source-manifest.jsonl").write_text(
+        orjson.dumps({"source": "jira:ABC-1", "path": "docs/sources/abc-1.md"}).decode() + "\n"
+    )
+    _git(source_root, "add", ".")
+    _git(source_root, "-c", "user.email=t@t.com", "-c", "user.name=t", "commit", "-m", "add source")
+
+    clone_root = tmp_path / "clone"
+    subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
+        [GIT, "clone", "--no-local", "--depth", "1", str(source_root), str(clone_root)],
+        capture_output=True,
+        check=True,
+    )
+    (clone_root / "docs" / "sources" / "abc-1.md").write_text(
+        (clone_root / "docs" / "sources" / "abc-1.md").read_text().replace("open", "closed")
+    )
+
+    delta = compute_source_delta(clone_root / "docs", "jira:ABC-1")
+
+    assert delta.changed_fields == {"status": ("open", "closed")}

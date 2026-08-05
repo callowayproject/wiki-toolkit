@@ -1,5 +1,7 @@
 """Smoke tests for the CLI skeleton and the make_source fixture."""
 
+import shutil
+import subprocess
 from typing import TYPE_CHECKING
 
 import orjson
@@ -9,6 +11,14 @@ from wiki_toolkit.cli import cli
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+GIT = shutil.which("git") or "git"
+
+
+def _git(root: Path, *args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
+        [GIT, *args], cwd=root, capture_output=True, text=True, check=True
+    )
 
 
 def test_cli_group_resolves() -> None:
@@ -303,3 +313,52 @@ def test_log_rejects_invalid_action(tmp_path: Path, monkeypatch, make_docs_tree)
     result = CliRunner().invoke(cli, ["log", "--title", "x", "--details", "y", "--action", "bogus"])
 
     assert result.exit_code != 0
+
+
+def test_source_delta_reports_changed_field(tmp_path: Path, monkeypatch, make_docs_tree, make_source) -> None:
+    """source-delta prints changed fields and exits 0 for a known source with a real prior commit."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:ABC-1", filename="abc-1.md", status="open")
+    (docs_dir / "source-manifest.jsonl").write_text(
+        orjson.dumps({"source": "jira:ABC-1", "path": "docs/sources/abc-1.md"}).decode() + "\n"
+    )
+    _git(tmp_path, "init", "-b", "main")
+    _git(tmp_path, "add", ".")
+    _git(tmp_path, "-c", "user.email=t@t.com", "-c", "user.name=t", "commit", "-m", "init")
+    make_source(docs_dir, "jira:ABC-1", filename="abc-1.md", status="closed")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["source-delta", "jira:ABC-1"])
+
+    assert result.exit_code == 0
+    assert "status: 'open' -> 'closed'" in result.output
+
+
+def test_source_delta_no_prior_commit_labels_fields_new(
+    tmp_path: Path, monkeypatch, make_docs_tree, make_source
+) -> None:
+    """A first-time source's fields print as [NEW], not [CHANGED], since there's no prior value."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:NEW-1", filename="new-1.md", status="open")
+    (docs_dir / "source-manifest.jsonl").write_text(
+        orjson.dumps({"source": "jira:NEW-1", "path": "docs/sources/new-1.md"}).decode() + "\n"
+    )
+    _git(tmp_path, "init", "-b", "main")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["source-delta", "jira:NEW-1"])
+
+    assert result.exit_code == 0
+    assert "[NEW] status: 'open'" in result.output
+    assert "[CHANGED]" not in result.output
+
+
+def test_source_delta_unknown_source_exits_nonzero(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
+    """source-delta on a source with no manifest entry is a clean error, not a crash."""
+    make_docs_tree()
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["source-delta", "jira:MISSING"])
+
+    assert result.exit_code == 1
+    assert "jira:MISSING" in result.output

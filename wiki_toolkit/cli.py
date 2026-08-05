@@ -14,6 +14,7 @@ from wiki_toolkit.core import (
     apply_source_scan,
     build_catalog,
     build_log_entry,
+    compute_source_delta,
     lint_sources,
     lint_wiki,
     read_jsonl,
@@ -139,6 +140,30 @@ def source_coverage_cmd() -> None:
         click.echo(f"[UNCOVERED] {entry.path} ({entry.source})")
 
     click.echo(f"{len(result.covered)} covered, {len(result.uncovered)} uncovered")
+
+
+@cli.command("source-delta")
+@click.argument("source")
+def source_delta(source: str) -> None:
+    """Diff a source's current content against its last-known revision on main."""
+    docs_dir = Path.cwd() / "docs"
+    try:
+        delta = compute_source_delta(docs_dir, source)
+    except ValueError as e:
+        click.echo(str(e))
+        raise SystemExit(1) from e
+
+    if not delta.changed_fields and not delta.new_comment_ids:
+        click.echo("No changes since last-known revision.")
+        return
+
+    for field_name, (old_value, new_value) in delta.changed_fields.items():
+        if old_value is None:
+            click.echo(f"[NEW] {field_name}: {new_value!r}")
+        else:
+            click.echo(f"[CHANGED] {field_name}: {old_value!r} -> {new_value!r}")
+    for comment_id in delta.new_comment_ids:
+        click.echo(f"[NEW COMMENT] {comment_id}")
 
 
 @cli.command("search-catalog")
