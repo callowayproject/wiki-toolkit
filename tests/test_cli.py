@@ -80,6 +80,24 @@ def test_build_writes_catalog(tmp_path: Path, monkeypatch, make_docs_tree, make_
     }
 
 
+def test_build_skips_malformed_note_without_crashing(
+    tmp_path: Path, monkeypatch, make_docs_tree, make_wiki_note
+) -> None:
+    """Build exits 0 and still catalogs well-formed notes when one note has malformed frontmatter."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "a.md", title="A Page")
+    (docs_dir / "wiki" / "bad.md").write_text("---\ntitle: [unclosed\n---\nbody")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["build"])
+
+    assert result.exit_code == 0
+    assert "Wrote 1 entries" in result.output
+    lines = (docs_dir / "catalog.jsonl").read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 1
+    assert orjson.loads(lines[0])["path"] == "docs/wiki/a.md"
+
+
 def test_build_overwrites_existing_catalog(tmp_path: Path, monkeypatch, make_docs_tree, make_wiki_note) -> None:
     """Build regenerates docs/catalog.jsonl from scratch rather than appending."""
     docs_dir = make_docs_tree()
