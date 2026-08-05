@@ -1,8 +1,11 @@
 """Source scanning and manifest management for wiki_toolkit."""
 
 import hashlib
+import shutil
+import subprocess
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from difflib import SequenceMatcher
 from typing import TYPE_CHECKING, Literal
 
 import frontmatter
@@ -332,3 +335,217 @@ def source_coverage(docs_dir: Path) -> SourceCoverageResult:
         )
 
     return result
+
+
+BOOKKEEPING_FIELDS = {"processed", "duplicate", "source"}
+
+
+@dataclass
+class Delta:
+    """Result of diffing a source's current content against its last-known revision on `main`."""
+
+    new_comment_ids: list[str] = field(default_factory=list)
+    changed_fields: dict[str, tuple[object, object]] = field(default_factory=dict)
+
+
+def diff_content_fields(old: dict, new: dict) -> dict[str, tuple[object, object]]:
+    """Diff two frontmatter metadata dicts, excluding CLI bookkeeping fields (`processed`, `duplicate`, `source`).
+
+    Returns `{field: (old_value, new_value)}` for every field that was added, removed, or changed.
+    """
+    keys = (set(old) | set(new)) - BOOKKEEPING_FIELDS
+    changed = {}
+    for key in keys:
+        old_value = old.get(key)
+        new_value = new.get(key)
+        if old_value != new_value:
+            changed[key] = (old_value, new_value)
+    return changed
+
+
+def last_known_revision(root: Path, rel_path: str) -> str | None:
+    """Return `rel_path`'s content as of the last commit touching it on `main`, or None if never committed there."""
+    git = shutil.which("git")
+    if git is None:
+        return None
+    try:
+        log_result = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
+            [git, "log", "-1", "--format=%H", "main", "--", rel_path],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError:
+        return None
+    sha = log_result.stdout.strip()
+    if not sha:
+        return None
+    try:
+        show_result = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
+            [git, "show", f"{sha}:{rel_path}"],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError:
+        return None
+    return show_result.stdout
+
+
+def compute_source_delta(docs_dir: Path, source: str) -> Delta:
+    """Diff a source's current working-tree content against its last-known revision on `main`.
+
+    Resolves the source's path via `source-manifest.jsonl`. A source with no prior
+    commit on `main` diffs against a synthetic empty baseline (every field reports
+    as new) rather than erroring.
+    """
+    manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
+    entry = manifest.get(source)
+    if entry is None:
+        raise ValueError(f"unknown source: {source!r}")
+
+    root = docs_dir.parent
+    rel_path = entry["path"]
+    current_post = frontmatter.loads((root / rel_path).read_text(encoding="utf-8"))
+
+    old_text = last_known_revision(root, rel_path)
+    old_metadata = frontmatter.loads(old_text).metadata if old_text is not None else {}
+
+    return Delta(changed_fields=diff_content_fields(old_metadata, current_post.metadata))
+
+
+@dataclass
+class DedupeCandidate:
+    """One file within a duplicate group."""
+
+    path: str
+    mtime: float
+    similarity: float  # difflib ratio against the suggested keeper; 1.0 for the keeper itself
+
+
+@dataclass
+class DedupeGroup:
+    """All `docs/sources/` files sharing a `source` id, where at least one is flagged `duplicate: true`."""
+
+    source: str
+    keep: str  # path suggested to keep
+    reason: str
+    candidates: list[DedupeCandidate] = field(default_factory=list)
+
+
+@dataclass
+class DedupeResult:
+    """The full result of a `source-dedupe` pass."""
+
+    groups: list[DedupeGroup] = field(default_factory=list)
+    violations: list[LintViolation] = field(default_factory=list)
+
+    @property
+    def needs_attention(self) -> bool:
+        """True if any duplicate group was found."""
+        return bool(self.groups)
+
+
+def suggest_dedupe(docs_dir: Path) -> DedupeResult:
+    """Group `docs_dir/sources/` files by shared `source` id and suggest which to keep.
+
+    A group is included only for `source` ids with at least one `duplicate: true`
+    file *and* more than one file sharing the id (a lone `duplicate: true` file
+    with no sibling has nothing to compare against). The suggested keeper is the
+    file with the latest mtime; content-similarity scores (difflib ratio against
+    the keeper) are reported per candidate so a human can confirm the call. Never
+    modifies or deletes files — suggestion only. A file with malformed frontmatter
+    is reported as a violation instead of raising.
+    """
+    result = DedupeResult()
+
+    groups: dict[str, list[Path]] = {}
+    flagged: set[str] = set()
+    for path, post in _iter_markdown(docs_dir / "sources"):
+        if isinstance(post, LoadError):
+            rel_path = str(path.relative_to(docs_dir.parent))
+            result.violations.append(LintViolation(rel_path, post.message))
+            continue
+
+        source_id = post.get("source")
+        if not source_id:
+            continue
+        groups.setdefault(source_id, []).append(path)
+        if post.get("duplicate"):
+            flagged.add(source_id)
+
+    for source_id in sorted(flagged):
+        group_paths = groups[source_id]
+        if len(group_paths) < 2:
+            continue
+
+        contents = {p: p.read_text(encoding="utf-8") for p in group_paths}
+        keeper = max(group_paths, key=lambda p: p.stat().st_mtime)
+        keeper_content = contents[keeper]
+
+        candidates = [
+            DedupeCandidate(
+                path=str(p.relative_to(docs_dir.parent)),
+                mtime=p.stat().st_mtime,
+                similarity=1.0 if p == keeper else SequenceMatcher(None, keeper_content, contents[p]).ratio(),
+            )
+            for p in group_paths
+        ]
+        result.groups.append(
+            DedupeGroup(
+                source=source_id,
+                keep=str(keeper.relative_to(docs_dir.parent)),
+                reason="most recently modified",
+                candidates=candidates,
+            )
+        )
+
+    return result
+
+
+SnapshotUnits = Literal["comments", "fields"]
+ALLOWED_SNAPSHOT_UNITS: tuple[SnapshotUnits, ...] = ("comments", "fields")
+
+
+@dataclass
+class SnapshotResult:
+    """Result of writing a new Raw snapshot unit for a source."""
+
+    source: str
+    path: str
+    units: SnapshotUnits
+    update_sha: str
+
+
+def write_source_snapshot(docs_dir: Path, source: str, units: str) -> SnapshotResult:
+    """Write a new Raw snapshot unit for `source`, for the given mutation type (`comments` or `fields`).
+
+    Resolves the source's path via `source-manifest.jsonl`, resets `processed: false` on the
+    file — the existing reprocessing signal (see `apply_source_scan`) — and records the current
+    on-disk content's hash and timestamp as the manifest's new `update_sha`/`updated`, giving an
+    explicit, versioned record of this mutation (the "computed SHA hash of files for mutable
+    sources" case the manifest's `update_sha` field already covers). Works entirely against
+    content already materialized on disk; v1 has no live adapter fetch to populate `units:
+    comments` from, so `units` is a bookkeeping distinction for downstream PR framing, not a
+    different write.
+    """
+    if units not in ALLOWED_SNAPSHOT_UNITS:
+        raise ValueError(f"invalid units {units!r}; must be one of {ALLOWED_SNAPSHOT_UNITS}")
+
+    manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
+    entry = manifest.get(source)
+    if entry is None:
+        raise ValueError(f"unknown source: {source!r}")
+
+    rel_path = entry["path"]
+    source_path = docs_dir.parent / rel_path
+    _stamp_frontmatter(source_path, processed=False)
+
+    now = datetime.now(UTC).isoformat()
+    update_sha = hashlib.sha256(source_path.read_bytes()).hexdigest()
+    manifest[source] = {**entry, "updated": now, "update_sha": update_sha}
+    write_jsonl(docs_dir / SOURCE_MANIFEST_FILENAME, [manifest[key] for key in manifest])
+
+    return SnapshotResult(source=source, path=rel_path, units=units, update_sha=update_sha)  # type: ignore[arg-type]

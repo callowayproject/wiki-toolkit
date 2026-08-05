@@ -9,18 +9,19 @@ from pathlib import Path
 import click
 
 from wiki_toolkit._io import read_jsonl, write_jsonl
-from wiki_toolkit.core import (
+from wiki_toolkit.core import build_catalog, lint_wiki, search_catalog
+from wiki_toolkit.doctor import run_doctor
+from wiki_toolkit.log import ALLOWED_LOG_ACTIONS, append_log_entry, build_log_entry
+from wiki_toolkit.sources import (
     ALLOWED_SNAPSHOT_UNITS,
-    build_catalog,
+    apply_source_scan,
     compute_source_delta,
-    lint_wiki,
-    search_catalog,
+    lint_sources,
+    scan_sources,
+    source_coverage,
     suggest_dedupe,
     write_source_snapshot,
 )
-from wiki_toolkit.doctor import run_doctor
-from wiki_toolkit.log import ALLOWED_LOG_ACTIONS, append_log_entry, build_log_entry
-from wiki_toolkit.sources import apply_source_scan, lint_sources, scan_sources, source_coverage
 from wiki_toolkit.write_gate import ALLOWED_FRAMES, propose_pr
 
 
