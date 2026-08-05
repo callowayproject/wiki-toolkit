@@ -9,6 +9,7 @@ from pathlib import Path
 import click
 
 from wiki_toolkit.core import (
+    ALLOWED_FRAMES,
     ALLOWED_LOG_ACTIONS,
     ALLOWED_SNAPSHOT_UNITS,
     append_log_entry,
@@ -18,6 +19,7 @@ from wiki_toolkit.core import (
     compute_source_delta,
     lint_sources,
     lint_wiki,
+    propose_pr,
     read_jsonl,
     run_doctor,
     scan_sources,
@@ -218,6 +220,22 @@ def search_catalog_cmd(query: str) -> None:
 
     for entry in matches:
         click.echo(f"{entry.get('title', '')} ({entry.get('path', '')})")
+
+
+@cli.command("propose-pr")
+@click.option("--pages", required=True, multiple=True, help="Page path to stage. Repeat for multiple pages.")
+@click.option("--frame", type=click.Choice(ALLOWED_FRAMES), required=True, help="Reviewer framing for this change.")
+def propose_pr_cmd(pages: tuple[str, ...], frame: str) -> None:
+    """Stage a wiki change as a local git branch + commit. Never pushes or opens a real PR."""
+    try:
+        result = propose_pr(Path.cwd(), list(pages), frame)
+    except ValueError as e:
+        click.echo(str(e))
+        raise SystemExit(1) from e
+
+    click.echo(f"Created branch {result.branch} (commit {result.commit_sha[:10]}, frame={result.frame})")
+    for page in result.pages:
+        click.echo(f"  [staged] {page}")
 
 
 @cli.command()

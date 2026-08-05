@@ -447,3 +447,72 @@ def test_source_snapshot_unknown_source_exits_nonzero(tmp_path: Path, monkeypatc
 
     assert result.exit_code == 1
     assert "jira:MISSING" in result.output
+
+
+def _make_propose_pr_repo(tmp_path: Path) -> None:
+    """Build a real git repo with a wiki page committed on main, ready to be edited and staged."""
+    (tmp_path / "docs" / "wiki").mkdir(parents=True)
+    page = tmp_path / "docs" / "wiki" / "note.md"
+    page.write_text("original\n")
+
+    _git(tmp_path, "init", "-b", "main")
+    _git(tmp_path, "config", "user.email", "t@t.com")
+    _git(tmp_path, "config", "user.name", "t")
+    _git(tmp_path, "add", ".")
+    _git(tmp_path, "commit", "-m", "init")
+
+
+def test_propose_pr_routine_exits_zero_and_reports_branch(tmp_path: Path, monkeypatch) -> None:
+    """propose-pr --frame routine parses --pages, stages the commit, and exits 0."""
+    _make_propose_pr_repo(tmp_path)
+    (tmp_path / "docs" / "wiki" / "note.md").write_text("updated\n")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["propose-pr", "--pages", "docs/wiki/note.md", "--frame", "routine"])
+
+    assert result.exit_code == 0
+    assert "frame=routine" in result.output
+    assert "[staged] docs/wiki/note.md" in result.output
+
+
+def test_propose_pr_accepts_repeated_pages_option(tmp_path: Path, monkeypatch) -> None:
+    """--pages can be repeated to stage multiple pages in one commit."""
+    _make_propose_pr_repo(tmp_path)
+    second_page = tmp_path / "docs" / "wiki" / "second.md"
+    second_page.write_text("second\n")
+    _git(tmp_path, "add", ".")
+    _git(tmp_path, "-c", "user.email=t@t.com", "-c", "user.name=t", "commit", "-m", "add second")
+    (tmp_path / "docs" / "wiki" / "note.md").write_text("updated\n")
+    second_page.write_text("updated second\n")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(
+        cli,
+        ["propose-pr", "--pages", "docs/wiki/note.md", "--pages", "docs/wiki/second.md", "--frame", "needs-review"],
+    )
+
+    assert result.exit_code == 0
+    assert "[staged] docs/wiki/note.md" in result.output
+    assert "[staged] docs/wiki/second.md" in result.output
+
+
+def test_propose_pr_rejects_invalid_frame(tmp_path: Path, monkeypatch) -> None:
+    """An unrecognized --frame value is a usage error, not a crash."""
+    _make_propose_pr_repo(tmp_path)
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["propose-pr", "--pages", "docs/wiki/note.md", "--frame", "bogus"])
+
+    assert result.exit_code != 0
+
+
+def test_propose_pr_never_pushes_or_opens_a_remote_pr(tmp_path: Path, monkeypatch) -> None:
+    """propose-pr's write stays entirely local: no remote is configured or touched."""
+    _make_propose_pr_repo(tmp_path)
+    (tmp_path / "docs" / "wiki" / "note.md").write_text("updated\n")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["propose-pr", "--pages", "docs/wiki/note.md", "--frame", "routine"])
+
+    assert result.exit_code == 0
+    assert not _git(tmp_path, "remote").stdout.strip()
