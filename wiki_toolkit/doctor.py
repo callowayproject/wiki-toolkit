@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 import orjson
 
-from wiki_toolkit.core import SOURCE_MANIFEST_FILENAME
+from wiki_toolkit.sources import SOURCE_MANIFEST_FILENAME
 
 if TYPE_CHECKING:
     from pathlib import Path
