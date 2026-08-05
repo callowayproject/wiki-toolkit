@@ -1860,17 +1860,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#wiki_toolkit.core.read_jsonl" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;read_jsonl
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#wiki_toolkit.core.run_doctor" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1930,17 +1919,6 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;validate_jsonl
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#wiki_toolkit.core.write_jsonl" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;write_jsonl
       
     </span>
   </a>
@@ -2536,14 +2514,6 @@
               </td>
             </tr>
             <tr class="doc-section-item">
-              <td><code><a class="autorefs autorefs-internal" title="            read_jsonl (wiki_toolkit.core.read_jsonl)" href="#wiki_toolkit.core.read_jsonl">read_jsonl</a></code></td>
-              <td class="doc-function-details">
-                <div class="doc-md-description">
-                  <p>Read a JSONL file into a list of dicts. Returns an empty list if the file doesn&rsquo;t exist.</p>
-                </div>
-              </td>
-            </tr>
-            <tr class="doc-section-item">
               <td><code><a class="autorefs autorefs-internal" title="            run_doctor (wiki_toolkit.core.run_doctor)" href="#wiki_toolkit.core.run_doctor">run_doctor</a></code></td>
               <td class="doc-function-details">
                 <div class="doc-md-description">
@@ -2588,14 +2558,6 @@
               <td class="doc-function-details">
                 <div class="doc-md-description">
                   <p>Return a list of error messages for malformed lines in a JSONL file, empty if well-formed.</p>
-                </div>
-              </td>
-            </tr>
-            <tr class="doc-section-item">
-              <td><code><a class="autorefs autorefs-internal" title="            write_jsonl (wiki_toolkit.core.write_jsonl)" href="#wiki_toolkit.core.write_jsonl">write_jsonl</a></code></td>
-              <td class="doc-function-details">
-                <div class="doc-md-description">
-                  <p>Write <code>records</code> to <code>path</code> as JSONL, one object per line.</p>
                 </div>
               </td>
             </tr>
@@ -4338,26 +4300,6 @@ branch + commit: it never pushes to a remote or opens a real GitHub PR.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="wiki_toolkit.core.read_jsonl" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">read_jsonl</span>
-
-
-<a href="#wiki_toolkit.core.read_jsonl" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">read_jsonl</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="dict">dict</span></span><span class="p">]</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Read a JSONL file into a list of dicts. Returns an empty list if the file doesn&rsquo;t exist.</p>
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
 <h3 id="wiki_toolkit.core.run_doctor" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">run_doctor</span>
 
@@ -4506,26 +4448,6 @@ modifies or deletes files — suggestion only.</p>
     <div class="doc doc-contents ">
 
         <p>Return a list of error messages for malformed lines in a JSONL file, empty if well-formed.</p>
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="wiki_toolkit.core.write_jsonl" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">write_jsonl</span>
-
-
-<a href="#wiki_toolkit.core.write_jsonl" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">write_jsonl</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n">records</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="dict">dict</span></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Write <code>records</code> to <code>path</code> as JSONL, one object per line.</p>
 
 
     </div>
