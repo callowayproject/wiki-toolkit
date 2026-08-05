@@ -1297,6 +1297,73 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.DedupeCandidate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;DedupeCandidate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.DedupeGroup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;DedupeGroup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.DedupeResult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;DedupeResult
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" DedupeResult">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.DedupeResult-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attributes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.DedupeResult.needs_attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;needs_attention
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#wiki_toolkit.core.Delta" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1826,6 +1893,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.suggest_dedupe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;suggest_dedupe
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#wiki_toolkit.core.validate_jsonl" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2131,6 +2209,45 @@
             </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            DedupeCandidate
+
+
+  
+      dataclass
+   (wiki_toolkit.core.DedupeCandidate)" href="#wiki_toolkit.core.DedupeCandidate">DedupeCandidate</a></code></td>
+            <td class="doc-class-details">
+              <div class="doc-md-description">
+                <p>One file within a duplicate group.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            DedupeGroup
+
+
+  
+      dataclass
+   (wiki_toolkit.core.DedupeGroup)" href="#wiki_toolkit.core.DedupeGroup">DedupeGroup</a></code></td>
+            <td class="doc-class-details">
+              <div class="doc-md-description">
+                <p>All <code>docs/sources/</code> files sharing a <code>source</code> id, where at least one is flagged <code>duplicate: true</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            DedupeResult
+
+
+  
+      dataclass
+   (wiki_toolkit.core.DedupeResult)" href="#wiki_toolkit.core.DedupeResult">DedupeResult</a></code></td>
+            <td class="doc-class-details">
+              <div class="doc-md-description">
+                <p>The full result of a <code>source-dedupe</code> pass.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
             <td><code><a class="autorefs autorefs-internal" title="            Delta
 
 
@@ -2416,6 +2533,14 @@
               </td>
             </tr>
             <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            suggest_dedupe (wiki_toolkit.core.suggest_dedupe)" href="#wiki_toolkit.core.suggest_dedupe">suggest_dedupe</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Group <code>docs_dir/sources/</code> files by shared <code>source</code> id and suggest which to keep.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
               <td><code><a class="autorefs autorefs-internal" title="            validate_jsonl (wiki_toolkit.core.validate_jsonl)" href="#wiki_toolkit.core.validate_jsonl">validate_jsonl</a></code></td>
               <td class="doc-function-details">
                 <div class="doc-md-description">
@@ -2506,6 +2631,244 @@
 
 
 
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="wiki_toolkit.core.DedupeCandidate" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">DedupeCandidate</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#wiki_toolkit.core.DedupeCandidate" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">DedupeCandidate</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">mtime</span><span class="p">:</span> <span class="n"><span title="float">float</span></span><span class="p">,</span> <span class="n">similarity</span><span class="p">:</span> <span class="n"><span title="float">float</span></span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>One file within a duplicate group.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="wiki_toolkit.core.DedupeGroup" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">DedupeGroup</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#wiki_toolkit.core.DedupeGroup" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">DedupeGroup</span><span class="p">(</span>
+    <span class="n">source</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
+    <span class="n">keep</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
+    <span class="n">reason</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
+    <span class="n">candidates</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            DedupeCandidate
+
+
+  
+      dataclass
+   (wiki_toolkit.core.DedupeCandidate)" href="#wiki_toolkit.core.DedupeCandidate">DedupeCandidate</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="list">list</span></span><span class="p">(),</span>
+<span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>All <code>docs/sources/</code> files sharing a <code>source</code> id, where at least one is flagged <code>duplicate: true</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="wiki_toolkit.core.DedupeResult" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">DedupeResult</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#wiki_toolkit.core.DedupeResult" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">DedupeResult</span><span class="p">(</span><span class="n">groups</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            DedupeGroup
+
+
+  
+      dataclass
+   (wiki_toolkit.core.DedupeGroup)" href="#wiki_toolkit.core.DedupeGroup">DedupeGroup</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="list">list</span></span><span class="p">())</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>The full result of a <code>source-dedupe</code> pass.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">ATTRIBUTE</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            needs_attention
+
+
+  
+      property
+   (wiki_toolkit.core.DedupeResult.needs_attention)" href="#wiki_toolkit.core.DedupeResult.needs_attention">needs_attention</a></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>True if any duplicate group was found.</p>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="bool">bool</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+<h4 id="wiki_toolkit.core.DedupeResult-attributes">Attributes<a href="#wiki_toolkit.core.DedupeResult-attributes" class="headerlink" title="Permanent link">&para;</a></h4>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h5 id="wiki_toolkit.core.DedupeResult.needs_attention" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">needs_attention</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#wiki_toolkit.core.DedupeResult.needs_attention" class="headerlink" title="Permanent link">&para;</a></h5>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">needs_attention</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>True if any duplicate group was found.</p>
+
+    </div>
+
+</div>
 
 
 
@@ -3965,6 +4328,37 @@ scan order, until a human resolves it via <code>source-dedupe</code>.</p>
 <code>catalog.jsonl</code>&rsquo;s <code>sources</code> lists. Duplicates are excluded using the same
 rule as <code>scan_sources</code>: a file stamped <code>duplicate: true</code>, or a later file
 sharing a <code>source</code> id already seen in this pass.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wiki_toolkit.core.suggest_dedupe" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">suggest_dedupe</span>
+
+
+<a href="#wiki_toolkit.core.suggest_dedupe" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">suggest_dedupe</span><span class="p">(</span><span class="n">docs_dir</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            DedupeResult
+
+
+  
+      dataclass
+   (wiki_toolkit.core.DedupeResult)" href="#wiki_toolkit.core.DedupeResult">DedupeResult</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Group <code>docs_dir/sources/</code> files by shared <code>source</code> id and suggest which to keep.</p>
+<p>A group is included only for <code>source</code> ids with at least one <code>duplicate: true</code>
+file <em>and</em> more than one file sharing the id (a lone <code>duplicate: true</code> file
+with no sibling has nothing to compare against). The suggested keeper is the
+file with the latest mtime; content-similarity scores (difflib ratio against
+the keeper) are reported per candidate so a human can confirm the call. Never
+modifies or deletes files — suggestion only.</p>
 
 
     </div>
