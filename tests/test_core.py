@@ -1,11 +1,14 @@
 """Unit tests for wiki_toolkit.core's internal (non-Click) logic."""
 
+import os
 import shutil
 import subprocess
+import time
 from typing import TYPE_CHECKING
 
 import frontmatter
 import orjson
+import pytest
 
 from wiki_toolkit.core import (
     DOCS_STRUCTURE,
@@ -24,6 +27,7 @@ from wiki_toolkit.core import (
     scan_sources,
     search_catalog,
     source_coverage,
+    suggest_dedupe,
     validate_jsonl,
     write_jsonl,
     write_source_snapshot,
@@ -247,6 +251,77 @@ def test_apply_source_scan_skips_unaccepted_covered_update(make_docs_tree: Calla
 
     assert written == 0
     assert "processed: true" not in path.read_text(encoding="utf-8")
+
+
+def test_suggest_dedupe_ignores_sources_without_duplicates(make_docs_tree: Callable[[], Path], make_source) -> None:
+    """A source id with only one file (no `duplicate: true`) yields no group."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:ABC-1")
+
+    result = suggest_dedupe(docs_dir)
+
+    assert result.groups == []
+    assert result.needs_attention is False
+
+
+def test_suggest_dedupe_groups_by_source_and_suggests_latest_mtime(
+    make_docs_tree: Callable[[], Path], make_source
+) -> None:
+    """A duplicate group includes every file sharing the source id; the newest mtime is the keep suggestion."""
+    docs_dir = make_docs_tree()
+    old_path = make_source(docs_dir, "jira:ABC-1", filename="a-first.md")
+    new_path = make_source(docs_dir, "jira:ABC-1", filename="b-second.md", duplicate=True)
+    os.utime(old_path, (time.time() - 100, time.time() - 100))
+
+    result = suggest_dedupe(docs_dir)
+
+    assert len(result.groups) == 1
+    assert result.needs_attention is True
+    group = result.groups[0]
+    assert group.source == "jira:ABC-1"
+    assert group.keep == str(new_path.relative_to(docs_dir.parent))
+    candidate_paths = {c.path for c in group.candidates}
+    assert candidate_paths == {str(old_path.relative_to(docs_dir.parent)), str(new_path.relative_to(docs_dir.parent))}
+
+
+def test_suggest_dedupe_scores_content_similarity_against_keeper(
+    make_docs_tree: Callable[[], Path], make_source
+) -> None:
+    """Non-keeper candidates get a difflib similarity ratio against the keeper's content; the keeper scores 1.0."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:ABC-1", filename="a-first.md", title="Old title")
+    make_source(docs_dir, "jira:ABC-1", filename="b-second.md", duplicate=True, title="Completely different")
+
+    result = suggest_dedupe(docs_dir)
+
+    group = result.groups[0]
+    by_path = {c.path: c for c in group.candidates}
+    assert by_path[group.keep].similarity == pytest.approx(1.0)
+    other = next(c for c in group.candidates if c.path != group.keep)
+    assert 0.0 <= other.similarity < 1.0
+
+
+def test_suggest_dedupe_ignores_lone_duplicate_flagged_file(make_docs_tree: Callable[[], Path], make_source) -> None:
+    """A `duplicate: true` file with no sibling sharing its source id has nothing to compare against."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:ABC-1", duplicate=True)
+
+    result = suggest_dedupe(docs_dir)
+
+    assert result.groups == []
+
+
+def test_suggest_dedupe_never_modifies_files(make_docs_tree: Callable[[], Path], make_source) -> None:
+    """suggest_dedupe is read-only: it never stamps frontmatter or deletes files."""
+    docs_dir = make_docs_tree()
+    path_a = make_source(docs_dir, "jira:ABC-1", filename="a-first.md")
+    path_b = make_source(docs_dir, "jira:ABC-1", filename="b-second.md", duplicate=True)
+    before_a, before_b = path_a.read_text(encoding="utf-8"), path_b.read_text(encoding="utf-8")
+
+    suggest_dedupe(docs_dir)
+
+    assert path_a.read_text(encoding="utf-8") == before_a
+    assert path_b.read_text(encoding="utf-8") == before_b
 
 
 def test_build_catalog_entry_fields(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:

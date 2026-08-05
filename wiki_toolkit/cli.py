@@ -23,6 +23,7 @@ from wiki_toolkit.core import (
     scan_sources,
     search_catalog,
     source_coverage,
+    suggest_dedupe,
     write_jsonl,
     write_source_snapshot,
 )
@@ -142,6 +143,24 @@ def source_coverage_cmd() -> None:
         click.echo(f"[UNCOVERED] {entry.path} ({entry.source})")
 
     click.echo(f"{len(result.covered)} covered, {len(result.uncovered)} uncovered")
+
+
+@cli.command("source-dedupe")
+def source_dedupe() -> None:
+    """Suggest which docs/sources/ file to keep per group sharing a source id with a duplicate: true file."""
+    docs_dir = Path.cwd() / "docs"
+    result = suggest_dedupe(docs_dir)
+
+    for group in result.groups:
+        click.echo(f"[GROUP] {group.source}")
+        for candidate in group.candidates:
+            tag = "KEEP" if candidate.path == group.keep else "DISCARD"
+            click.echo(f"  [{tag}] {candidate.path} (similarity={candidate.similarity:.2f})")
+        click.echo(f"  suggestion: keep {group.keep} ({group.reason})")
+
+    if result.needs_attention:
+        raise SystemExit(1)
+    click.echo("No duplicate groups found.")
 
 
 @cli.command("source-delta")
