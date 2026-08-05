@@ -921,8 +921,10 @@ def _make_propose_pr_repo(tmp_path: Path) -> Path:
     page.write_text("original\n")
 
     _git(tmp_path, "init", "-b", "main")
+    _git(tmp_path, "config", "user.email", "t@t.com")
+    _git(tmp_path, "config", "user.name", "t")
     _git(tmp_path, "add", ".")
-    _git(tmp_path, "-c", "user.email=t@t.com", "-c", "user.name=t", "commit", "-m", "init")
+    _git(tmp_path, "commit", "-m", "init")
 
     return tmp_path
 
