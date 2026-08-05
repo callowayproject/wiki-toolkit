@@ -1409,6 +1409,73 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.SourceCoverageEntry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;SourceCoverageEntry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.SourceCoverageResult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;SourceCoverageResult
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" SourceCoverageResult">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.SourceCoverageResult-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attributes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.SourceCoverageResult.covered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;covered
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.SourceCoverageResult.uncovered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;uncovered
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#wiki_toolkit.core.SourceLintResult" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1686,6 +1753,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;search_catalog
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wiki_toolkit.core.source_coverage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;source_coverage
       
     </span>
   </a>
@@ -2039,6 +2117,32 @@
             </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            SourceCoverageEntry
+
+
+  
+      dataclass
+   (wiki_toolkit.core.SourceCoverageEntry)" href="#wiki_toolkit.core.SourceCoverageEntry">SourceCoverageEntry</a></code></td>
+            <td class="doc-class-details">
+              <div class="doc-md-description">
+                <p>A single <code>docs/sources/</code> file&rsquo;s coverage status.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            SourceCoverageResult
+
+
+  
+      dataclass
+   (wiki_toolkit.core.SourceCoverageResult)" href="#wiki_toolkit.core.SourceCoverageResult">SourceCoverageResult</a></code></td>
+            <td class="doc-class-details">
+              <div class="doc-md-description">
+                <p>The full result of a <code>source-coverage</code> pass.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
             <td><code><a class="autorefs autorefs-internal" title="            SourceLintResult
 
 
@@ -2184,6 +2288,14 @@
               <td class="doc-function-details">
                 <div class="doc-md-description">
                   <p>Return catalog entries whose title or path contains <code>query</code>, case-insensitively.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            source_coverage (wiki_toolkit.core.source_coverage)" href="#wiki_toolkit.core.source_coverage">source_coverage</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Report which <code>docs_dir/sources/</code> files are covered by at least one wiki note.</p>
                 </div>
               </td>
             </tr>
@@ -2616,6 +2728,247 @@
 
 
 
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="wiki_toolkit.core.SourceCoverageEntry" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">SourceCoverageEntry</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#wiki_toolkit.core.SourceCoverageEntry" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">SourceCoverageEntry</span><span class="p">(</span>
+    <span class="n">source</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
+    <span class="n">title</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
+    <span class="n">covered</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span><span class="p">,</span>
+    <span class="n">covered_by</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="list">list</span></span><span class="p">(),</span>
+<span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>A single <code>docs/sources/</code> file&rsquo;s coverage status.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="wiki_toolkit.core.SourceCoverageResult" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">SourceCoverageResult</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#wiki_toolkit.core.SourceCoverageResult" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">SourceCoverageResult</span><span class="p">(</span><span class="n">entries</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            SourceCoverageEntry
+
+
+  
+      dataclass
+   (wiki_toolkit.core.SourceCoverageEntry)" href="#wiki_toolkit.core.SourceCoverageEntry">SourceCoverageEntry</a></span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="list">list</span></span><span class="p">())</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>The full result of a <code>source-coverage</code> pass.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">ATTRIBUTE</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            covered
+
+
+  
+      property
+   (wiki_toolkit.core.SourceCoverageResult.covered)" href="#wiki_toolkit.core.SourceCoverageResult.covered">covered</a></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>Entries covered by at least one wiki note.</p>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="            SourceCoverageEntry
+
+
+  
+      dataclass
+   (wiki_toolkit.core.SourceCoverageEntry)" href="#wiki_toolkit.core.SourceCoverageEntry">SourceCoverageEntry</a>]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            uncovered
+
+
+  
+      property
+   (wiki_toolkit.core.SourceCoverageResult.uncovered)" href="#wiki_toolkit.core.SourceCoverageResult.uncovered">uncovered</a></code></td>
+            <td class="doc-attribute-details">
+              <div class="doc-md-description">
+                <p>Entries covered by no wiki note.</p>
+              </div>
+              <p>
+                  <span class="doc-attribute-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="            SourceCoverageEntry
+
+
+  
+      dataclass
+   (wiki_toolkit.core.SourceCoverageEntry)" href="#wiki_toolkit.core.SourceCoverageEntry">SourceCoverageEntry</a>]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+<h4 id="wiki_toolkit.core.SourceCoverageResult-attributes">Attributes<a href="#wiki_toolkit.core.SourceCoverageResult-attributes" class="headerlink" title="Permanent link">&para;</a></h4>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h5 id="wiki_toolkit.core.SourceCoverageResult.covered" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">covered</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#wiki_toolkit.core.SourceCoverageResult.covered" class="headerlink" title="Permanent link">&para;</a></h5>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">covered</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            SourceCoverageEntry
+
+
+  
+      dataclass
+   (wiki_toolkit.core.SourceCoverageEntry)" href="#wiki_toolkit.core.SourceCoverageEntry">SourceCoverageEntry</a></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Entries covered by at least one wiki note.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h5 id="wiki_toolkit.core.SourceCoverageResult.uncovered" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">uncovered</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#wiki_toolkit.core.SourceCoverageResult.uncovered" class="headerlink" title="Permanent link">&para;</a></h5>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">uncovered</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            SourceCoverageEntry
+
+
+  
+      dataclass
+   (wiki_toolkit.core.SourceCoverageEntry)" href="#wiki_toolkit.core.SourceCoverageEntry">SourceCoverageEntry</a></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Entries covered by no wiki note.</p>
+
+    </div>
+
+</div>
 
 
 
@@ -3275,6 +3628,35 @@ scan order, until a human resolves it via <code>source-dedupe</code>.</p>
     <div class="doc doc-contents ">
 
         <p>Return catalog entries whose title or path contains <code>query</code>, case-insensitively.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wiki_toolkit.core.source_coverage" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">source_coverage</span>
+
+
+<a href="#wiki_toolkit.core.source_coverage" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">source_coverage</span><span class="p">(</span><span class="n">docs_dir</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            SourceCoverageResult
+
+
+  
+      dataclass
+   (wiki_toolkit.core.SourceCoverageResult)" href="#wiki_toolkit.core.SourceCoverageResult">SourceCoverageResult</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Report which <code>docs_dir/sources/</code> files are covered by at least one wiki note.</p>
+<p>Cross-references <code>source-manifest.jsonl</code>&rsquo;s <code>covered_by</code> field against
+<code>catalog.jsonl</code>&rsquo;s <code>sources</code> lists. Duplicates are excluded using the same
+rule as <code>scan_sources</code>: a file stamped <code>duplicate: true</code>, or a later file
+sharing a <code>source</code> id already seen in this pass.</p>
 
 
     </div>
