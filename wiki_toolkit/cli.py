@@ -13,16 +13,14 @@ from wiki_toolkit.core import (
     ALLOWED_SNAPSHOT_UNITS,
     build_catalog,
     compute_source_delta,
-    lint_sources,
     lint_wiki,
     search_catalog,
-    source_coverage,
     suggest_dedupe,
     write_source_snapshot,
 )
 from wiki_toolkit.doctor import run_doctor
 from wiki_toolkit.log import ALLOWED_LOG_ACTIONS, append_log_entry, build_log_entry
-from wiki_toolkit.sources import apply_source_scan, scan_sources
+from wiki_toolkit.sources import apply_source_scan, lint_sources, scan_sources, source_coverage
 from wiki_toolkit.write_gate import ALLOWED_FRAMES, propose_pr
 
 
