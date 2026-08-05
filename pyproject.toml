@@ -51,7 +51,6 @@ test = [
 docs = [
     "mkdocs-click",
     "mkdocs-include-markdown-plugin",
-    "markdown-customblocks",
     "properdocs",
     "mkdocs-gen-files>=0.5.0",
     "mkdocs-git-revision-date-localized-plugin",
