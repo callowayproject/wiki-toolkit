@@ -8,11 +8,11 @@ from datetime import UTC, datetime
 from difflib import SequenceMatcher
 from typing import TYPE_CHECKING, Literal
 
-import frontmatter
 import orjson
 import yaml
 
 from wiki_toolkit._io import read_jsonl, write_jsonl
+from wiki_toolkit.frontmatter import Post
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -34,12 +34,12 @@ class LintViolation:
 
 @dataclass
 class LoadError:
-    """A markdown file whose frontmatter failed to parse."""
+    """A Markdown file whose frontmatter failed to parse."""
 
     message: str
 
 
-def _iter_markdown(dir_path: Path) -> Iterator[tuple[Path, frontmatter.Post | LoadError]]:
+def _iter_markdown(dir_path: Path) -> Iterator[tuple[Path, Post | LoadError]]:
     """Walk `dir_path` for `*.md` files in sorted order, parsing each file's frontmatter.
 
     Yields `(path, post)` for well-formed files, `(path, LoadError)` for files whose
@@ -49,14 +49,14 @@ def _iter_markdown(dir_path: Path) -> Iterator[tuple[Path, frontmatter.Post | Lo
         return
     for path in sorted(dir_path.rglob("*.md")):
         try:
-            yield path, frontmatter.loads(path.read_text(encoding="utf-8"))
+            yield path, Post.loads(path.read_text(encoding="utf-8"))
         except yaml.YAMLError as e:
             yield path, LoadError(message=f"malformed frontmatter: {e}")
 
 
 def _load_or_record_violation(
-    path: Path, post: frontmatter.Post | LoadError, violations: list[LintViolation], docs_dir: Path
-) -> frontmatter.Post | None:
+    path: Path, post: Post | LoadError, violations: list[LintViolation], docs_dir: Path
+) -> Post | None:
     """Return `post` if well-formed, else append a `LintViolation` to `violations` and return None."""
     if isinstance(post, LoadError):
         rel_path = str(path.relative_to(docs_dir.parent))
@@ -65,7 +65,7 @@ def _load_or_record_violation(
     return post
 
 
-def _is_canonical_source(post: frontmatter.Post, seen: set[str]) -> bool:
+def _is_canonical_source(post: Post, seen: set[str]) -> bool:
     """True if `post` is the first-seen, non-duplicate-flagged file for its `source` id.
 
     Mutates `seen` by recording the source id when canonical. A file stamped
@@ -179,10 +179,10 @@ def scan_sources(docs_dir: Path, *, accept_covered: bool = False) -> SourceScanR
 
 def _stamp_frontmatter(path: Path, **fields: object) -> None:
     """Merge `fields` into a source file's frontmatter and write it back."""
-    post = frontmatter.loads(path.read_text(encoding="utf-8"))
+    post = Post.loads(path.read_text(encoding="utf-8"))
     for key, value in fields.items():
         post[key] = value
-    path.write_bytes(frontmatter.dumps(post).encode())
+    path.write_bytes(Post.dumps(post).encode())
 
 
 def apply_source_scan(docs_dir: Path, result: SourceScanResult) -> int:
@@ -416,10 +416,10 @@ def compute_source_delta(docs_dir: Path, source: str) -> Delta:
 
     root = docs_dir.parent
     rel_path = entry["path"]
-    current_post = frontmatter.loads((root / rel_path).read_text(encoding="utf-8"))
+    current_post = Post.loads((root / rel_path).read_text(encoding="utf-8"))
 
     old_text = last_known_revision(root, rel_path)
-    old_metadata = frontmatter.loads(old_text).metadata if old_text is not None else {}
+    old_metadata = Post.loads(old_text).metadata if old_text is not None else {}
 
     return Delta(changed_fields=diff_content_fields(old_metadata, current_post.metadata))
 
