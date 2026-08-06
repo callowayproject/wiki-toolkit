@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.14.0 (2026-08-06)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.13.1...0.14.0)
+
+### New
+
+- Add frontmatter parsing module and tests; remove unused dependency. [2394283](https://github.com/callowayproject/wiki-toolkit/commit/23942831d6bb102f7e0dc06d176a5ba83be5eb00)
+
+  Introduce `frontmatter.py` for parsing and dumping YAML frontmatter, providing a `Post` class for convenient metadata handling. Add comprehensive tests for parsing, dumping, and `Post` functionality. Drop unused `python-frontmatter` dependency, aligning with new custom implementation.
+
 ## 0.13.1 (2026-08-05)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.13.0...0.13.1)
