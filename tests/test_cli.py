@@ -139,6 +139,20 @@ def test_build_skips_malformed_note_without_crashing(
     assert orjson.loads(lines[0])["path"] == "docs/wiki/a.md"
 
 
+def test_build_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_docs_tree, make_wiki_note) -> None:
+    """Build --docs-dir writes to the overridden tree, not cwd/docs (which doesn't exist here)."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "a.md", title="A Page", updated="2026-01-01", sources=[])
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    result = CliRunner().invoke(cli, ["build", "--docs-dir", str(docs_dir)])
+
+    assert result.exit_code == 0
+    assert (docs_dir / "catalog.jsonl").exists()
+
+
 def test_build_overwrites_existing_catalog(tmp_path: Path, monkeypatch, make_docs_tree, make_wiki_note) -> None:
     """Build regenerates docs/catalog.jsonl from scratch rather than appending."""
     docs_dir = make_docs_tree()
@@ -152,6 +166,20 @@ def test_build_overwrites_existing_catalog(tmp_path: Path, monkeypatch, make_doc
     catalog = (docs_dir / "catalog.jsonl").read_text(encoding="utf-8")
     assert "stale.md" not in catalog
     assert "A Page" in catalog
+
+
+def test_source_scan_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_docs_tree, make_source) -> None:
+    """source-scan --docs-dir reads from the overridden tree, not cwd/docs (which doesn't exist here)."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:ABC-1")
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    result = CliRunner().invoke(cli, ["source-scan", "--docs-dir", str(docs_dir)])
+
+    assert result.exit_code == 0
+    assert "jira:ABC-1" in result.output
 
 
 def test_source_scan_reports_new_source(tmp_path: Path, monkeypatch, make_docs_tree, make_source) -> None:
@@ -179,6 +207,20 @@ def test_source_scan_update_writes_manifest(tmp_path: Path, monkeypatch, make_do
     assert result.exit_code == 0
     manifest = (docs_dir / "source-manifest.jsonl").read_text(encoding="utf-8")
     assert "jira:ABC-1" in manifest
+
+
+def test_lint_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_docs_tree, make_wiki_note) -> None:
+    """Lint --docs-dir reads from the overridden tree, not cwd/docs (which doesn't exist here)."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "schema.md").write_text("## Tag Taxonomy\n\n- infra\n")
+    make_wiki_note(docs_dir, "a.md", tags=["infra"], sources=[])
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    result = CliRunner().invoke(cli, ["lint", "--docs-dir", str(docs_dir)])
+
+    assert result.exit_code == 0
 
 
 def test_lint_exits_zero_on_clean_wiki(tmp_path: Path, monkeypatch, make_docs_tree, make_wiki_note) -> None:
@@ -220,6 +262,21 @@ def test_source_scan_flags_duplicate_with_nonzero_exit(
 
     assert result.exit_code == 1
     assert "DUPLICATE" in result.output
+
+
+def test_source_dedupe_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_docs_tree, make_source) -> None:
+    """source-dedupe --docs-dir reads from the overridden tree, not cwd/docs (which doesn't exist here)."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:ABC-1", filename="a-first.md")
+    make_source(docs_dir, "jira:ABC-1", filename="b-second.md", duplicate=True)
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    result = CliRunner().invoke(cli, ["source-dedupe", "--docs-dir", str(docs_dir)])
+
+    assert result.exit_code == 1
+    assert "[GROUP] jira:ABC-1" in result.output
 
 
 def test_source_dedupe_exits_zero_with_no_duplicates(tmp_path: Path, monkeypatch, make_docs_tree, make_source) -> None:
@@ -278,6 +335,19 @@ def test_source_dedupe_reports_violations_and_exits_nonzero(tmp_path: Path, monk
     assert "malformed frontmatter" in result.output
 
 
+def test_source_lint_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
+    """source-lint --docs-dir reads from the overridden tree, not cwd/docs (which doesn't exist here)."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "sources" / "a.md").write_text("---\ntitle: no source id\n---\nbody")
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    result = CliRunner().invoke(cli, ["source-lint", "--docs-dir", str(docs_dir)])
+
+    assert result.exit_code == 1
+
+
 def test_source_lint_exits_zero_on_clean_tree(tmp_path: Path, monkeypatch, make_docs_tree, make_source) -> None:
     """source-lint exits 0 and reports no violations against a clean docs/sources/ tree."""
     docs_dir = make_docs_tree()
@@ -316,6 +386,24 @@ def test_source_lint_reports_backlog_without_failing(tmp_path: Path, monkeypatch
     assert "backlog" in result.output.lower()
 
 
+def test_source_coverage_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_docs_tree, make_source) -> None:
+    """source-coverage --docs-dir reads from the overridden tree, not cwd/docs (which doesn't exist here)."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "source-manifest.jsonl").write_text("")
+    make_source(docs_dir, "jira:ABC-1", filename="covered.md")
+    (docs_dir / "catalog.jsonl").write_text(
+        orjson.dumps({"path": "docs/wiki/a.md", "sources": ["jira:ABC-1"]}).decode() + "\n"
+    )
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    result = CliRunner().invoke(cli, ["source-coverage", "--docs-dir", str(docs_dir)])
+
+    assert result.exit_code == 0
+    assert "[COVERED]" in result.output
+
+
 def test_source_coverage_reports_covered_and_uncovered(
     tmp_path: Path, monkeypatch, make_docs_tree, make_source
 ) -> None:
@@ -334,6 +422,21 @@ def test_source_coverage_reports_covered_and_uncovered(
     assert "[COVERED] docs/sources/covered.md (jira:ABC-1)" in result.output
     assert "[UNCOVERED] docs/sources/uncovered.md (jira:ABC-2)" in result.output
     assert "1 covered, 1 uncovered" in result.output
+
+
+def test_search_catalog_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
+    """search-catalog --docs-dir reads from the overridden tree, not cwd/docs (which doesn't exist here)."""
+    docs_dir = make_docs_tree()
+    entry = {"path": "docs/wiki/auth.md", "title": "Auth Middleware", "sources": [], "updated": "", "status": "ok"}
+    (docs_dir / "catalog.jsonl").write_text(orjson.dumps(entry).decode() + "\n")
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    result = CliRunner().invoke(cli, ["search-catalog", "--query", "auth", "--docs-dir", str(docs_dir)])
+
+    assert result.exit_code == 0
+    assert "Auth Middleware" in result.output
 
 
 def test_search_catalog_returns_matching_entry(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
@@ -371,6 +474,23 @@ def test_search_catalog_requires_query_option(tmp_path: Path, monkeypatch, make_
     result = CliRunner().invoke(cli, ["search-catalog"])
 
     assert result.exit_code != 0
+
+
+def test_log_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
+    """Log --docs-dir writes to the overridden tree, not cwd/docs (which doesn't exist here)."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "log.jsonl").write_text("")
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    result = CliRunner().invoke(
+        cli, ["log", "--title", "x", "--details", "y", "--action", "create", "--docs-dir", str(docs_dir)]
+    )
+
+    assert result.exit_code == 0
+    lines = (docs_dir / "log.jsonl").read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 1
 
 
 def test_log_appends_entry(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
@@ -430,6 +550,24 @@ def test_log_rejects_invalid_action(tmp_path: Path, monkeypatch, make_docs_tree)
     assert result.exit_code != 0
 
 
+def test_source_delta_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_docs_tree, make_source) -> None:
+    """source-delta --docs-dir reads from the overridden tree, not cwd/docs (which doesn't exist here)."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:ABC-1", filename="abc-1.md", status="open")
+    (docs_dir / "source-manifest.jsonl").write_text(
+        orjson.dumps({"source": "jira:ABC-1", "path": "docs/sources/abc-1.md"}).decode() + "\n"
+    )
+    _git(tmp_path, "init", "-b", "main")
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    result = CliRunner().invoke(cli, ["source-delta", "jira:ABC-1", "--docs-dir", str(docs_dir)])
+
+    assert result.exit_code == 0
+    assert "[NEW] status" in result.output
+
+
 def test_source_delta_reports_changed_field(tmp_path: Path, monkeypatch, make_docs_tree, make_source) -> None:
     """source-delta prints changed fields and exits 0 for a known source with a real prior commit."""
     docs_dir = make_docs_tree()
@@ -477,6 +615,25 @@ def test_source_delta_unknown_source_exits_nonzero(tmp_path: Path, monkeypatch, 
 
     assert result.exit_code == 1
     assert "jira:MISSING" in result.output
+
+
+def test_source_snapshot_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_docs_tree, make_source) -> None:
+    """source-snapshot --docs-dir reads/writes the overridden tree, not cwd/docs (which doesn't exist here)."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:ABC-1", filename="abc-1.md", processed=True, status="open")
+    (docs_dir / "source-manifest.jsonl").write_text(
+        orjson.dumps({"source": "jira:ABC-1", "path": "docs/sources/abc-1.md"}).decode() + "\n"
+    )
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    result = CliRunner().invoke(
+        cli, ["source-snapshot", "jira:ABC-1", "--units", "fields", "--docs-dir", str(docs_dir)]
+    )
+
+    assert result.exit_code == 0
+    assert "jira:ABC-1" in result.output
 
 
 def test_source_snapshot_fields_resets_processed_and_exits_zero(
