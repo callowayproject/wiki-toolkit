@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.15.1 (2026-08-07)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.15.0...0.15.1)
+
+### Other
+
+- Retrofit --docs-dir onto the 10 remaining CLI commands. [c3bf1b3](https://github.com/callowayproject/wiki-toolkit/commit/c3bf1b3c4df3f0e21d9e843547fa0734f838891e)
+
+  build, lint, source-scan, source-lint, source-coverage, source-dedupe,
+  source-delta, source-snapshot, search-catalog, and log each hardcoded
+  docs_dir = Path.cwd() / "docs"; now they resolve it through settings.py's
+  flag > env > pyproject > default precedence, matching doctor/config show.
+
+  propose-pr is deliberately excluded: it operates on git root, not docs_dir,
+  so the flag wouldn't be meaningfully wired to anything.
+
+  Closes #56
+
 ## 0.15.0 (2026-08-07)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.14.0...0.15.0)
