@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.17.0 (2026-08-07)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.16.0...0.17.0)
+
+### Updates
+
+- Refactor type hints for flexibility and standardize CLI error handling with `click.UsageError`. [73c6ed5](https://github.com/callowayproject/wiki-toolkit/commit/73c6ed5254b921d22fc06235b50c38a8b63d4c16)
+
 ## 0.16.0 (2026-08-07)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.15.1...0.16.0)
