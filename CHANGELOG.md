@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.16.0 (2026-08-07)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.15.1...0.16.0)
+
+### New
+
+- Add init command to scaffold docs/ structure. [33825ac](https://github.com/callowayproject/wiki-toolkit/commit/33825ac73cc41df0a7ae2018c4131aa5b4181f08)
+
+  Creates sources/, wiki/, catalog.jsonl, log.jsonl, source-manifest.jsonl,
+  and schema.md (verbatim from toolkit-spec.md). Refuses to overwrite
+  existing items, reporting them as already-present so a partial init can
+  be completed by re-running.
+
+  Closes #57
+
 ## 0.15.1 (2026-08-07)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.15.0...0.15.1)
