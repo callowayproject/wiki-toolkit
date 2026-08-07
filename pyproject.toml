@@ -258,6 +258,9 @@ typing-modules = ["typing", "types", "typing_extensions", "mypy", "mypy_extensio
     "raise-within-try",
     "import-private-name",
 ]
+"wiki_toolkit/init.py" = [
+    "line-too-long",  # SCHEMA_TEMPLATE must match toolkit-spec.md verbatim, including its long lines
+]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10
