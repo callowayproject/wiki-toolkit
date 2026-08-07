@@ -31,6 +31,17 @@ repo-root/
 
 **Architecture constraint**: the CLI is a thin adapter (arg parsing, delegation, output formatting). All business logic lives in internal library functions the CLI calls — the CLI has no logic worth unit-testing beyond correct delegation.
 
+## Configuration
+
+Settings (currently just the `docs` root, default `docs/`) resolve via `pydantic-settings`, in precedence order:
+
+1. CLI flag (`--docs-dir`, per-command where relevant)
+2. Environment variable (`WIKI_TOOLKIT_DOCS_DIR`)
+3. `[tool.wiki_toolkit]` table in the project's `pyproject.toml`, if present
+4. Built-in default
+
+No dedicated config file format — reusing `pyproject.toml` avoids introducing a new file the user has to know about.
+
 ## Source lifecycle
 
 Files land directly in `docs/sources/` — no separate staging/inbox directory. State is tracked entirely via frontmatter:
@@ -96,7 +107,8 @@ All commands are keyed off `source` (frontmatter field, formerly called `source_
 
 | Command | Contract |
 |---|---|
-| `doctor` | Non-mutating health check: `docs/` folder structure, Python version, catalog/manifest sanity, note counts, shallow-clone warning |
+| `init` | Scaffold a new wiki: create `docs/{sources,wiki}/`, empty `catalog.jsonl`/`log.jsonl`/`source-manifest.jsonl`, and `schema.md` from the toolkit's built-in template |
+| `doctor` | Non-mutating health check: `docs/` folder structure, Python version, catalog/manifest sanity, note counts, shallow-clone warning, resolved configuration and its source |
 | `build` | Generate `docs/catalog.jsonl` from `docs/wiki/` notes (no `index.md`/per-folder index generation) |
 | `lint` | Validate wiki note frontmatter, allowed tags, source links, `source_count` |
 | `source-scan [--update] [--accept-covered]` | Walk `docs/sources/`; classify each file `new` / `update` / `duplicate` (absorbs the old `source-match` and base-spec `source-delta` meaning — "not in the manifest" is just "unprocessed"). With `--update`, write results to `docs/source-manifest.jsonl`. Skips version-controlled source types (no Raw file to scan) |
@@ -108,6 +120,7 @@ All commands are keyed off `source` (frontmatter field, formerly called `source_
 | `search-catalog --query "text"` | Search compiled wiki notes through the catalog |
 | `log --title "..." --details "..."` | Append entry to `docs/log.jsonl` |
 | `propose-pr --pages <list> --frame routine\|needs-review` | Branch + commit locally, framed per mutation type that triggered it (no real GitHub PR in v1) |
+| `config show` | Read-only: print the resolved configuration and which source (default/env/`pyproject.toml`/flag) each value came from |
 
 ## Testing strategy
 

@@ -1,14 +1,8 @@
 # DevOps Wiki
 
-## Pitch
-- Audience: leadership / other teams. Decision requested: approve this as an org-wide infra-documentation standard.
-- Concrete ask (near-term): approve a one-repo pilot, not an org-wide mandate. Repo selection is deferred until after approval.
-- Success signal for the pilot: qualitative (a retro/survey with the piloting team on doc trust and onboarding friction), not a hard quantitative metric.
-
 ## Problem
--  Keeping documentation up-to-date and accurate in an infrastructure repository.
--  The infrastructure repository will primarily contain the code required to provision infrastructure using Terraform and Helm.
--  The documentation should provide someone a basic understanding of who, what, where, when, and why.
+-  Keeping documentation up to date and accurate in a repository.
+-  The documentation should provide someone with a basic understanding of who, what, where, when, and why.
 
 ## Constraints
 -  Multiple people with different skill levels are reviewing and updating the code
