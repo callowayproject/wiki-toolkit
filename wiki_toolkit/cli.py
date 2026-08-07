@@ -10,6 +10,7 @@ import click
 
 from wiki_toolkit._io import read_jsonl, write_jsonl
 from wiki_toolkit.doctor import run_doctor
+from wiki_toolkit.init import run_init
 from wiki_toolkit.log import ALLOWED_LOG_ACTIONS, append_log_entry, build_log_entry
 from wiki_toolkit.settings import resolve_docs_dir
 from wiki_toolkit.sources import (
@@ -45,6 +46,21 @@ def config_show(docs_dir: Path | None) -> None:
     """Print the resolved docs_dir and which source (flag/env/pyproject/default) it came from."""
     resolved = resolve_docs_dir(flag=docs_dir)
     click.echo(f"docs_dir={resolved.docs_dir} (source: {resolved.source})")
+
+
+@cli.command()
+@click.option(
+    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
+)
+def init(docs_dir: Path | None) -> None:
+    """Scaffold a docs/ tree: sources/, wiki/, catalog.jsonl, log.jsonl, source-manifest.jsonl, schema.md."""
+    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
+    report = run_init(docs_dir)
+
+    for name in report.created:
+        click.echo(f"  [created] docs/{name}")
+    for name in report.already_present:
+        click.echo(f"  [already present] docs/{name}")
 
 
 @cli.command()

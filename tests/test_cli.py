@@ -35,6 +35,55 @@ def test_make_source_writes_frontmatter(tmp_path: Path, make_source) -> None:
     assert path.name == "issue-9.md"
 
 
+def test_init_creates_structure_on_a_bare_directory(tmp_path: Path, monkeypatch) -> None:
+    """Init on a bare directory creates all six items and exits 0."""
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["init"])
+
+    assert result.exit_code == 0
+    assert "[created] docs/schema.md" in result.output
+    assert (tmp_path / "docs" / "schema.md").is_file()
+    assert (tmp_path / "docs" / "sources").is_dir()
+    assert (tmp_path / "docs" / "wiki").is_dir()
+
+
+def test_init_honors_docs_dir_flag(tmp_path: Path, monkeypatch) -> None:
+    """Init --docs-dir scaffolds the overridden tree, not cwd/docs (which doesn't exist here)."""
+    override = tmp_path / "other-docs"
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    result = CliRunner().invoke(cli, ["init", "--docs-dir", str(override)])
+
+    assert result.exit_code == 0
+    assert (override / "schema.md").is_file()
+
+
+def test_init_is_idempotent_and_reports_already_present_items(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
+    """Re-running init against a fully-scaffolded tree reports every item as already present."""
+    make_docs_tree()
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["init"])
+
+    assert result.exit_code == 0
+    assert "[created]" not in result.output
+    assert "[already present] docs/schema.md" in result.output
+
+
+def test_init_then_doctor_reports_full_structure_present(tmp_path: Path, monkeypatch) -> None:
+    """Running doctor immediately after init reports the full structure as present."""
+    monkeypatch.chdir(tmp_path)
+    CliRunner().invoke(cli, ["init"])
+
+    result = CliRunner().invoke(cli, ["doctor"])
+
+    assert result.exit_code == 0
+    assert "MISSING" not in result.output
+
+
 def test_doctor_reports_missing_structure_and_exits_nonzero(tmp_path: Path, monkeypatch) -> None:
     """Doctor delegates to run_doctor and surfaces missing docs/ elements with a nonzero exit."""
     monkeypatch.chdir(tmp_path)
