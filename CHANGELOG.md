@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.15.0 (2026-08-07)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.14.0...0.15.0)
+
+### New
+
+- Add settings resolution module, config show, and doctor provenance line. [d71c432](https://github.com/callowayproject/wiki-toolkit/commit/d71c432c20f8704b5cdd11e59ba843e978b8bbdb)
+
+  Resolves docs_dir via CLI flag > WIKI_TOOLKIT_DOCS_DIR env > nearest
+  pyproject.toml [tool.wiki_toolkit] table > default, using
+  pydantic-settings for both the env and pyproject legs. Wires the
+  resolver into a new `config show` command and into `doctor`, whose
+  run_doctor now takes docs_dir directly instead of deriving it from
+  root.
+
+  Closes #55
+
+### Other
+
+- "Refactor and reorganize documentation, templates, and tooling". [bcf0e5f](https://github.com/callowayproject/wiki-toolkit/commit/bcf0e5ff6a6bfa28b930812cdde605be4bacff28)
+
+  - Removed redundant development-related documentation (`development.md`); integrated relevant content into `CODING_STANDARDS.md`.
+  - Created detailed Jinja2 templates for docstrings, including `parameters`, `raises`, `returns`, and `attributes` sections, supporting multiple styles (table, list, spacy).
+  - Updated CSS with specific styles for new templates (`doc-label-dataclass`).
+  - Refactored structure under `docs/`, merging and expanding tutorials with detailed step-by-step workflows.
+  - Added a new `README.md` with installation and usage instructions.
+
+### Updates
+
+- Remove outdated reference to `Developer Guide` in documentation. [981ee42](https://github.com/callowayproject/wiki-toolkit/commit/981ee422fa99b4041f69c8aee1306dcfb95eda45)
+
 ## 0.14.0 (2026-08-06)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.13.1...0.14.0)
