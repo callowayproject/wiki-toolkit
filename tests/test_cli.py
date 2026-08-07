@@ -662,7 +662,7 @@ def test_source_delta_unknown_source_exits_nonzero(tmp_path: Path, monkeypatch, 
 
     result = CliRunner().invoke(cli, ["source-delta", "jira:MISSING"])
 
-    assert result.exit_code == 1
+    assert result.exit_code == 2
     assert "jira:MISSING" in result.output
 
 
@@ -723,7 +723,7 @@ def test_source_snapshot_unknown_source_exits_nonzero(tmp_path: Path, monkeypatc
 
     result = CliRunner().invoke(cli, ["source-snapshot", "jira:MISSING", "--units", "comments"])
 
-    assert result.exit_code == 1
+    assert result.exit_code == 2
     assert "jira:MISSING" in result.output
 
 

@@ -6,7 +6,7 @@ import subprocess
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from difflib import SequenceMatcher
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import orjson
 import yaml
@@ -177,7 +177,7 @@ def scan_sources(docs_dir: Path, *, accept_covered: bool = False) -> SourceScanR
     return result
 
 
-def _stamp_frontmatter(path: Path, **fields: object) -> None:
+def _stamp_frontmatter(path: Path, **fields: Any) -> None:
     """Merge `fields` into a source file's frontmatter and write it back."""
     post = Post.loads(path.read_text(encoding="utf-8"))
     for key, value in fields.items():
@@ -353,10 +353,10 @@ class Delta:
     """Result of diffing a source's current content against its last-known revision on `main`."""
 
     new_comment_ids: list[str] = field(default_factory=list)
-    changed_fields: dict[str, tuple[object, object]] = field(default_factory=dict)
+    changed_fields: dict[str, tuple[Any, Any]] = field(default_factory=dict)
 
 
-def diff_content_fields(old: dict, new: dict) -> dict[str, tuple[object, object]]:
+def diff_content_fields(old: dict, new: dict) -> dict[str, tuple[Any, Any]]:
     """Diff two frontmatter metadata dicts, excluding CLI bookkeeping fields (`processed`, `duplicate`, `source`).
 
     Returns `{field: (old_value, new_value)}` for every field that was added, removed, or changed.
