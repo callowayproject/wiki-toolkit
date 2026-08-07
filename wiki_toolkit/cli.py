@@ -228,8 +228,7 @@ def source_delta(source: str, docs_dir: Path | None) -> None:
     try:
         delta = compute_source_delta(docs_dir, source)
     except ValueError as e:
-        click.echo(str(e))
-        raise SystemExit(1) from e
+        raise click.UsageError(str(e)) from e
 
     if not delta.changed_fields and not delta.new_comment_ids:
         click.echo("No changes since last-known revision.")
@@ -258,8 +257,7 @@ def source_snapshot(source: str, units: str, docs_dir: Path | None) -> None:
     try:
         result = write_source_snapshot(docs_dir, source, units)
     except ValueError as e:
-        click.echo(str(e))
-        raise SystemExit(1) from e
+        raise click.UsageError(str(e)) from e
 
     click.echo(f"Wrote {result.units} snapshot for {result.source} ({result.path}), update_sha={result.update_sha}")
 
@@ -291,8 +289,7 @@ def propose_pr_cmd(pages: tuple[str, ...], frame: str) -> None:
     try:
         result = propose_pr(Path.cwd(), list(pages), frame)
     except ValueError as e:
-        click.echo(str(e))
-        raise SystemExit(1) from e
+        raise click.UsageError(str(e)) from e
 
     click.echo(f"Created branch {result.branch} (commit {result.commit_sha[:10]}, frame={result.frame})")
     for page in result.pages:
