@@ -79,9 +79,12 @@ def doctor(docs_dir: Path | None) -> None:
 
 
 @cli.command()
-def build() -> None:
+@click.option(
+    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
+)
+def build(docs_dir: Path | None) -> None:
     """Regenerate docs/catalog.jsonl from the current docs/wiki/ notes."""
-    docs_dir = Path.cwd() / "docs"
+    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
     result = build_catalog(docs_dir)
 
     write_jsonl(docs_dir / "catalog.jsonl", [asdict(entry) for entry in result.entries])
@@ -90,9 +93,12 @@ def build() -> None:
 
 
 @cli.command()
-def lint() -> None:
+@click.option(
+    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
+)
+def lint(docs_dir: Path | None) -> None:
     """Validate wiki note frontmatter, allowed tags, source links, and source_count."""
-    docs_dir = Path.cwd() / "docs"
+    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
     result = lint_wiki(docs_dir)
 
     for violation in result.violations:
@@ -107,9 +113,12 @@ def lint() -> None:
 @cli.command("source-scan")
 @click.option("--update", "update_manifest", is_flag=True, help="Write results into docs/source-manifest.jsonl.")
 @click.option("--accept-covered", is_flag=True, help="Accept updates to sources already covered by a wiki note.")
-def source_scan(update_manifest: bool, accept_covered: bool) -> None:
+@click.option(
+    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
+)
+def source_scan(update_manifest: bool, accept_covered: bool, docs_dir: Path | None) -> None:
     """Classify docs/sources/ files as new, update, or duplicate."""
-    docs_dir = Path.cwd() / "docs"
+    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
     result = scan_sources(docs_dir, accept_covered=accept_covered)
 
     for entry in result.entries:
@@ -129,9 +138,12 @@ def source_scan(update_manifest: bool, accept_covered: bool) -> None:
 
 
 @cli.command("source-lint")
-def source_lint() -> None:
+@click.option(
+    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
+)
+def source_lint(docs_dir: Path | None) -> None:
     """Validate docs/sources/ frontmatter and report processed-but-uncovered sources."""
-    docs_dir = Path.cwd() / "docs"
+    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
     result = lint_sources(docs_dir)
 
     for violation in result.violations:
@@ -149,9 +161,12 @@ def source_lint() -> None:
 
 
 @cli.command("source-coverage")
-def source_coverage_cmd() -> None:
+@click.option(
+    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
+)
+def source_coverage_cmd(docs_dir: Path | None) -> None:
     """Show which docs/sources/ files are covered by at least one wiki note."""
-    docs_dir = Path.cwd() / "docs"
+    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
     result = source_coverage(docs_dir)
 
     for entry in result.covered:
@@ -163,9 +178,12 @@ def source_coverage_cmd() -> None:
 
 
 @cli.command("source-dedupe")
-def source_dedupe() -> None:
+@click.option(
+    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
+)
+def source_dedupe(docs_dir: Path | None) -> None:
     """Suggest which docs/sources/ file to keep per group sharing a source id with a duplicate: true file."""
-    docs_dir = Path.cwd() / "docs"
+    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
     result = suggest_dedupe(docs_dir)
 
     for violation in result.violations:
@@ -185,9 +203,12 @@ def source_dedupe() -> None:
 
 @cli.command("source-delta")
 @click.argument("source")
-def source_delta(source: str) -> None:
+@click.option(
+    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
+)
+def source_delta(source: str, docs_dir: Path | None) -> None:
     """Diff a source's current content against its last-known revision on main."""
-    docs_dir = Path.cwd() / "docs"
+    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
     try:
         delta = compute_source_delta(docs_dir, source)
     except ValueError as e:
@@ -212,9 +233,12 @@ def source_delta(source: str) -> None:
 @click.option(
     "--units", type=click.Choice(ALLOWED_SNAPSHOT_UNITS), required=True, help="Mutation type driving this snapshot."
 )
-def source_snapshot(source: str, units: str) -> None:
+@click.option(
+    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
+)
+def source_snapshot(source: str, units: str, docs_dir: Path | None) -> None:
     """Write a new Raw snapshot unit for SOURCE, for a comments or fields mutation."""
-    docs_dir = Path.cwd() / "docs"
+    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
     try:
         result = write_source_snapshot(docs_dir, source, units)
     except ValueError as e:
@@ -226,9 +250,12 @@ def source_snapshot(source: str, units: str) -> None:
 
 @cli.command("search-catalog")
 @click.option("--query", required=True, help="Text to search for in catalog entry titles and paths.")
-def search_catalog_cmd(query: str) -> None:
+@click.option(
+    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
+)
+def search_catalog_cmd(query: str, docs_dir: Path | None) -> None:
     """Search docs/catalog.jsonl for entries matching --query."""
-    docs_dir = Path.cwd() / "docs"
+    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
     entries = read_jsonl(docs_dir / "catalog.jsonl")
     matches = search_catalog(query, entries)
 
@@ -260,9 +287,12 @@ def propose_pr_cmd(pages: tuple[str, ...], frame: str) -> None:
 @click.option("--title", "message", required=True, help="Short message describing the event.")
 @click.option("--details", required=True, help="Additional detail about the event.")
 @click.option("--action", type=click.Choice(ALLOWED_LOG_ACTIONS), required=True, help="Event category.")
-def log(message: str, details: str, action: str) -> None:
+@click.option(
+    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
+)
+def log(message: str, details: str, action: str, docs_dir: Path | None) -> None:
     """Append a structured entry to docs/log.jsonl."""
-    docs_dir = Path.cwd() / "docs"
+    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
     entry = build_log_entry(action, message, details)
     append_log_entry(docs_dir, entry)
 
