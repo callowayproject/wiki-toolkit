@@ -11,6 +11,7 @@ import click
 from wiki_toolkit._io import read_jsonl, write_jsonl
 from wiki_toolkit.doctor import run_doctor
 from wiki_toolkit.log import ALLOWED_LOG_ACTIONS, append_log_entry, build_log_entry
+from wiki_toolkit.settings import resolve_docs_dir
 from wiki_toolkit.sources import (
     ALLOWED_SNAPSHOT_UNITS,
     apply_source_scan,
@@ -31,12 +32,32 @@ def cli() -> None:
     """AI skills and helper tools that implement and maintain an LLM Wiki."""
 
 
+@cli.group()
+def config() -> None:
+    """Inspect wiki_toolkit's resolved configuration."""
+
+
+@config.command("show")
+@click.option(
+    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
+)
+def config_show(docs_dir: Path | None) -> None:
+    """Print the resolved docs_dir and which source (flag/env/pyproject/default) it came from."""
+    resolved = resolve_docs_dir(flag=docs_dir)
+    click.echo(f"docs_dir={resolved.docs_dir} (source: {resolved.source})")
+
+
 @cli.command()
-def doctor() -> None:
+@click.option(
+    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
+)
+def doctor(docs_dir: Path | None) -> None:
     """Non-mutating health check of the wiki's docs/ structure and git clone."""
-    report = run_doctor(Path.cwd())
+    resolved = resolve_docs_dir(flag=docs_dir)
+    report = run_doctor(resolved.docs_dir, root=Path.cwd(), docs_dir_source=resolved.source)
 
     click.echo(f"Python: {report.python_version}")
+    click.echo(f"Config: docs_dir={report.docs_dir} (source: {report.docs_dir_source})")
     click.echo(f"Notes in docs/wiki/: {report.note_count}")
 
     for name in report.present_structure:

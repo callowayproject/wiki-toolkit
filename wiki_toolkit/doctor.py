@@ -13,6 +13,8 @@ from wiki_toolkit.sources import SOURCE_MANIFEST_FILENAME
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from wiki_toolkit.settings import ConfigSource
+
 DOCS_DIRS = ("sources", "wiki")
 DOCS_FILES = ("catalog.jsonl", "log.jsonl", "schema.md", SOURCE_MANIFEST_FILENAME)
 DOCS_STRUCTURE = (*DOCS_FILES, *DOCS_DIRS)
@@ -24,6 +26,8 @@ class DoctorReport:
     """Result of a `doctor` health check. Non-mutating: built entirely from reads."""
 
     python_version: str
+    docs_dir: Path
+    docs_dir_source: ConfigSource
     missing_structure: list[str] = field(default_factory=list)
     present_structure: list[str] = field(default_factory=list)
     note_count: int = 0
@@ -67,10 +71,15 @@ def validate_jsonl(path: Path) -> list[str]:
     return errors
 
 
-def run_doctor(root: Path) -> DoctorReport:
-    """Run the non-mutating `doctor` health check against a wiki rooted at `root`."""
-    docs_dir = root / "docs"
-    report = DoctorReport(python_version=sys.version.split()[0])
+def run_doctor(docs_dir: Path, root: Path | None = None, docs_dir_source: ConfigSource = "default") -> DoctorReport:
+    """Run the non-mutating `doctor` health check against `docs_dir`.
+
+    `root` is the git repository root used for the shallow-clone check; it
+    defaults to `docs_dir`'s parent, the common case where `docs_dir` is a
+    `docs/` subdirectory of the repo.
+    """
+    root = root if root is not None else docs_dir.parent
+    report = DoctorReport(python_version=sys.version.split()[0], docs_dir=docs_dir, docs_dir_source=docs_dir_source)
 
     for name in DOCS_FILES:
         if (docs_dir / name).is_file():
