@@ -23,7 +23,7 @@ def test_run_doctor_reports_all_structure_present(tmp_path: Path, make_docs_tree
     """A fully-scaffolded docs/ tree has no missing structure entries."""
     make_docs_tree()
 
-    report = run_doctor(tmp_path)
+    report = run_doctor(tmp_path / "docs")
 
     assert report.missing_structure == []
     assert set(report.present_structure) == set(DOCS_STRUCTURE)
@@ -33,7 +33,7 @@ def test_run_doctor_reports_missing_structure(tmp_path: Path) -> None:
     """Absent docs/ elements are reported by name, nothing crashes."""
     (tmp_path / "docs").mkdir()
 
-    report = run_doctor(tmp_path)
+    report = run_doctor(tmp_path / "docs")
 
     assert set(report.missing_structure) == set(DOCS_STRUCTURE)
     assert report.present_structure == []
@@ -46,7 +46,7 @@ def test_run_doctor_counts_wiki_notes(tmp_path: Path, make_docs_tree: Callable[[
     (docs_dir / "wiki" / "a.md").write_text("# a")
     (docs_dir / "wiki" / "b.md").write_text("# b")
 
-    report = run_doctor(tmp_path)
+    report = run_doctor(tmp_path / "docs")
 
     assert report.note_count == 2
 
@@ -56,11 +56,21 @@ def test_run_doctor_flags_malformed_jsonl(tmp_path: Path, make_docs_tree: Callab
     docs_dir = make_docs_tree()
     (docs_dir / "catalog.jsonl").write_text('{"path": "a.md"}\nnot json\n')
 
-    report = run_doctor(tmp_path)
+    report = run_doctor(tmp_path / "docs")
 
     assert "catalog.jsonl" in report.jsonl_errors
     assert "line 2" in report.jsonl_errors["catalog.jsonl"][0]
     assert report.ok is False
+
+
+def test_run_doctor_reports_docs_dir_and_source(tmp_path: Path, make_docs_tree: Callable[[], Path]) -> None:
+    """The report carries the docs_dir it was given and the source it was told to attribute."""
+    make_docs_tree()
+
+    report = run_doctor(tmp_path / "docs", docs_dir_source="env")
+
+    assert report.docs_dir == tmp_path / "docs"
+    assert report.docs_dir_source == "env"
 
 
 def test_validate_jsonl_skips_blank_lines(tmp_path: Path) -> None:

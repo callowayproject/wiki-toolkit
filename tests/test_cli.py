@@ -58,6 +58,47 @@ def test_doctor_exits_zero_on_healthy_docs_tree(tmp_path: Path, monkeypatch, mak
     assert "MALFORMED" not in result.output
 
 
+def test_doctor_reports_resolved_config_and_source(tmp_path: Path, monkeypatch) -> None:
+    """Doctor's output includes the resolved docs_dir and which source produced it."""
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["doctor"])
+
+    assert f"Config: docs_dir={tmp_path / 'docs'} (source: default)" in result.output
+
+
+def test_doctor_docs_dir_flag_is_reported_as_source(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
+    """A --docs-dir flag overrides resolution and is reported as the 'flag' source."""
+    docs_dir = make_docs_tree()
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["doctor", "--docs-dir", str(docs_dir)])
+
+    assert f"Config: docs_dir={docs_dir} (source: flag)" in result.output
+    assert result.exit_code == 0
+
+
+def test_config_show_prints_resolved_docs_dir_and_source(tmp_path: Path, monkeypatch) -> None:
+    """`config show` prints the resolved docs_dir and its source, without mutating anything."""
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["config", "show"])
+
+    assert result.exit_code == 0
+    assert f"docs_dir={tmp_path / 'docs'} (source: default)" in result.output
+
+
+def test_config_show_honors_docs_dir_flag(tmp_path: Path, monkeypatch) -> None:
+    """`config show --docs-dir` reports the flag value with source 'flag'."""
+    monkeypatch.chdir(tmp_path)
+    override = tmp_path / "other-docs"
+
+    result = CliRunner().invoke(cli, ["config", "show", "--docs-dir", str(override)])
+
+    assert result.exit_code == 0
+    assert f"docs_dir={override} (source: flag)" in result.output
+
+
 def test_build_writes_catalog(tmp_path: Path, monkeypatch, make_docs_tree, make_wiki_note) -> None:
     """Build writes one catalog entry per note in docs/wiki/ and exits 0."""
     docs_dir = make_docs_tree()

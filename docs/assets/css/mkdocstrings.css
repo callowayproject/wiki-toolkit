@@ -3,6 +3,9 @@ div.doc-contents:not(.first) {
   padding-left: 25px;
   border-left: .05rem solid var(--md-typeset-table-color);
 }
+.doc-label-dataclass {
+  background-color: var(--md-typeset-a-color);
+}
 
 /* Mark external links as such. */
 a.external::after,

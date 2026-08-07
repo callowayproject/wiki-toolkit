@@ -3,6 +3,7 @@ repo_url: https://github.com/callowayproject/wiki-toolkit
 edit_uri: edit/main/docs/
 theme:
   name: material
+  custom_dir: overrides
   logo: assets/logo.png
   favicon: assets/favicon.png
   features:
