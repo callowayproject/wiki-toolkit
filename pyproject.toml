@@ -73,6 +73,9 @@ wiki-toolkit = "wiki_toolkit.cli:cli"
 [tool.hatch.version]
 path = "wiki_toolkit/__init__.py"
 
+[tool.hatch.build.targets.wheel.force-include]
+"skills" = "wiki_toolkit/skills"
+
 [[tool.mypy.overrides]]
 module = "frontmatter"
 ignore_missing_imports = true

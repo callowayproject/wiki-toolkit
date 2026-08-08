@@ -1,15 +1,15 @@
 """Scaffolds a bare docs/ tree with the structure `doctor` expects."""
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from importlib.metadata import version
+from pathlib import Path
 
 from wiki_toolkit.sources import SOURCE_MANIFEST_FILENAME
 
-if TYPE_CHECKING:
-    from pathlib import Path
-
 INIT_DIRS = ("sources", "wiki")
 INIT_EMPTY_FILES = ("catalog.jsonl", "log.jsonl", SOURCE_MANIFEST_FILENAME)
+SKILL_NAMES = ("ingest", "lint", "maintain", "query", "source-update")
+PROVENANCE_FILENAME = ".provenance"
 
 SCHEMA_TEMPLATE = """# Wiki Schema
 
@@ -51,6 +51,14 @@ Rule: every tag on a page must appear in this taxonomy. If a new tag is needed, 
 """
 
 
+def _skills_source_dir() -> Path:
+    """Locate the shipped skills/ directory: packaged wheel data, else the repo-root dev checkout."""
+    packaged = Path(__file__).resolve().parent / "skills"
+    if packaged.is_dir():
+        return packaged
+    return Path(__file__).resolve().parent.parent / "skills"
+
+
 @dataclass
 class InitReport:
     """Result of `init`: which docs/ items were created vs already present."""
@@ -86,5 +94,18 @@ def run_init(docs_dir: Path) -> InitReport:
     else:
         schema_path.write_text(SCHEMA_TEMPLATE, encoding="utf-8")
         report.created.append("schema.md")
+
+    skills_dir = docs_dir / ".agents" / "skills"
+    if skills_dir.is_dir():
+        report.already_present.append(".agents/skills")
+    else:
+        source_dir = _skills_source_dir()
+        for name in SKILL_NAMES:
+            content = (source_dir / name / "SKILL.md").read_text(encoding="utf-8")
+            dest = skills_dir / name / "SKILL.md"
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_text(content, encoding="utf-8")
+        (skills_dir / PROVENANCE_FILENAME).write_text(version("wiki_toolkit"), encoding="utf-8")
+        report.created.append(".agents/skills")
 
     return report
