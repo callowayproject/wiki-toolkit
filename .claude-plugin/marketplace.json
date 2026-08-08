@@ -1,0 +1,17 @@
+{
+  "name": "wiki-toolkit",
+  "version": "0.18.0",
+  "description": "Skills for building and maintaining an LLM Wiki with wiki_toolkit.",
+  "repository": "https://github.com/callowayproject/wiki-toolkit",
+  "owner": {
+    "name": "Corey Oordt",
+    "email": "coreyoordt@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "wiki-toolkit",
+      "source": "./",
+      "description": "Ingest sources and query the catalog of an LLM Wiki managed by wiki_toolkit."
+    }
+  ]
+}
