@@ -11,7 +11,7 @@
     {
       "name": "wiki-toolkit",
       "source": "./",
-      "description": "Ingest sources and query the catalog of an LLM Wiki managed by wiki_toolkit."
+      "description": "Ingest sources, query the catalog, and lint an LLM Wiki managed by wiki_toolkit."
     }
   ]
 }
