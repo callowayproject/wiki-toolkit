@@ -1,6 +1,6 @@
 {
   "name": "wiki-toolkit",
-  "description": "Skills for building and maintaining an LLM Wiki: ingest new sources through the write gate, and query the catalog with citations.",
+  "description": "Skills for building and maintaining an LLM Wiki: ingest new sources through the write gate, query the catalog with citations, and lint for structural and semantic issues.",
   "version": "0.18.0",
   "author": {
     "name": "Corey Oordt",
