@@ -43,9 +43,11 @@ def test_init_creates_structure_on_a_bare_directory(tmp_path: Path, monkeypatch)
 
     assert result.exit_code == 0
     assert "[created] docs/schema.md" in result.output
+    assert "[created] docs/.agents/skills" in result.output
     assert (tmp_path / "docs" / "schema.md").is_file()
     assert (tmp_path / "docs" / "sources").is_dir()
     assert (tmp_path / "docs" / "wiki").is_dir()
+    assert (tmp_path / "docs" / ".agents" / "skills" / "ingest" / "SKILL.md").is_file()
 
 
 def test_init_honors_docs_dir_flag(tmp_path: Path, monkeypatch) -> None:

@@ -1,20 +1,21 @@
 """Unit tests for wiki_toolkit.init."""
 
+from importlib.metadata import version
 from typing import TYPE_CHECKING
 
-from wiki_toolkit.init import INIT_DIRS, INIT_EMPTY_FILES, SCHEMA_TEMPLATE, run_init
+from wiki_toolkit.init import INIT_DIRS, INIT_EMPTY_FILES, SCHEMA_TEMPLATE, SKILL_NAMES, run_init
 
 if TYPE_CHECKING:
     from pathlib import Path
 
 
 def test_run_init_creates_all_structure_on_a_bare_directory(tmp_path: Path) -> None:
-    """Init on an empty docs/ dir creates all six items and reports them as created."""
+    """Init on an empty docs/ dir creates all seven items and reports them as created."""
     docs_dir = tmp_path / "docs"
 
     report = run_init(docs_dir)
 
-    assert set(report.created) == {*INIT_DIRS, *INIT_EMPTY_FILES, "schema.md"}
+    assert set(report.created) == {*INIT_DIRS, *INIT_EMPTY_FILES, "schema.md", ".agents/skills"}
     assert report.already_present == []
     for name in INIT_DIRS:
         assert (docs_dir / name).is_dir()
@@ -22,6 +23,32 @@ def test_run_init_creates_all_structure_on_a_bare_directory(tmp_path: Path) -> N
         assert (docs_dir / name).is_file()
         assert not (docs_dir / name).read_text(encoding="utf-8")
     assert (docs_dir / "schema.md").is_file()
+
+
+def test_run_init_copies_the_five_skills_with_a_provenance_marker(tmp_path: Path) -> None:
+    """Fresh init copies each SKILL.md and records the current package version."""
+    docs_dir = tmp_path / "docs"
+
+    run_init(docs_dir)
+
+    skills_dir = docs_dir / ".agents" / "skills"
+    for name in SKILL_NAMES:
+        assert (skills_dir / name / "SKILL.md").is_file()
+    assert (skills_dir / ".provenance").read_text(encoding="utf-8") == version("wiki_toolkit")
+
+
+def test_run_init_skills_copy_is_idempotent(tmp_path: Path) -> None:
+    """A second init run reports the skills copy as already-present and leaves it untouched."""
+    docs_dir = tmp_path / "docs"
+    run_init(docs_dir)
+    skills_dir = docs_dir / ".agents" / "skills"
+    (skills_dir / "ingest" / "SKILL.md").write_text("hand-edited", encoding="utf-8")
+
+    report = run_init(docs_dir)
+
+    assert ".agents/skills" in report.already_present
+    assert ".agents/skills" not in report.created
+    assert (skills_dir / "ingest" / "SKILL.md").read_text(encoding="utf-8") == "hand-edited"
 
 
 def test_run_init_writes_schema_matching_toolkit_spec_verbatim(tmp_path: Path) -> None:
@@ -47,5 +74,5 @@ def test_run_init_is_idempotent_and_never_clobbers_existing_files(tmp_path: Path
 
     second_report = run_init(docs_dir)
 
-    assert set(second_report.already_present) == {*INIT_DIRS, *INIT_EMPTY_FILES, "schema.md"}
+    assert set(second_report.already_present) == {*INIT_DIRS, *INIT_EMPTY_FILES, "schema.md", ".agents/skills"}
     assert second_report.created == []

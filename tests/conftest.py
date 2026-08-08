@@ -64,6 +64,7 @@ def make_docs_tree(tmp_path: Path) -> Callable[[], Path]:
         (docs_dir / "log.jsonl").write_text("")
         (docs_dir / "schema.md").write_text("# schema")
         (docs_dir / "source-manifest.jsonl").write_text('{"source": "s1"}\n')
+        (docs_dir / ".agents" / "skills").mkdir(parents=True)
         return docs_dir
 
     return _make_docs_tree
