@@ -1,5 +1,56 @@
 # Changelog
 
+## 0.18.1 (2026-08-08)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.18.0...0.18.1)
+
+### New
+
+- Add maintain skill. [b2ab34d](https://github.com/callowayproject/wiki-toolkit/commit/b2ab34df704351884a8914913d57334d048199a1)
+
+  Orchestrates lint, source-update, and ingest per the periodic sweep
+  described in issue #73, delegating instead of duplicating their logic.
+
+- Add source-update skill. [3f4c78d](https://github.com/callowayproject/wiki-toolkit/commit/3f4c78d23c24a812cf83553cf4eab4d9eb42baba)
+
+  Refreshes wiki pages for sources whose fields changed since the last
+  Raw revision on main, using source-scan --update + source-delta.
+  Closes #72.
+
+- Add lint skill. [030ae33](https://github.com/callowayproject/wiki-toolkit/commit/030ae332d88f7963849330e33174c89823c962c9)
+
+  Implements issue #71: skills/lint/SKILL.md runs the deterministic
+  lint/source-lint/source-coverage trio, then a semantic pass for
+  contradictions, staleness, orphan pages, and missing cross-references.
+  Mechanical fixes (e.g. a missing wikilink) route through the write gate
+  with --frame needs-review; contradictions and staleness are surfaced in
+  the report only. Manually verified end-to-end against a scaffolded wiki
+  with a seeded source_count violation and a seeded orphan page.
+
+- Add plugin scaffold and ingest/query skills (#70). [5f13181](https://github.com/callowayproject/wiki-toolkit/commit/5f13181f715191d6f65dd6fc76f8229de8bf25ac)
+
+  Adds the installable plugin skeleton (.claude-plugin/plugin.json,
+  marketplace.json) plus skills/ingest and skills/query, whose command
+  sequences were manually verified end-to-end against a scaffolded
+  docs/ tree (source-scan -> write page -> build -> lint -> log ->
+  propose-pr, and search-catalog -> cite -> optional write-back).
+
+### Other
+
+- Extend init to scaffold a local copy of the five skills (#74). [6de3a83](https://github.com/callowayproject/wiki-toolkit/commit/6de3a83a57b4846ad608e44abdf0c4ce12e9a108)
+
+  run_init now copies each skills/<name>/SKILL.md into
+  docs/.agents/skills/ and writes a .provenance file recording the
+  installed wiki_toolkit version. Idempotent: reports an existing copy
+  as already-present without touching it, matching the pattern used for
+  every other scaffolded item.
+
+  Packages skills/ into the wheel (wiki_toolkit/skills/) via hatch
+  force-include, since the plugin's skills/ directory lives at the repo
+  root but run_init needs it available post-install too.
+
+- Extend command allowlist to include `git checkout`. [ba6ce8d](https://github.com/callowayproject/wiki-toolkit/commit/ba6ce8d7d9004d908f3637147cfb36de70ddd7c0)
+
 ## 0.18.0 (2026-08-08)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.17.0...0.18.0)
