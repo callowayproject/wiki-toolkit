@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.18.0 (2026-08-08)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.17.0...0.18.0)
+
+### Updates
+
+- Remove dead Delta.new_comment_ids field. [23eabc4](https://github.com/callowayproject/wiki-toolkit/commit/23eabc4ddef6a9d41e7fbaa930363efbb400c6d4)
+
+  comments now materialize as new Raw sources via ingest, never
+  source-update, so the field compute_source_delta never populated
+  had no reader left.
+
+  Fixes #69
+
 ## 0.17.0 (2026-08-07)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.16.0...0.17.0)
