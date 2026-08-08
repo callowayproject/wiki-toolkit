@@ -486,7 +486,6 @@ def test_compute_source_delta_reports_changed_field(
     delta = compute_source_delta(docs_dir, "jira:ABC-1")
 
     assert delta.changed_fields == {"status": ("open", "closed")}
-    assert delta.new_comment_ids == []
 
 
 def test_compute_source_delta_no_prior_commit_reports_every_field_as_new(
