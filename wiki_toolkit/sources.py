@@ -352,7 +352,6 @@ BOOKKEEPING_FIELDS = {"processed", "duplicate", "source"}
 class Delta:
     """Result of diffing a source's current content against its last-known revision on `main`."""
 
-    new_comment_ids: list[str] = field(default_factory=list)
     changed_fields: dict[str, tuple[Any, Any]] = field(default_factory=dict)
 
 
