@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.18.2 (2026-08-09)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.18.1...0.18.2)
+
+### Other
+
+- Warn in doctor on skills-copy version drift (#75). [90f9b4b](https://github.com/callowayproject/wiki-toolkit/commit/90f9b4b81ef2c65a544ebb88de4457227d991b5f)
+
+  Extend `run_doctor` to compare docs/.agents/skills/.provenance against
+  the installed wiki_toolkit version and surface drift as a blocking
+  warning, consistent with how doctor already gates on shallow clones
+  and malformed JSONL. Non-mutating: doctor never touches local files.
+
+- Refine ingest skill documentation for clarity and precision. Streamlined instructions and adjusted formatting for consistency. [3f1bed4](https://github.com/callowayproject/wiki-toolkit/commit/3f1bed45081076a8946eddf6363a0d227583ebe8)
+
 ## 0.18.1 (2026-08-08)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.18.0...0.18.1)
