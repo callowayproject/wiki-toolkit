@@ -1346,6 +1346,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#wiki_toolkit.doctor.check_skills_version_drift" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;check_skills_version_drift
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#wiki_toolkit.doctor.run_doctor" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1858,6 +1869,14 @@
               </td>
             </tr>
             <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            check_skills_version_drift (wiki_toolkit.doctor.check_skills_version_drift)" href="#wiki_toolkit.doctor.check_skills_version_drift">check_skills_version_drift</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Compare the local <code>.agents/skills/.provenance</code> version to the installed <code>wiki_toolkit</code> version.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
               <td><code><a class="autorefs autorefs-internal" title="            run_doctor (wiki_toolkit.doctor.run_doctor)" href="#wiki_toolkit.doctor.run_doctor">run_doctor</a></code></td>
               <td class="doc-function-details">
                 <div class="doc-md-description">
@@ -1912,6 +1931,7 @@
     <span class="n">note_count</span><span class="p">:</span> <span class="n"><span title="int">int</span></span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">is_shallow_clone</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">jsonl_errors</span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]]</span> <span class="o">=</span> <span class="n"><span title="dict">dict</span></span><span class="p">(),</span>
+    <span class="n">skills_version_drift</span><span class="p">:</span> <span class="n"><span title="tuple">tuple</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="str">str</span></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
 
@@ -1951,7 +1971,7 @@
    (wiki_toolkit.doctor.DoctorReport.ok)" href="#wiki_toolkit.doctor.DoctorReport.ok">ok</a></code></td>
             <td class="doc-attribute-details">
               <div class="doc-md-description">
-                <p>True if no missing structure, no shallow clone, and no malformed JSONL.</p>
+                <p>True if no missing structure, no shallow clone, no malformed JSONL, and no skills version drift.</p>
               </div>
               <p>
                   <span class="doc-attribute-annotation">
@@ -1993,7 +2013,7 @@
 
     <div class="doc doc-contents ">
 
-        <p>True if no missing structure, no shallow clone, and no malformed JSONL.</p>
+        <p>True if no missing structure, no shallow clone, no malformed JSONL, and no skills version drift.</p>
 
     </div>
 
@@ -2025,6 +2045,28 @@
     <div class="doc doc-contents ">
 
         <p>Return True if <code>root</code> is a shallow git clone, False if not, None if not a git repo.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wiki_toolkit.doctor.check_skills_version_drift" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">check_skills_version_drift</span>
+
+
+<a href="#wiki_toolkit.doctor.check_skills_version_drift" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">check_skills_version_drift</span><span class="p">(</span><span class="n">docs_dir</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="tuple">tuple</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="str">str</span></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Compare the local <code>.agents/skills/.provenance</code> version to the installed <code>wiki_toolkit</code> version.</p>
+<p>Returns <code>(local_version, installed_version)</code> if they differ, <code>None</code> if they match
+or no local copy&rsquo;s provenance marker exists.</p>
 
 
     </div>
