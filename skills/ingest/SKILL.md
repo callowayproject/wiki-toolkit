@@ -5,38 +5,37 @@ description: Drive a brand-new or updated source through the wiki_toolkit write 
 
 # ingest
 
-Turn one source under `docs/sources/` into a reviewed wiki page. Every step
-in this sequence is required, in order — do not skip straight to writing the
-page.
+You are ingesting source documents into an Obsidian wiki.
+Your job is not to summarize, it is to distill and integrate** knowledge across the entire wiki.
+Every step in this sequence is required, in order.
+Do not skip straight to writing the page.
 
 ## Sequence
 
 1. **`wiki-toolkit source-scan --update`**
-   Classifies every file in `docs/sources/` as new, update, or duplicate and
-   writes the result to `docs/source-manifest.jsonl`. If a source needs
-   `--accept-covered` (an update to a source already covered by a wiki note),
+   Classifies every source file as new, update, or duplicate and writes the result to `source-manifest.jsonl`.
+   If a source needs `--accept-covered` (an update to a source already covered by a wiki note),
    re-run with that flag once you've confirmed the update is real.
 
-2. **Write or update the wiki page(s)** in `docs/wiki/`, following
-   `docs/schema.md`:
+2. **Write or update the wiki page(s)** in the `wiki/`, following `schema.md`:
    - YAML frontmatter (`title`, `created`, `updated`, `tags`, `sources`,
      `source_count`, `status`) — `source_count` must equal `len(sources)`.
-   - Every tag must already exist in `docs/schema.md`'s tag taxonomy; add the
-     tag there first if it's new.
+   - Every tag must already exist in `schema.md`'s tag taxonomy; add the tag there first if it's new.
    - At least 2 outbound `[[wikilink]]`s to other wiki pages.
-   - Cite the source: list its id under `sources:` frontmatter, and add
-     `^[source_id]` at the end of any paragraph whose claim comes from a
-     specific source when the page synthesizes 3+ sources.
+     If fewer than 2 related pages exist, create minimal stub pages for the most important concepts mentioned.
+   - Cite the source: list its id under `sources:` frontmatter, and add `^[source_id]` at the end of any paragraph whose
+     claim comes from a specific source when the page synthesizes 3+ sources.
    - If the source is `proposed` (not yet resolved), mark the page (or the
      relevant section) `status: proposed` / "Proposed change".
+   - Use the [ingest-prompts](ingest-prompts.md) for writing pages.
 
 3. **`wiki-toolkit build`**
-   Regenerates `docs/catalog.jsonl` from `docs/wiki/`. Run after every page
-   write so the catalog stays in sync.
+   Regenerates `docs/catalog.jsonl` from `docs/wiki/`.
+   Run after every page write so the catalog stays in sync.
 
 4. **`wiki-toolkit lint`**
-   Validates frontmatter, tag taxonomy, source links, and `source_count`. Fix
-   any `[VIOLATION]` it reports and re-run `lint` until it passes clean.
+   Validates frontmatter, tag taxonomy, source links, and `source_count`.
+   Fix any `[VIOLATION]` it reports and re-run `lint` until it passes clean.
 
 5. **`wiki-toolkit log --action ingest --title "..." --details "..."`**
    Appends a structured entry to `docs/log.jsonl` describing what was
@@ -51,9 +50,7 @@ page.
 
 ## Rules
 
-- Never write a wiki page without a corresponding source in
-  `docs/source-manifest.jsonl` — run `source-scan` first.
-- Never skip `build` or `lint` between writing a page and logging/proposing
-  it — `propose-pr` should always land on a lint-clean catalog.
-- One ingest = one `log` entry and one `propose-pr` call, even when it
-  touches several pages.
+- Never write a wiki page without a corresponding source in `docs/source-manifest.jsonl` — run `source-scan` first.
+- Never skip `build` or `lint` between writing a page and logging/proposing it.
+  `propose-pr` should always land on a lint-clean catalog.
+- One ingest = one `log` entry and one `propose-pr` call, even when it touches several pages.
