@@ -8,6 +8,7 @@ import orjson
 from click.testing import CliRunner
 
 from wiki_toolkit.cli import cli
+from wiki_toolkit.init import PROVENANCE_FILENAME
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -127,6 +128,19 @@ def test_doctor_docs_dir_flag_is_reported_as_source(tmp_path: Path, monkeypatch,
 
     assert f"Config: docs_dir={docs_dir} (source: flag)" in result.output
     assert result.exit_code == 0
+
+
+def test_doctor_reports_skills_version_drift(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
+    """Doctor warns and exits nonzero when the local skills copy's provenance version is stale."""
+    docs_dir = make_docs_tree()
+    (docs_dir / ".agents" / "skills" / PROVENANCE_FILENAME).write_text("0.0.1", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["doctor"])
+
+    assert result.exit_code == 1
+    assert "0.0.1" in result.output
+    assert "re-run init" in result.output
 
 
 def test_config_show_prints_resolved_docs_dir_and_source(tmp_path: Path, monkeypatch) -> None:

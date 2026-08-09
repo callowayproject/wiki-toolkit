@@ -90,6 +90,13 @@ def doctor(docs_dir: Path | None) -> None:
         for error in errors:
             click.echo(f"  [MALFORMED] docs/{name}: {error}")
 
+    if report.skills_version_drift is not None:
+        local_version, installed_version = report.skills_version_drift
+        click.echo(
+            f"  [warn] docs/.agents/skills copy ({local_version}) and installed wiki_toolkit "
+            f"({installed_version}) are out of sync; remove docs/.agents/skills/ and re-run init to refresh"
+        )
+
     if not report.ok:
         raise SystemExit(1)
 

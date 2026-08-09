@@ -4,10 +4,12 @@ import shutil
 import subprocess
 import sys
 from dataclasses import dataclass, field
+from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING
 
 import orjson
 
+from wiki_toolkit.init import PROVENANCE_FILENAME
 from wiki_toolkit.sources import SOURCE_MANIFEST_FILENAME
 
 if TYPE_CHECKING:
@@ -33,11 +35,17 @@ class DoctorReport:
     note_count: int = 0
     is_shallow_clone: bool | None = None
     jsonl_errors: dict[str, list[str]] = field(default_factory=dict)
+    skills_version_drift: tuple[str, str] | None = None
 
     @property
     def ok(self) -> bool:
-        """True if no missing structure, no shallow clone, and no malformed JSONL."""
-        return not self.missing_structure and not self.is_shallow_clone and not self.jsonl_errors
+        """True if no missing structure, no shallow clone, no malformed JSONL, and no skills version drift."""
+        return (
+            not self.missing_structure
+            and not self.is_shallow_clone
+            and not self.jsonl_errors
+            and self.skills_version_drift is None
+        )
 
 
 def check_shallow_clone(root: Path) -> bool | None:
@@ -69,6 +77,25 @@ def validate_jsonl(path: Path) -> list[str]:
         except orjson.JSONDecodeError as e:
             errors.append(f"line {lineno}: {e}")
     return errors
+
+
+def check_skills_version_drift(docs_dir: Path) -> tuple[str, str] | None:
+    """Compare the local `.agents/skills/.provenance` version to the installed `wiki_toolkit` version.
+
+    Returns `(local_version, installed_version)` if they differ, `None` if they match
+    or no local copy's provenance marker exists.
+    """
+    provenance_path = docs_dir / ".agents" / "skills" / PROVENANCE_FILENAME
+    if not provenance_path.is_file():
+        return None
+    local_version = provenance_path.read_text(encoding="utf-8").strip()
+    try:
+        installed_version = version("wiki_toolkit")
+    except PackageNotFoundError:
+        return None
+    if local_version == installed_version:
+        return None
+    return (local_version, installed_version)
 
 
 def run_doctor(docs_dir: Path, root: Path | None = None, docs_dir_source: ConfigSource = "default") -> DoctorReport:
@@ -104,5 +131,6 @@ def run_doctor(docs_dir: Path, root: Path | None = None, docs_dir_source: Config
                 report.jsonl_errors[name] = errors
 
     report.is_shallow_clone = check_shallow_clone(root)
+    report.skills_version_drift = check_skills_version_drift(docs_dir)
 
     return report
