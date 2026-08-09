@@ -2,9 +2,18 @@
 
 import shutil
 import subprocess
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as pkg_version
 from typing import TYPE_CHECKING
 
-from wiki_toolkit.doctor import DOCS_STRUCTURE, check_shallow_clone, run_doctor, validate_jsonl
+from wiki_toolkit.doctor import (
+    DOCS_STRUCTURE,
+    check_shallow_clone,
+    check_skills_version_drift,
+    run_doctor,
+    validate_jsonl,
+)
+from wiki_toolkit.init import PROVENANCE_FILENAME
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -71,6 +80,59 @@ def test_run_doctor_reports_docs_dir_and_source(tmp_path: Path, make_docs_tree: 
 
     assert report.docs_dir == tmp_path / "docs"
     assert report.docs_dir_source == "env"
+
+
+def test_check_skills_version_drift_none_when_no_local_copy(make_docs_tree: Callable[[], Path]) -> None:
+    """No `.provenance` marker (or no local skills copy at all) means no drift."""
+    docs_dir = make_docs_tree()
+
+    assert check_skills_version_drift(docs_dir) is None
+
+
+def test_check_skills_version_drift_none_when_versions_match(make_docs_tree: Callable[[], Path]) -> None:
+    """A `.provenance` marker matching the installed package version reports no drift."""
+    docs_dir = make_docs_tree()
+    installed = pkg_version("wiki_toolkit")
+    (docs_dir / ".agents" / "skills" / PROVENANCE_FILENAME).write_text(installed, encoding="utf-8")
+
+    assert check_skills_version_drift(docs_dir) is None
+
+
+def test_check_skills_version_drift_reports_mismatch(make_docs_tree: Callable[[], Path]) -> None:
+    """A `.provenance` marker older than the installed package reports both versions."""
+    docs_dir = make_docs_tree()
+    installed = pkg_version("wiki_toolkit")
+    (docs_dir / ".agents" / "skills" / PROVENANCE_FILENAME).write_text("0.0.1", encoding="utf-8")
+
+    assert check_skills_version_drift(docs_dir) == ("0.0.1", installed)
+
+
+def test_check_skills_version_drift_none_when_package_not_installed(
+    make_docs_tree: Callable[[], Path], monkeypatch
+) -> None:
+    """No discoverable `wiki_toolkit` package metadata is treated as no drift, not a crash."""
+    docs_dir = make_docs_tree()
+    (docs_dir / ".agents" / "skills" / PROVENANCE_FILENAME).write_text("0.0.1", encoding="utf-8")
+
+    def _raise(_name: str) -> str:
+        raise PackageNotFoundError
+
+    monkeypatch.setattr("wiki_toolkit.doctor.version", _raise)
+
+    assert check_skills_version_drift(docs_dir) is None
+
+
+def test_run_doctor_reports_skills_version_drift(tmp_path: Path, make_docs_tree: Callable[[], Path]) -> None:
+    """run_doctor surfaces skills version drift and it gates `ok`, without touching local files."""
+    docs_dir = make_docs_tree()
+    (docs_dir / ".agents" / "skills" / PROVENANCE_FILENAME).write_text("0.0.1", encoding="utf-8")
+
+    report = run_doctor(tmp_path / "docs")
+
+    assert report.skills_version_drift is not None
+    assert report.skills_version_drift[0] == "0.0.1"
+    assert report.ok is False
+    assert (docs_dir / ".agents" / "skills" / PROVENANCE_FILENAME).read_text(encoding="utf-8") == "0.0.1"
 
 
 def test_validate_jsonl_skips_blank_lines(tmp_path: Path) -> None:
