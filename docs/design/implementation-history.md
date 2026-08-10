@@ -43,4 +43,4 @@ Neither phase touched idea.md's [Gaps section](idea.md) — the receiver's secur
 - **Resolved decisions, with context and consequences**: [`docs/adr/`](../adr/)
 - **CLI reference, as built**: [v1-spec.md](v1-spec.md)
 - **Full eventual toolkit vision** (adapters, webhooks) — superseded by v1-spec.md wherever they disagree: [toolkit-spec.md](toolkit-spec.md)
-- **Domain vocabulary**: [CONTEXT.md](../../CONTEXT.md)
+- **Domain vocabulary**: [CONTEXT.md](CONTEXT.md)
