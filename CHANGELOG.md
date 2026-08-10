@@ -1,5 +1,74 @@
 # Changelog
 
+## 0.21.0 (2026-08-10)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.20.0...0.21.0)
+
+### New
+
+- Add batching and cross-linking design doc to documentation. [58eac19](https://github.com/callowayproject/wiki-toolkit/commit/58eac197f2decbe801ebe7c17325a2476f524fdc)
+
+- Add confidence rollup drift lint check (resolves #108). [41c2fb8](https://github.com/callowayproject/wiki-toolkit/commit/41c2fb8c4472ee4d9fb9e28b193cb3a74e0707ec)
+
+  lint_wiki() recomputes a note's confidence: rollup from its inline
+  markers (^[inferred], ^[ambiguous], unmarked = extracted), one unit
+  per bullet or per paragraph on non-bulleted content, rounded to 2
+  decimals round-half-up, and flags any mismatch — no tolerance band,
+  same pattern as the existing source_count drift check. A confidence:
+  value that isn't a mapping is flagged rather than crashing the lint
+  run.
+
+- Add spec-handoff summary for metadata schema map (issue #88). [b25c5e5](https://github.com/callowayproject/wiki-toolkit/commit/b25c5e509a508722fdf0355602f9733ba9b76c54)
+
+  Consolidates the 5 resolved decisions (confidence marker naming,
+  inline syntax, relationship-type enum, and both lint checks) into
+  one pointer document so a future session can write the formal
+  **spec:** issue without re-deriving context from the closed tickets.
+
+- Add relationships: target-resolution lint check (resolves #92). [e500f81](https://github.com/callowayproject/wiki-toolkit/commit/e500f815bb8c9a52013eebb1541efdb0bbd7966c)
+
+  lint verifies a relationships: entry's target resolves to an
+  existing page, reusing the existing missing-cross-reference
+  resolution rule for body wikilinks. Flags, doesn't reject — the
+  write gate's PR review is the enforcement point.
+
+- Add fixed relationship-type enum and relationships: block (resolves #91). [577310a](https://github.com/callowayproject/wiki-toolkit/commit/577310ab2bca80d2d887969acbd4559ee9fb0a00)
+
+  type is a fixed 7-value enum (extends/implements/contradicts/
+  derived_from/uses/replaces/related_to), not a per-wiki extensible
+  taxonomy, so edges stay comparable across wikis.
+
+- Add manifest write/resolve helpers, finish ADR-0006 unification. [aa13c83](https://github.com/callowayproject/wiki-toolkit/commit/aa13c83a351a797fdb061c7afb8eb38bf9e072cf)
+
+  \_write_manifest and \_resolve_source_entry mirror \_read_manifest,
+  replacing the hand-rolled write and entry-lookup-or-raise blocks
+  duplicated across apply_source_scan, compute_source_delta, and
+  write_source_snapshot.
+
+### Other
+
+- Pin down confidence: rollup counting/rounding/drift rule (resolves #93). [04ac8db](https://github.com/callowayproject/wiki-toolkit/commit/04ac8db961d55a0e91d26fb4c996d0dddf95bfde)
+
+  Recompute-and-flag-drift confirmed, same pattern as source_count:
+  counts bullets (or paragraphs on non-bulleted pages), 2 decimal
+  places round-half-up, exact match after rounding with no tolerance
+  band. lint's capability line updated to mention both the
+  **relationships:** target check and confidence: drift check.
+
+- Pin down confidence-marker + source-citation stacking syntax (resolves #90). [44630c4](https://github.com/callowayproject/wiki-toolkit/commit/44630c42fab3eb67701e4b15134e82ebc2a43979)
+
+  Confidence markers and ^[source_id] citations stack as independent
+  suffixes rather than combining into one bracket; confidence marker
+  comes first: ^[inferred]^[design-doc-3].
+
+### Updates
+
+- Rename provenance marker to confidence marker (resolves #89). [f63a477](https://github.com/callowayproject/wiki-toolkit/commit/f63a4779fe8d033a685d147251faa5e75617df0d)
+
+  Avoids collision with CONTEXT.md's existing "Provenance marker" term
+  (.provenance skill-copy drift file). Renames the frontmatter rollup
+  key provenance: to confidence: to match.
+
 ## 0.20.0 (2026-08-10)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.19.0...0.20.0)
