@@ -153,6 +153,7 @@ cross-references to the sources they reference.
 - `path`: relative path to the document from the repo root
 - `title`: the document's title
 - `aliases`: list of alternate names for the document, from its frontmatter `aliases:` (empty list if absent)
+- `links`: list of the document's outbound `[[wikilink]]` targets, extracted from its body (empty list if none); feeds `cross-linker`'s co-citation scoring signal
 - `sources`: list of `source` ids this document references
 - `updated`: ISO-8601 date-time string when it was updated
 - `status`: `resolved` when all referenced sources are `resolved`; `proposed` if any is `proposed`
@@ -259,7 +260,7 @@ earlier drafts — see [CONTEXT.md](CONTEXT.md)). No adapter arguments yet.
 |---|---|
 | `init` | Scaffold a new wiki: create `docs/{sources,wiki}/`, empty `catalog.jsonl`/`log.jsonl`/`source-manifest.jsonl`, `schema.md` from the built-in template, and a local `docs/.agents/skills/` copy of the skills plugin |
 | `doctor` | Non-mutating health check: `docs/` folder structure, Python version, catalog/manifest sanity, note counts, shallow-clone warning, resolved configuration and its source, local skills-copy version drift |
-| `build` | Generate `docs/catalog.jsonl` from `docs/wiki/` notes, including each page's `aliases:` frontmatter (empty list if absent) (no `index.md`/per-folder index generation) |
+| `build` | Generate `docs/catalog.jsonl` from `docs/wiki/` notes, including each page's `aliases:` frontmatter and outbound `[[wikilink]]` targets as `links` (both empty lists if absent/none) (no `index.md`/per-folder index generation) |
 | `lint` | Validate wiki note frontmatter, allowed tags, source links, `source_count`; flags a `relationships:` entry whose `target` doesn't resolve to an existing page, and drift between a page's `confidence:` block and its recomputed marker counts. Flagged, not rejected — the write gate's PR review is the enforcement point |
 | `source-scan [--update] [--accept-covered]` | Walk `docs/sources/`; classify each file `new` / `update` / `duplicate` (absorbs the old `source-match` and base-spec `source-delta` meaning — "not in the manifest" is just "unprocessed"). With `--update`, write results to `docs/source-manifest.jsonl`. Skips version-controlled source types (no Raw file to scan) |
 | `source-lint` | Validate source frontmatter and coverage state (flags `processed` sources with no `covered_by` entries) |

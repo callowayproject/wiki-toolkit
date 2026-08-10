@@ -199,6 +199,8 @@ def test_build_writes_catalog(tmp_path: Path, monkeypatch, make_docs_tree, make_
         "updated": "2026-01-01",
         "sources": [],
         "status": "resolved",
+        "aliases": [],
+        "links": [],
     }
 
 

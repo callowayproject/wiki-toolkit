@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from wiki_toolkit.frontmatter import Post
 
 _BULLET_RE = re.compile(r"^\s*[-*]\s+(.*)$")
+_WIKILINK_RE = re.compile(r"\[\[([^\]|]+)(?:\|[^\]]*)?\]\]")
 _CONFIDENCE_MARKER_RE = re.compile(r"\^\[(inferred|ambiguous)\]")
 _CONFIDENCE_STATES = ("extracted", "inferred", "ambiguous")
 _RELATIONSHIP_TYPES = frozenset(
@@ -29,6 +30,8 @@ class CatalogEntry:
     updated: str
     sources: list[str]
     status: Literal["resolved", "proposed"]
+    aliases: list[str] = field(default_factory=list)
+    links: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -37,6 +40,20 @@ class CatalogResult:
 
     entries: list[CatalogEntry] = field(default_factory=list)
     violations: list[LintViolation] = field(default_factory=list)
+
+
+def _extract_wikilinks(content: str) -> list[str]:
+    """Return the deduplicated, ordered `[[target]]` (or `[[target|display]]`) targets in `content`.
+
+    Strips any `#heading` or `^block-id` anchor from each target, and dedupes
+    case-insensitively (keeping the first-seen casing) to match this module's
+    other wikilink-target comparisons (see `known_targets` in `lint_wiki`).
+    """
+    seen: dict[str, str] = {}
+    for match in _WIKILINK_RE.finditer(content):
+        target = re.split(r"[#^]", match.group(1).strip(), maxsplit=1)[0].strip()
+        seen.setdefault(target.lower(), target)
+    return list(seen.values())
 
 
 def build_catalog(docs_dir: Path) -> CatalogResult:
@@ -67,6 +84,8 @@ def build_catalog(docs_dir: Path) -> CatalogResult:
                 updated=post.get("updated", ""),
                 sources=sources,
                 status="resolved" if resolved else "proposed",
+                aliases=post.get("aliases") or [],
+                links=_extract_wikilinks(post.content),
             )
         )
 
