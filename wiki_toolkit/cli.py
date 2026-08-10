@@ -25,7 +25,7 @@ from wiki_toolkit.sources import (
     suggest_dedupe,
     write_source_snapshot,
 )
-from wiki_toolkit.wiki import build_catalog, lint_wiki, search_catalog
+from wiki_toolkit.wiki import build_catalog, find_cross_link_candidates, lint_wiki, search_catalog
 from wiki_toolkit.write_gate import ALLOWED_FRAMES, commit_pages, propose_pr, start_wiki_branch
 
 
@@ -295,6 +295,20 @@ def search_catalog_cmd(query: str, docs_dir: Path | None) -> None:
 
     for entry in matches:
         click.echo(f"{entry.get('title', '')} ({entry.get('path', '')})")
+
+
+@cli.command("cross-link-candidates")
+@click.argument("page_paths", nargs=-1, required=True)
+@click.option(
+    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
+)
+def cross_link_candidates_cmd(page_paths: tuple[str, ...], docs_dir: Path | None) -> None:
+    """Find literal title/alias mentions of other catalog pages inside PAGE_PATHS' bodies (JSONL output)."""
+    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
+    candidates = find_cross_link_candidates(docs_dir, list(page_paths))
+
+    for candidate in candidates:
+        click.echo(orjson.dumps(asdict(candidate)).decode())
 
 
 @cli.command("start-branch")

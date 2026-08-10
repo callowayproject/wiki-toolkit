@@ -559,6 +559,38 @@ def test_search_catalog_requires_query_option(tmp_path: Path, monkeypatch, make_
     assert result.exit_code != 0
 
 
+def test_cross_link_candidates_parses_pages_and_prints_jsonl(
+    tmp_path: Path, monkeypatch, make_docs_tree, make_wiki_note
+) -> None:
+    """cross-link-candidates parses PAGE_PATHS args, delegates to wiki.py, and prints one JSON object per line."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "session.md", content="This note discusses Target Page in detail.")
+    entry = {"path": "docs/wiki/target.md", "title": "Target Page", "aliases": []}
+    (docs_dir / "catalog.jsonl").write_text(orjson.dumps(entry).decode() + "\n")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["cross-link-candidates", "docs/wiki/session.md"])
+
+    assert result.exit_code == 0
+    line = orjson.loads(result.output.strip())
+    assert line == {
+        "page": "docs/wiki/session.md",
+        "target": "docs/wiki/target.md",
+        "mention_text": "Target Page",
+        "match_type": "title",
+    }
+
+
+def test_cross_link_candidates_requires_at_least_one_page(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
+    """Omitting PAGE_PATHS is a usage error, not a crash."""
+    make_docs_tree()
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["cross-link-candidates"])
+
+    assert result.exit_code != 0
+
+
 def test_log_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
     """Log --docs-dir writes to the overridden tree, not cwd/docs (which doesn't exist here)."""
     docs_dir = make_docs_tree()
