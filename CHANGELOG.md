@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.24.0 (2026-08-10)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.23.0...0.24.0)
+
+### New
+
+- Add cross-link-candidates deterministic CLI subcommand (resolves #118). [106520b](https://github.com/callowayproject/wiki-toolkit/commit/106520b771a123b179d3d203a928f7e55151d68b)
+
+  Literal, case-insensitive title/alias matching against catalog.jsonl,
+  scoped to the session's own pages as sources and every other catalog
+  entry as a potential target. Skips code blocks, frontmatter, and
+  mentions already wrapped in \[[...]\].
+
 ## 0.23.0 (2026-08-10)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.22.0...0.23.0)
