@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.19.0 (2026-08-10)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.18.2...0.19.0)
+
+### Fixes
+
+- Fix relative link to `CONTEXT.md` in `implementation-history.md` for consistency. [e767943](https://github.com/callowayproject/wiki-toolkit/commit/e767943c26ead3110cfe0a36ad86fbbde15126df)
+
+### New
+
+- Add batch-plan CLI subcommand (#101). [f73ad4d](https://github.com/callowayproject/wiki-toolkit/commit/f73ad4dd09942ea9b90ccd447edf1801d9be4b01)
+
+  Splits files under a source directory into batches of at most 100,000
+  bytes or 20 files, for parallel wiki-ingest subagent dispatch. Prints
+  the plan as JSON per the documented schema.
+
+### Other
+
+- Research: prior art on cross-linking/link-suggestion at scale (#97). [60b6e80](https://github.com/callowayproject/wiki-toolkit/commit/60b6e80a67638ee8c7bace6041f83f348a140277)
+
+### Updates
+
+- Update `toolkit-spec.md` with v1 skills clarification, add `implementation-history.md`, and document core ADRs (`0001-0010`). [df19722](https://github.com/callowayproject/wiki-toolkit/commit/df19722e027cdc2fdb1ab243ec13839264cd9bf9)
+
 ## 0.18.2 (2026-08-09)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.18.1...0.18.2)
