@@ -28,6 +28,22 @@ def test_cli_group_resolves() -> None:
     assert result.exit_code == 0
 
 
+def test_batch_plan_cmd_prints_json_report(tmp_path: Path) -> None:
+    """`batch-plan` prints the documented JSON schema for a folder of source files."""
+    vault = tmp_path / "vault"
+    vault.mkdir()
+    source_dir = tmp_path / "source"
+    source_dir.mkdir()
+    (source_dir / "a.md").write_text("hello")
+
+    result = CliRunner().invoke(cli, ["batch-plan", str(vault), str(source_dir)])
+
+    assert result.exit_code == 0
+    report = orjson.loads(result.output)
+    assert report["stats"] == {"total_files": 1, "total_bytes": 5, "batch_count": 1}
+    assert report["batches"] == [{"id": "0", "files": ["a.md"], "total_bytes": 5}]
+
+
 def test_make_source_writes_frontmatter(tmp_path: Path, make_source) -> None:
     """make_source writes a frontmatter file keyed on the source id."""
     docs_dir = tmp_path / "docs"

@@ -196,6 +196,7 @@ This means `source-update`'s "auto re-ingest vs. flag for review" split (per mut
 
 Extends the `wiki_tool.py` command set from `llm-breakdown.md`:
 
+- `batch-plan <vault> <source-dir>` — split the files under `source-dir` into batches (100,000 bytes or 20 files per batch, whichever comes first), for parallel wiki-ingest subagent dispatch.
 - `source-match <adapter> <payload>` — resolve `stable_id`, report whether it matches an existing Raw manifest entry (new vs. update).
 - `source-delta <adapter> <stable_id>` — fetch current state, diff against last-known snapshot, print the `Delta`.
 - `source-snapshot <adapter> <stable_id> --units comments|fields` — write the new Raw snapshot unit(s) for the given mutation type.

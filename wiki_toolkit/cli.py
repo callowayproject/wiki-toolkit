@@ -7,6 +7,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 import click
+import orjson
 
 from wiki_toolkit._io import read_jsonl, write_jsonl
 from wiki_toolkit.doctor import run_doctor
@@ -18,6 +19,7 @@ from wiki_toolkit.sources import (
     apply_source_scan,
     compute_source_delta,
     lint_sources,
+    plan_batches,
     scan_sources,
     source_coverage,
     suggest_dedupe,
@@ -131,6 +133,15 @@ def lint(docs_dir: Path | None) -> None:
         click.echo("No lint violations found.")
     else:
         raise SystemExit(1)
+
+
+@cli.command("batch-plan")
+@click.argument("vault", type=click.Path(path_type=Path))
+@click.argument("source_dir", type=click.Path(path_type=Path))
+def batch_plan_cmd(vault: Path, source_dir: Path) -> None:
+    """Split the files under SOURCE_DIR into batches for parallel wiki-ingest dispatch."""
+    plan = plan_batches(source_dir)
+    click.echo(orjson.dumps(asdict(plan)).decode())
 
 
 @cli.command("source-scan")
