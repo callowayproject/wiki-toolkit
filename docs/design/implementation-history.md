@@ -1,6 +1,6 @@
 # Implementation history
 
-How the pitch's toolkit ([idea.md](idea.md) → [toolkit-spec.md](toolkit-spec.md) → [v1-spec.md](v1-spec.md)) actually got built, across two closed Wayfinder maps and their follow-on tickets. This is the connective narrative; the individual resolved decisions live in [`docs/adr/`](../adr/) — link there for the "why," not here.
+How `wiki_toolkit` ([idea.md](idea.md) → [toolkit-spec.md](toolkit-spec.md)) actually got built, across two closed Wayfinder maps and their follow-on tickets. This is the connective narrative; the individual resolved decisions live in [`docs/adr/`](../adr/) — link there for the "why," not here.
 
 ## Phase 1 — v1 CLI ([map #2](https://github.com/callowayproject/wiki-toolkit/issues/2), closed 2026-08-05)
 
@@ -19,7 +19,7 @@ Twelve build tickets (#9–#22) then implemented `doctor`, `build`, `lint`, `sou
 **Follow-on work**, not part of the original map but building directly on its output:
 
 - **[#37](https://github.com/callowayproject/wiki-toolkit/issues/37) — domain-module split** (closed 2026-08-05): `core.py` had grown to 810 lines of six tangled domain concepts with the same directory-walk logic reimplemented six times. Split into `sources.py`/`wiki.py`/`write_gate.py`/`log.py`/`doctor.py`/`_io.py` with zero change to `cli.py`'s observable behavior. → [ADR-0006](../adr/0006-domain-module-split.md)
-- **[#54](https://github.com/callowayproject/wiki-toolkit/issues/54) — settings, init, config show** (closed 2026-08-07): filled the gap between what `v1-spec.md` already specified (a `docs_dir` precedence chain, an `init` command) and what existed in code (neither). → [ADR-0007](../adr/0007-settings-resolution-and-init.md)
+- **[#54](https://github.com/callowayproject/wiki-toolkit/issues/54) — settings, init, config show** (closed 2026-08-07): filled the gap between what the spec already specified (a `docs_dir` precedence chain, an `init` command) and what existed in code (neither). → [ADR-0007](../adr/0007-settings-resolution-and-init.md)
 
 ## Phase 2 — Skills package ([map #62](https://github.com/callowayproject/wiki-toolkit/issues/62), closed 2026-08-08)
 
@@ -41,6 +41,5 @@ Neither phase touched idea.md's [Gaps section](idea.md) — the receiver's secur
 ## Where to look
 
 - **Resolved decisions, with context and consequences**: [`docs/adr/`](../adr/)
-- **CLI reference, as built**: [v1-spec.md](v1-spec.md)
-- **Full eventual toolkit vision** (adapters, webhooks) — superseded by v1-spec.md wherever they disagree: [toolkit-spec.md](toolkit-spec.md)
+- **CLI reference, as built, plus the still-unbuilt full vision (adapters, webhooks) under "Not yet built" headings**: [toolkit-spec.md](toolkit-spec.md)
 - **Domain vocabulary**: [CONTEXT.md](CONTEXT.md)
