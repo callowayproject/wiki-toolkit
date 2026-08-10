@@ -275,6 +275,96 @@ def test_lint_confidence_marker_stacks_with_source_citation(
     assert result.ok is True
 
 
+def test_lint_relationships_valid_type_and_target_passes_clean(
+    make_docs_tree: Callable[[], Path], make_wiki_note
+) -> None:
+    """A `relationships:` entry with a valid type and a resolvable target has no violation."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "target.md", title="Target Page")
+    make_wiki_note(docs_dir, "a.md", relationships=[{"target": "[[Target Page]]", "type": "extends"}])
+
+    result = lint_wiki(docs_dir)
+
+    assert result.violations == []
+    assert result.ok is True
+
+
+def test_lint_flags_unrecognized_relationship_type(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
+    """A `relationships:` entry with a type outside the fixed enum is flagged."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "target.md", title="Target Page")
+    make_wiki_note(docs_dir, "a.md", relationships=[{"target": "[[Target Page]]", "type": "bogus"}])
+
+    result = lint_wiki(docs_dir)
+
+    assert len(result.violations) == 1
+    assert "bogus" in result.violations[0].message
+
+
+def test_lint_flags_unresolved_relationship_target(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
+    """A `relationships:` entry whose target doesn't resolve to any page is flagged, non-fatal."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "a.md", relationships=[{"target": "[[Nonexistent Page]]", "type": "extends"}])
+
+    result = lint_wiki(docs_dir)
+
+    assert len(result.violations) == 1
+    assert "Nonexistent Page" in result.violations[0].message
+    assert result.ok is False
+
+
+def test_lint_flags_non_list_relationships_instead_of_crashing(
+    make_docs_tree: Callable[[], Path], make_wiki_note
+) -> None:
+    """A `relationships:` block that isn't a list is flagged, not raised."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "a.md", relationships="bogus")
+
+    result = lint_wiki(docs_dir)
+
+    assert len(result.violations) == 1
+    assert "must be a list" in result.violations[0].message
+
+
+def test_lint_flags_non_mapping_relationship_entry_instead_of_crashing(
+    make_docs_tree: Callable[[], Path], make_wiki_note
+) -> None:
+    """A `relationships:` entry that isn't a mapping is flagged, not raised."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "a.md", relationships=["extends"])
+
+    result = lint_wiki(docs_dir)
+
+    assert len(result.violations) == 1
+    assert "must be a mapping" in result.violations[0].message
+
+
+def test_lint_flags_null_relationship_target_instead_of_crashing(
+    make_docs_tree: Callable[[], Path], make_wiki_note
+) -> None:
+    """A `relationships:` entry with an explicit `target: null` is flagged, not raised."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "a.md", relationships=[{"target": None, "type": "extends"}])
+
+    result = lint_wiki(docs_dir)
+
+    assert len(result.violations) == 1
+    assert "does not resolve" in result.violations[0].message
+
+
+def test_lint_no_relationships_block_lints_clean_regardless(
+    make_docs_tree: Callable[[], Path], make_wiki_note
+) -> None:
+    """A note with no `relationships:` frontmatter block is unaffected by this check."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "a.md")
+
+    result = lint_wiki(docs_dir)
+
+    assert result.violations == []
+    assert result.ok is True
+
+
 def test_lint_clean_note_has_no_violations(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
     """A well-formed note with valid tags, resolved sources, and correct source_count passes clean."""
     docs_dir = make_docs_tree()
