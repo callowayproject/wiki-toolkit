@@ -100,7 +100,7 @@ The schema (`schema.md`) provides instructions to the AI agent on how to manage 
 - Mark any sections referencing a proposed source with "Proposed change" or "Future implementation" to indicate it is not yet done.
 - On pages that synthesize 3+ sources, append `^[source_id]` at the end of paragraphs whose claims come from a specific source. This lets a reader trace each claim back without re-reading the whole raw file. Optional on single-source pages where the `sources:` frontmatter is enough.
 - Mark claims with a confidence marker where relevant: no marker = extracted (a paraphrase of what a source actually says); `^[inferred]` suffix = an LLM-synthesized connection or implication the source doesn't state directly; `^[ambiguous]` suffix = sources disagree or are unclear. Default (no marker) means existing pages stay valid without changes. A claim needing both a confidence marker and a `^[source_id]` citation stacks them as independent suffixes, confidence marker first: `^[inferred]^[design-doc-3]`.
-- The optional `relationships:` frontmatter block adds typed, directional edges between pages, on top of plain `[[wikilinks]]` (which carry no semantic weight). Rules: omit the block entirely if no typed relationship is known — untagged wikilinks remain valid; if `[[foo]]` already appears as an inline wikilink, a `relationships:` entry just enriches it with a type, it is not a second link; the page declaring the entry is the *source*, `target` is the destination — only declare relationships from this page's own perspective; only add a typed entry when the source material makes the relationship's direction and type clear — when in doubt, use `related_to` or omit. `type` must be one of the fixed Relationship Types below.
+- The optional `relationships:` frontmatter block adds typed, directional edges between pages, on top of plain `[[wikilinks]]` (which carry no semantic weight). Rules: omit the block entirely if no typed relationship is known — untagged wikilinks remain valid; if `[[foo]]` already appears as an inline wikilink, a `relationships:` entry just enriches it with a type, it is not a second link; the page declaring the entry is the *source*, `target` is the destination — only declare relationships from this page's own perspective; only add a typed entry when the source material makes the relationship's direction and type clear — when in doubt, use `related_to` or omit. `type` must be one of the fixed Relationship Types below; `target` must resolve to an existing page or `lint` flags it.
 
 ## Wiki Document Frontmatter
   ```yaml
@@ -194,7 +194,7 @@ Five skills, each a `SKILL.md` for the agent operating the toolkit:
 
 **query** — unchanged: search the catalog, read relevant pages, answer with citations, optionally file the answer back as a new page.
 
-**lint** — unchanged: contradictions, staleness, orphan pages, missing cross-references.
+**lint** — unchanged: contradictions, staleness, orphan pages, missing cross-references. Also flags a `relationships:` entry whose `target` doesn't resolve to an existing page — same resolution rule as missing-cross-reference detection already uses for body `[[wikilinks]]`. Flagged, not rejected: lint reports, it doesn't block; the write gate's PR review is the enforcement point.
 
 **source-update** (new) — separate from `ingest` because the judgment calls differ: matching identity, computing a delta, and deciding whether that delta is safe to fold in automatically. Triggered by a source-system event (Jira webhook, GitHub event) or manual invocation:
 
