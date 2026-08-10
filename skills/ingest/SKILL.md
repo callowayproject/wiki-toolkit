@@ -32,6 +32,28 @@ This sequence covers a session ingesting one or more sources, listed manually.
      claim comes from a specific source when the page synthesizes 3+ sources.
    - If the source is `proposed` (not yet resolved), mark the page (or the
      relevant section) `status: proposed` / "Proposed change".
+   - **Confidence markers** (optional). Mark a claim `^[inferred]` when it's an
+     LLM-synthesized connection the source doesn't state directly, or
+     `^[ambiguous]` when sources disagree or are unclear; leave a faithful
+     paraphrase unmarked (extracted). When a claim also needs a `^[source_id]`
+     citation, stack them as independent suffixes with the confidence marker
+     first: `^[inferred]^[design-doc-3]`. If you add the page-level
+     `confidence:` frontmatter rollup, it must exactly match the inline
+     markers: count one unit per bullet line if the page has any bullets,
+     else one unit per paragraph; each unit is `inferred`/`ambiguous` per its
+     marker, else `extracted`; roll each state up as `count / total`, rounded
+     to 2 decimals round-half-up. `lint` checks this rollup for drift, so
+     recompute it by hand (or omit `confidence:` entirely) rather than
+     guessing — omitting the block is not an error.
+   - **Typed relationships** (optional). Add a `relationships:` entry to
+     enrich an existing `[[wikilink]]` already in the page body — never as a
+     duplicate link with no corresponding wikilink. Each entry is
+     `{target: "[[Page]]", type: "..."}` with `type` one of `extends`,
+     `implements`, `contradicts`, `derived_from`, `uses`, `replaces`,
+     `related_to`, and direction is always from this (the declaring) page's
+     perspective. Only pick a specific type when the source material makes
+     direction/type clear; otherwise use `related_to` or omit the entry
+     rather than fabricating one.
    - Use the [ingest-prompts](ingest-prompts.md) for writing pages.
    - **`wiki-toolkit log --action ingest --title "..." --details "..."`**
      Once per source, right after that source's page(s) are written. Appends
