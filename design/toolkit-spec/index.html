@@ -2474,6 +2474,7 @@ diff(old_snapshot, new_snapshot) -&gt; Delta
 <h2 id="helper-tools-cli-surface">Helper tools (CLI surface)<a class="headerlink" href="#helper-tools-cli-surface" title="Permanent link">&para;</a></h2>
 <p>Extends the <code>wiki_tool.py</code> command set from <code>llm-breakdown.md</code>:</p>
 <ul>
+<li><code>batch-plan &lt;vault&gt; &lt;source-dir&gt;</code> — split the files under <code>source-dir</code> into batches (100,000 bytes or 20 files per batch, whichever comes first), for parallel wiki-ingest subagent dispatch.</li>
 <li><code>source-match &lt;adapter&gt; &lt;payload&gt;</code> — resolve <code>stable_id</code>, report whether it matches an existing Raw manifest entry (new vs. update).</li>
 <li><code>source-delta &lt;adapter&gt; &lt;stable_id&gt;</code> — fetch current state, diff against last-known snapshot, print the <code>Delta</code>.</li>
 <li><code>source-snapshot &lt;adapter&gt; &lt;stable_id&gt; --units comments|fields</code> — write the new Raw snapshot unit(s) for the given mutation type.</li>
