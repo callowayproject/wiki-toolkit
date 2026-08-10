@@ -2404,6 +2404,7 @@ cross-references to the sources they reference.</p>
 <li><code>path</code>: relative path to the document from the repo root</li>
 <li><code>title</code>: the document&rsquo;s title</li>
 <li><code>aliases</code>: list of alternate names for the document, from its frontmatter <code>aliases:</code> (empty list if absent)</li>
+<li><code>links</code>: list of the document&rsquo;s outbound <code>[[wikilink]]</code> targets, extracted from its body (empty list if none); feeds <code>cross-linker</code>&rsquo;s co-citation scoring signal</li>
 <li><code>sources</code>: list of <code>source</code> ids this document references</li>
 <li><code>updated</code>: ISO-8601 date-time string when it was updated</li>
 <li><code>status</code>: <code>resolved</code> when all referenced sources are <code>resolved</code>; <code>proposed</code> if any is <code>proposed</code></li>
@@ -2513,7 +2514,7 @@ earlier drafts — see <a href="../CONTEXT/">CONTEXT.md</a>). No adapter argumen
 </tr>
 <tr>
 <td><code>build</code></td>
-<td>Generate <code>docs/catalog.jsonl</code> from <code>docs/wiki/</code> notes, including each page&rsquo;s <code>aliases:</code> frontmatter (empty list if absent) (no <code>index.md</code>/per-folder index generation)</td>
+<td>Generate <code>docs/catalog.jsonl</code> from <code>docs/wiki/</code> notes, including each page&rsquo;s <code>aliases:</code> frontmatter and outbound <code>[[wikilink]]</code> targets as <code>links</code> (both empty lists if absent/none) (no <code>index.md</code>/per-folder index generation)</td>
 </tr>
 <tr>
 <td><code>lint</code></td>
