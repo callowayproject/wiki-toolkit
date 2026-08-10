@@ -41,10 +41,12 @@ def make_wiki_note() -> Callable[..., Path]:
     returns its path. Each call is self-contained.
     """
 
-    def _make_wiki_note(docs_dir: Path, filename: str, *, title: str | None = None, **fields: object) -> Path:
+    def _make_wiki_note(
+        docs_dir: Path, filename: str, *, title: str | None = None, content: str = "", **fields: object
+    ) -> Path:
         wiki_dir = docs_dir / "wiki"
         wiki_dir.mkdir(parents=True, exist_ok=True)
-        post = frontmatter.Post("", title=title, **fields)
+        post = frontmatter.Post(content, title=title, **fields)
         path = wiki_dir / filename
         path.write_bytes(frontmatter.dumps(post).encode())
         return path

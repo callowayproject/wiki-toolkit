@@ -178,6 +178,103 @@ def test_lint_flags_mismatched_source_count(make_docs_tree: Callable[[], Path], 
     assert "source_count" in result.violations[0].message
 
 
+def test_lint_confidence_matches_recomputed_markers(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
+    """A `confidence:` block whose values exactly match the recomputed fractions passes clean."""
+    docs_dir = make_docs_tree()
+    body = "- extracted claim one\n- extracted claim two\n- inferred claim.^[inferred]\n- ambiguous claim.^[ambiguous]"
+    make_wiki_note(
+        docs_dir,
+        "a.md",
+        content=body,
+        confidence={"extracted": 0.5, "inferred": 0.25, "ambiguous": 0.25},
+    )
+
+    result = lint_wiki(docs_dir)
+
+    assert result.violations == []
+    assert result.ok is True
+
+
+def test_lint_flags_confidence_off_by_one_unit(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
+    """A `confidence:` block off by one unit from the recomputed fractions is flagged."""
+    docs_dir = make_docs_tree()
+    body = "- extracted claim one\n- extracted claim two\n- inferred claim.^[inferred]\n- ambiguous claim.^[ambiguous]"
+    make_wiki_note(
+        docs_dir,
+        "a.md",
+        content=body,
+        confidence={"extracted": 0.75, "inferred": 0.25, "ambiguous": 0.0},
+    )
+
+    result = lint_wiki(docs_dir)
+
+    assert len(result.violations) == 1
+    assert "confidence" in result.violations[0].message
+
+
+def test_lint_confidence_checks_zero_fraction_exactly(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
+    """A state with zero markers (fraction 0.00) is checked for exact match too, not skipped."""
+    docs_dir = make_docs_tree()
+    body = "- extracted claim one\n- extracted claim two"
+    make_wiki_note(
+        docs_dir,
+        "a.md",
+        content=body,
+        confidence={"extracted": 1.0, "inferred": 0.0, "ambiguous": 0.01},
+    )
+
+    result = lint_wiki(docs_dir)
+
+    assert len(result.violations) == 1
+    assert "confidence" in result.violations[0].message
+
+
+def test_lint_flags_non_mapping_confidence_instead_of_crashing(
+    make_docs_tree: Callable[[], Path], make_wiki_note
+) -> None:
+    """A `confidence:` value that isn't a mapping is flagged, not raised."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "a.md", content="- a claim", confidence=["not", "a", "dict"])
+
+    result = lint_wiki(docs_dir)
+
+    assert len(result.violations) == 1
+    assert "confidence" in result.violations[0].message
+
+
+def test_lint_no_confidence_block_lints_clean_regardless_of_markers(
+    make_docs_tree: Callable[[], Path], make_wiki_note
+) -> None:
+    """A note with no `confidence:` frontmatter lints clean regardless of inline markers present."""
+    docs_dir = make_docs_tree()
+    body = "- inferred claim.^[inferred]\n- ambiguous claim.^[ambiguous]"
+    make_wiki_note(docs_dir, "a.md", content=body)
+
+    result = lint_wiki(docs_dir)
+
+    assert result.violations == []
+    assert result.ok is True
+
+
+def test_lint_confidence_marker_stacks_with_source_citation(
+    make_docs_tree: Callable[[], Path], make_wiki_note
+) -> None:
+    """A confidence marker stacking with a `^[source_id]` citation still counts correctly."""
+    docs_dir = make_docs_tree()
+    body = "- extracted claim.^[design-doc-3]\n- inferred claim.^[inferred]^[design-doc-3]"
+    make_wiki_note(
+        docs_dir,
+        "a.md",
+        content=body,
+        confidence={"extracted": 0.5, "inferred": 0.5, "ambiguous": 0.0},
+    )
+
+    result = lint_wiki(docs_dir)
+
+    assert result.violations == []
+    assert result.ok is True
+
+
 def test_lint_clean_note_has_no_violations(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
     """A well-formed note with valid tags, resolved sources, and correct source_count passes clean."""
     docs_dir = make_docs_tree()
