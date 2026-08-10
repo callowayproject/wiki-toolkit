@@ -158,6 +158,10 @@ For every EXTRACTED or INFERRED link added (inline or related section), infer a 
 
 If the surrounding context is ambiguous or the link came from shared-tag matching (no in-body mention), default to `related_to`.
 
+If a sentence matches more than one pattern (e.g. "RAG uses and extends the base retriever"), take the first matching row in table order above — `extends` beats `uses` in that example. Table order is the tie-break; don't add a separate specificity ranking.
+
+Only infer and write a relationship type for EXTRACTED and INFERRED links. AMBIGUOUS links are skipped by Step 3 already — no relationship entry is written for them, and no type is inferred at all.
+
 **Writing the block:**
 
 Read the page's YAML frontmatter. If a `relationships:` block already exists, append new entries without duplicating existing targets. If the block is absent, add it after `aliases:` (or after `tags:` when `aliases:` is missing).
