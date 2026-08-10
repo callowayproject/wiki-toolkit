@@ -6,8 +6,8 @@ sections — additional metadata, batch planner — were absorbed into
 [toolkit-spec.md](toolkit-spec.md) and removed).
 
 Status: active design for the open [cross-linker map, issue #94](https://github.com/callowayproject/wiki-toolkit/issues/94).
-Scale strategy is still being researched — see [cross-linker-scale-research.md](cross-linker-scale-research.md)
-(issue #97) for the incremental-scan and pre-filter follow-ups this spec doesn't yet account for.
+Scale strategy: see [cross-linker-scale-research.md](cross-linker-scale-research.md) (issue #97) for the prior-art
+survey; the "Scale mechanism" subsection below (issue #115) is the resolved design.
 
 You are weaving the wiki's knowledge graph tighter by finding and inserting missing `[[wikilinks]]` between pages that should reference each other but currently don't.
 
@@ -18,7 +18,24 @@ You are weaving the wiki's knowledge graph tighter by finding and inserting miss
 
 The catalog (`catalog.jsonl`) is an index of all the documents in the wiki (`wiki/`), with cross-references to the sources they reference.
 
-This is your "vocabulary" — every entry in this table is a valid wikilink target.
+This is your "vocabulary" — every entry in this table is a valid wikilink target. Each entry's `aliases`
+field (see toolkit-spec.md's Catalog schema) widens the vocabulary beyond the canonical `title` — an alternate
+name a page is also known by.
+
+### Scale mechanism: no full-vault rescan per run
+
+Candidate detection scopes to **this ingest session's pages**, not the whole vault, every run:
+
+- **Sources scanned** — only the pages this ingest session wrote or updated. `cross-link-candidates` takes
+  these as explicit path arguments (the same page list the session is about to `log`/`propose-pr`), rather
+  than diffing `catalog.jsonl`'s `updated` field against a persisted last-run marker. No state file is needed —
+  the session already knows which pages it touched.
+- **Targets available** — the full catalog registry (Step 1) stays the match target for those scanned pages;
+  existing pages are never rescanned as sources, only looked up as potential link destinations.
+- **Zero-token pre-filter** — before any LLM `Read`, `cross-link-candidates` runs a literal `grep -F` match of
+  every catalog `title` and `aliases` entry against the session's page bodies. This produces the high-confidence
+  EXTRACTED-tier candidates cheaply; only pages with a hit (or with tag/`sources:` overlap feeding the
+  INFERRED tier per #96) need a full-body `Read` for scoring and relationship-type inference.
 
 ## Step 2: Scan for Missing Links
 

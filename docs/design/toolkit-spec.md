@@ -152,6 +152,7 @@ cross-references to the sources they reference.
 
 - `path`: relative path to the document from the repo root
 - `title`: the document's title
+- `aliases`: list of alternate names for the document, from its frontmatter `aliases:` (empty list if absent)
 - `sources`: list of `source` ids this document references
 - `updated`: ISO-8601 date-time string when it was updated
 - `status`: `resolved` when all referenced sources are `resolved`; `proposed` if any is `proposed`
@@ -194,6 +195,7 @@ sync.
 - Mark claims with a confidence marker where relevant: no marker = extracted (a paraphrase of what a source actually says); `^[inferred]` suffix = an LLM-synthesized connection or implication the source doesn't state directly; `^[ambiguous]` suffix = sources disagree or are unclear. Default (no marker) means existing pages stay valid without changes. A claim needing both a confidence marker and a `^[source_id]` citation stacks them as independent suffixes, confidence marker first: `^[inferred]^[design-doc-3]`.
 - The optional `confidence:` frontmatter block rolls up the mix of markers on the page, one countable unit per bullet (or per paragraph on non-bulleted pages), rounded to 2 decimal places, round-half-up. `ingest` writes it best-effort; `lint` recomputes it from the page's actual markers and flags any drift — exact match after rounding, same as `source_count`, no tolerance band.
 - The optional `relationships:` frontmatter block adds typed, directional edges between pages, on top of plain `[[wikilinks]]` (which carry no semantic weight). Rules: omit the block entirely if no typed relationship is known — untagged wikilinks remain valid; if `[[foo]]` already appears as an inline wikilink, a `relationships:` entry just enriches it with a type, it is not a second link; the page declaring the entry is the *source*, `target` is the destination — only declare relationships from this page's own perspective; only add a typed entry when the source material makes the relationship's direction and type clear — when in doubt, use `related_to` or omit. `type` must be one of the fixed Relationship Types below; `target` must resolve to an existing page or `lint` flags it.
+- The optional `aliases:` frontmatter field lists alternate names a page is also known by (e.g. an acronym alongside a spelled-out title). It exists to widen `cross-linker`'s literal-match pre-filter beyond the page's canonical `title:` — nothing else reads it. Omit when a page has no alternate names.
 
 ## Wiki Document Frontmatter
   ```yaml
@@ -214,6 +216,7 @@ sync.
       type: extends
     - target: "[[LSTM]]"
       type: contradicts
+  aliases: [alt name, another alt name]  # optional; alternate names this page is also known by
   ---
   ```
 
@@ -256,7 +259,7 @@ earlier drafts — see [CONTEXT.md](CONTEXT.md)). No adapter arguments yet.
 |---|---|
 | `init` | Scaffold a new wiki: create `docs/{sources,wiki}/`, empty `catalog.jsonl`/`log.jsonl`/`source-manifest.jsonl`, `schema.md` from the built-in template, and a local `docs/.agents/skills/` copy of the skills plugin |
 | `doctor` | Non-mutating health check: `docs/` folder structure, Python version, catalog/manifest sanity, note counts, shallow-clone warning, resolved configuration and its source, local skills-copy version drift |
-| `build` | Generate `docs/catalog.jsonl` from `docs/wiki/` notes (no `index.md`/per-folder index generation) |
+| `build` | Generate `docs/catalog.jsonl` from `docs/wiki/` notes, including each page's `aliases:` frontmatter (empty list if absent) (no `index.md`/per-folder index generation) |
 | `lint` | Validate wiki note frontmatter, allowed tags, source links, `source_count`; flags a `relationships:` entry whose `target` doesn't resolve to an existing page, and drift between a page's `confidence:` block and its recomputed marker counts. Flagged, not rejected — the write gate's PR review is the enforcement point |
 | `source-scan [--update] [--accept-covered]` | Walk `docs/sources/`; classify each file `new` / `update` / `duplicate` (absorbs the old `source-match` and base-spec `source-delta` meaning — "not in the manifest" is just "unprocessed"). With `--update`, write results to `docs/source-manifest.jsonl`. Skips version-controlled source types (no Raw file to scan) |
 | `source-lint` | Validate source frontmatter and coverage state (flags `processed` sources with no `covered_by` entries) |
