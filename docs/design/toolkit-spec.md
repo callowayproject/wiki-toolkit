@@ -161,6 +161,8 @@ Everything else named in `idea.md`'s "Possible sources" list (Slack, Teams, Azur
 
 ## Skills
 
+> **Implementation status**: the five skills below describe the full eventual toolkit's adapter-era design. The skills actually shipped (`skills/` at the repo root, an installable Claude Code plugin) target v1's adapter-less, git-history-backed CLI instead — see [implementation-history.md](implementation-history.md) and [ADR-0008 through ADR-0010](../adr/) for what was built and why it diverges from `source-update`'s design below.
+
 Five skills, each a `SKILL.md` for the agent operating the toolkit:
 
 **ingest** — unchanged from `llm-breakdown.md`: take a source (first time seen), read it, write/update wiki pages, cite the source, log it.

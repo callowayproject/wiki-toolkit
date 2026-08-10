@@ -6,7 +6,7 @@ Consolidates [toolkit-spec.md](toolkit-spec.md) (target design), `Reference/llm-
 
 v1 is a CLI (`wiki_toolkit`) that consumes **pre-materialized Markdown files** dropped into `docs/sources/` — no adapter fetches or converts anything. `propose-pr` stops at a local branch + commit, not a real GitHub PR.
 
-**Out of scope:** source adapters (GitHub/Jira/Confluence), the five `SKILL.md` agent-facing skill files, webhook wiring, real PR creation, pilot-repo rollout.
+**Out of scope for this document:** source adapters (GitHub/Jira/Confluence), webhook wiring, real PR creation, pilot-repo rollout — still unbuilt. The five `SKILL.md` agent-facing skill files were out of scope for the *v1 CLI* build described here, but shipped as a separate phase; see [implementation-history.md](implementation-history.md) and `skills/` at the repo root.
 
 ## Wiki structure
 
@@ -108,7 +108,7 @@ All commands are keyed off `source` (frontmatter field, formerly called `source_
 | Command | Contract |
 |---|---|
 | `init` | Scaffold a new wiki: create `docs/{sources,wiki}/`, empty `catalog.jsonl`/`log.jsonl`/`source-manifest.jsonl`, and `schema.md` from the toolkit's built-in template |
-| `doctor` | Non-mutating health check: `docs/` folder structure, Python version, catalog/manifest sanity, note counts, shallow-clone warning, resolved configuration and its source |
+| `doctor` | Non-mutating health check: `docs/` folder structure, Python version, catalog/manifest sanity, note counts, shallow-clone warning, resolved configuration and its source, local skills-copy version drift |
 | `build` | Generate `docs/catalog.jsonl` from `docs/wiki/` notes (no `index.md`/per-folder index generation) |
 | `lint` | Validate wiki note frontmatter, allowed tags, source links, `source_count` |
 | `source-scan [--update] [--accept-covered]` | Walk `docs/sources/`; classify each file `new` / `update` / `duplicate` (absorbs the old `source-match` and base-spec `source-delta` meaning — "not in the manifest" is just "unprocessed"). With `--update`, write results to `docs/source-manifest.jsonl`. Skips version-controlled source types (no Raw file to scan) |

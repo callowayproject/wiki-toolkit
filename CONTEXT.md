@@ -21,3 +21,10 @@ A source file the toolkit has scanned via `source-scan` and found to be neither 
 
 **Covered** (source state):
 A source that at least one Wiki note's `sources:` frontmatter references (tracked as `covered_by` in the source manifest). A source can be `processed` but not yet `covered` — that's an expected transient state, not an error; `source-lint` flags sources stuck in it as a backlog signal, not enforced at scan time.
+
+**Local skill copy**:
+The versioned copy of the five agent-facing `SKILL.md` files that `init` scaffolds into a consumer wiki's `docs/.agents/skills/`, distinct from the installable Claude Code plugin (`skills/` at this repo's root) it was copied from. Exists so a wiki is self-contained without a live runtime dependency on the plugin.
+_Avoid_: "the skills" alone when the distinction between the plugin and this copy matters (e.g. discussing drift).
+
+**Provenance marker**:
+`docs/.agents/skills/.provenance` — records the `wiki_toolkit` package version a local skill copy was scaffolded from. `doctor` compares it to the installed package version to detect drift; only `init` writes it.

@@ -6,7 +6,7 @@ description: Drive a brand-new or updated source through the wiki_toolkit write 
 # ingest
 
 You are ingesting source documents into an Obsidian wiki.
-Your job is not to summarize, it is to distill and integrate** knowledge across the entire wiki.
+Your job is not to summarize, it is to distill and integrate knowledge across the entire wiki.
 Every step in this sequence is required, in order.
 Do not skip straight to writing the page.
 
