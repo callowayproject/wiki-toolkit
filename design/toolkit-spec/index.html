@@ -9,7 +9,7 @@
       
       
       
-        <link rel="prev" href="../job-stories/">
+        <link rel="prev" href="../metadata-schema-summary/">
       
       
         <link rel="next" href="../v1-spec/">
@@ -910,6 +910,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -970,6 +974,34 @@
     
   
     wiki-toolkit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../batching-and-crosslink/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Batching and crosslink
   
 
     
@@ -1110,6 +1142,34 @@
     
   
     Job Stories
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../metadata-schema-summary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata schema — confidence markers &amp; typed relationships — summary for spec
   
 
     
@@ -1448,10 +1508,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_9" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_11" >
         
           
-          <label class="md-nav__link" for="__nav_7_9" id="__nav_7_9_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_11" id="__nav_7_11_label" tabindex="0">
             
   
   
@@ -1469,8 +1529,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_9_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7_9">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_11">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1537,10 +1597,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_10" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_12" >
         
           
-          <label class="md-nav__link" for="__nav_7_10" id="__nav_7_10_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_12" id="__nav_7_12_label" tabindex="0">
             
   
   
@@ -1558,8 +1618,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_10_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7_10">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_12">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2391,6 +2451,9 @@ An AI Agent harness operates this toolkit; the toolkit itself is domain-agnostic
 <span class="k">-</span><span class="w"> </span>When all sources on a page are <span class="sb">`resolved`</span>, mark the page&#39;s status as <span class="sb">`resolved`</span>.
 <span class="k">-</span><span class="w"> </span>Mark any sections referencing a proposed source with &quot;Proposed change&quot; or &quot;Future implementation&quot; to indicate it is not yet done.
 <span class="k">-</span><span class="w"> </span>On pages that synthesize 3+ sources, append <span class="sb">`^[source_id]`</span> at the end of paragraphs whose claims come from a specific source. This lets a reader trace each claim back without re-reading the whole raw file. Optional on single-source pages where the <span class="sb">`sources:`</span> frontmatter is enough.
+<span class="k">-</span><span class="w"> </span>Mark claims with a confidence marker where relevant: no marker = extracted (a paraphrase of what a source actually says); <span class="sb">`^[inferred]`</span> suffix = an LLM-synthesized connection or implication the source doesn&#39;t state directly; <span class="sb">`^[ambiguous]`</span> suffix = sources disagree or are unclear. Default (no marker) means existing pages stay valid without changes. A claim needing both a confidence marker and a <span class="sb">`^[source_id]`</span> citation stacks them as independent suffixes, confidence marker first: <span class="sb">`^[inferred]^[design-doc-3]`</span>.
+<span class="k">-</span><span class="w"> </span>The optional <span class="sb">`confidence:`</span> frontmatter block rolls up the mix of markers on the page, one countable unit per bullet (or per paragraph on non-bulleted pages), rounded to 2 decimal places, round-half-up. <span class="sb">`ingest`</span> writes it best-effort; <span class="sb">`lint`</span> recomputes it from the page&#39;s actual markers and flags any drift — exact match after rounding, same as <span class="sb">`source_count`</span>, no tolerance band.
+<span class="k">-</span><span class="w"> </span>The optional <span class="sb">`relationships:`</span> frontmatter block adds typed, directional edges between pages, on top of plain <span class="sb">`[[wikilinks]]`</span> (which carry no semantic weight). Rules: omit the block entirely if no typed relationship is known — untagged wikilinks remain valid; if <span class="sb">`[[foo]]`</span> already appears as an inline wikilink, a <span class="sb">`relationships:`</span> entry just enriches it with a type, it is not a second link; the page declaring the entry is the <span class="ge">*source*</span>, <span class="sb">`target`</span> is the destination — only declare relationships from this page&#39;s own perspective; only add a typed entry when the source material makes the relationship&#39;s direction and type clear — when in doubt, use <span class="sb">`related_to`</span> or omit. <span class="sb">`type`</span> must be one of the fixed Relationship Types below; <span class="sb">`target`</span> must resolve to an existing page or <span class="sb">`lint`</span> flags it.
 
 <span class="gu">## Wiki Document Frontmatter</span>
 <span class="sb">  ```yaml</span>
@@ -2402,6 +2465,15 @@ An AI Agent harness operates this toolkit; the toolkit itself is domain-agnostic
 <span class="w">  </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">source_id</span><span class="p p-Indicator">]</span>
 <span class="w">  </span><span class="nt">source_count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">  </span><span class="c1"># must equal len(sources); checked by `lint`</span>
 <span class="w">  </span><span class="nt">status</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">resolved</span><span class="w">  </span><span class="c1"># or `proposed` for speculative pages ingested ahead of any code change</span>
+<span class="w">  </span><span class="nt">confidence</span><span class="p">:</span><span class="w">  </span><span class="c1"># optional; best-effort fractions written by `ingest`, recomputed and drift-checked by `lint` (see Conventions)</span>
+<span class="w">    </span><span class="nt">extracted</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.72</span>
+<span class="w">    </span><span class="nt">inferred</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.25</span>
+<span class="w">    </span><span class="nt">ambiguous</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.03</span>
+<span class="w">  </span><span class="nt">relationships</span><span class="p">:</span><span class="w">  </span><span class="c1"># optional; typed, directional edges to other pages</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;[[Transformer</span><span class="nv"> </span><span class="s">Architecture]]&quot;</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">extends</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;[[LSTM]]&quot;</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">contradicts</span>
 <span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">---</span>
 <span class="sb">  ```</span>
 
@@ -2411,6 +2483,20 @@ Rule: every tag on a page must appear in this taxonomy. If a new tag is needed, 
 
 <span class="k">-</span><span class="w"> </span>&lt;example tag&gt;
 <span class="k">-</span><span class="w"> </span>&lt;another tag&gt;
+
+<span class="gu">## Relationship Types</span>
+
+Fixed set — unlike Tag Taxonomy, this list is not per-wiki editable; the same 7 types apply everywhere so edges stay comparable across wikis.
+
+| Type           | Meaning                                                     | Example                                       |
+|----------------|--------------------------------------------------------------|------------------------------------------------|
+| <span class="sb">`extends`</span>      | This page builds on or generalises the target               | GPT extends Transformer Architecture          |
+| <span class="sb">`implements`</span>   | This page is a concrete realisation of the target concept   | BERT implements Masked Language Modelling     |
+| <span class="sb">`contradicts`</span>  | This page&#39;s claims conflict with or refute the target       | Evidence A contradicts Evidence B             |
+| <span class="sb">`derived_from`</span> | This page is based on or adapted from the target            | Fine-tuning is derived from Transfer Learning |
+| <span class="sb">`uses`</span>         | This page depends on or relies on the target                | RAG uses Vector Databases                     |
+| <span class="sb">`replaces`</span>     | This page supersedes or deprecates the target                | GPT-4 replaces GPT-3                          |
+| <span class="sb">`related_to`</span>   | Catch-all: related but no stronger directional type applies | Concept A is related to Concept B             |
 </code></pre></div>
 <h2 id="adapter-interface">Adapter interface<a class="headerlink" href="#adapter-interface" title="Permanent link">&para;</a></h2>
 <p>Each source type (GitHub, Jira, &hellip;) implements:</p>
@@ -2450,7 +2536,7 @@ diff(old_snapshot, new_snapshot) -&gt; Delta
 <p>Five skills, each a <code>SKILL.md</code> for the agent operating the toolkit:</p>
 <p><strong>ingest</strong> — unchanged from <code>llm-breakdown.md</code>: take a source (first time seen), read it, write/update wiki pages, cite the source, log it.</p>
 <p><strong>query</strong> — unchanged: search the catalog, read relevant pages, answer with citations, optionally file the answer back as a new page.</p>
-<p><strong>lint</strong> — unchanged: contradictions, staleness, orphan pages, missing cross-references.</p>
+<p><strong>lint</strong> — unchanged: contradictions, staleness, orphan pages, missing cross-references. Also flags a <code>relationships:</code> entry whose <code>target</code> doesn&rsquo;t resolve to an existing page — same resolution rule as missing-cross-reference detection already uses for body <code>[[wikilinks]]</code> — and flags drift between a page&rsquo;s <code>confidence:</code> block and its recomputed marker counts. Flagged, not rejected: lint reports, it doesn&rsquo;t block; the write gate&rsquo;s PR review is the enforcement point.</p>
 <p><strong>source-update</strong> (new) — separate from <code>ingest</code> because the judgment calls differ: matching identity, computing a delta, and deciding whether that delta is safe to fold in automatically. Triggered by a source-system event (Jira webhook, GitHub event) or manual invocation:</p>
 <ol>
 <li>Extract <code>stable_id</code> via the adapter. If <code>None</code>, stop — flag for manual filing, do not proceed.</li>

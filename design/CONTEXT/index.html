@@ -12,7 +12,7 @@
         <link rel="prev" href="../../agents/triage-labels/">
       
       
-        <link rel="next" href="../github-webhooks/">
+        <link rel="next" href="../batching-and-crosslink/">
       
       
         
@@ -910,6 +910,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -1036,6 +1040,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../batching-and-crosslink/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Batching and crosslink
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1188,6 +1220,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../metadata-schema-summary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata schema — confidence markers &amp; typed relationships — summary for spec
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../toolkit-spec/" class="md-nav__link">
         
   
@@ -1258,10 +1318,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_9" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_11" >
         
           
-          <label class="md-nav__link" for="__nav_7_9" id="__nav_7_9_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_11" id="__nav_7_11_label" tabindex="0">
             
   
   
@@ -1279,8 +1339,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_9_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7_9">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_11">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1347,10 +1407,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_10" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_12" >
         
           
-          <label class="md-nav__link" for="__nav_7_10" id="__nav_7_10_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_12" id="__nav_7_12_label" tabindex="0">
             
   
   
@@ -1368,8 +1428,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_10_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7_10">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_12">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2140,7 +2200,11 @@ A source that at least one Wiki note&rsquo;s <code>sources:</code> frontmatter r
 The versioned copy of the five agent-facing <code>SKILL.md</code> files that <code>init</code> scaffolds into a consumer wiki&rsquo;s <code>docs/.agents/skills/</code>, distinct from the installable Claude Code plugin (<code>skills/</code> at this repo&rsquo;s root) it was copied from. Exists so a wiki is self-contained without a live runtime dependency on the plugin.
 <em>Avoid</em>: &ldquo;the skills&rdquo; alone when the distinction between the plugin and this copy matters (e.g. discussing drift).</p>
 <p><strong>Provenance marker</strong>:
-<code>docs/.agents/skills/.provenance</code> — records the <code>wiki_toolkit</code> package version a local skill copy was scaffolded from. <code>doctor</code> compares it to the installed package version to detect drift; only <code>init</code> writes it.</p>
+<code>docs/.agents/skills/.provenance</code> — records the <code>wiki_toolkit</code> package version a local skill copy was scaffolded from. <code>doctor</code> compares it to the installed package version to detect drift; only <code>init</code> writes it.
+<em>Avoid</em>: confidence marker (different concept — see Confidence marker entry)</p>
+<p><strong>Confidence marker</strong>:
+A per-claim epistemic tag on wiki page content: <strong>extracted</strong> (default, no marker — a paraphrase of what a source actually says), <strong>inferred</strong> (<code>^[inferred]</code> suffix — an LLM-synthesized connection or implication the source doesn&rsquo;t state directly), or <strong>ambiguous</strong> (<code>^[ambiguous]</code> suffix — sources disagree or are unclear). Optionally rolled up at the page level as a <code>confidence:</code> frontmatter block (best-effort fractions written by <code>ingest</code>, recomputed and drift-checked by <code>lint</code>). Exact inline suffix syntax — including interaction with the existing <code>^[source_id]</code> footnote convention — is pinned down separately.
+<em>Avoid</em>: provenance marker (different concept — see Provenance marker entry)</p>
 
 
 
