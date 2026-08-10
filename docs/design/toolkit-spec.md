@@ -99,7 +99,7 @@ The schema (`schema.md`) provides instructions to the AI agent on how to manage 
 - When all sources on a page are `resolved`, mark the page's status as `resolved`.
 - Mark any sections referencing a proposed source with "Proposed change" or "Future implementation" to indicate it is not yet done.
 - On pages that synthesize 3+ sources, append `^[source_id]` at the end of paragraphs whose claims come from a specific source. This lets a reader trace each claim back without re-reading the whole raw file. Optional on single-source pages where the `sources:` frontmatter is enough.
-- Mark claims with a confidence marker where relevant: no marker = extracted (a paraphrase of what a source actually says); `^[inferred]` suffix = an LLM-synthesized connection or implication the source doesn't state directly; `^[ambiguous]` suffix = sources disagree or are unclear. Default (no marker) means existing pages stay valid without changes. Exact interaction with the `^[source_id]` suffix above is TBD.
+- Mark claims with a confidence marker where relevant: no marker = extracted (a paraphrase of what a source actually says); `^[inferred]` suffix = an LLM-synthesized connection or implication the source doesn't state directly; `^[ambiguous]` suffix = sources disagree or are unclear. Default (no marker) means existing pages stay valid without changes. A claim needing both a confidence marker and a `^[source_id]` citation stacks them as independent suffixes, confidence marker first: `^[inferred]^[design-doc-3]`.
 
 ## Wiki Document Frontmatter
   ```yaml
