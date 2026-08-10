@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
 Frame = Literal["routine", "needs-review"]
 ALLOWED_FRAMES: tuple[Frame, ...] = ("routine", "needs-review")
+_BRANCH_PREFIX = "wiki-update/"
 
 
 @dataclass
@@ -24,44 +25,113 @@ class ProposePrResult:
     pages: list[str]
 
 
+def _require_git() -> str:
+    """Resolve the `git` executable, raising if it isn't on PATH."""
+    git = shutil.which("git")
+    if git is None:
+        raise ValueError("git executable not found")
+    return git
+
+
+def _run(git: str, root: Path, *args: str) -> subprocess.CompletedProcess:
+    """Run a `git` subcommand in `root`, raising `CalledProcessError` on a nonzero exit."""
+    return subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
+        [git, *args], cwd=root, capture_output=True, text=True, check=True
+    )
+
+
+def _new_branch_name(frame: str) -> str:
+    """Generate a unique `wiki-update/<frame>-<timestamp>` branch name."""
+    return f"{_BRANCH_PREFIX}{frame}-{datetime.now(UTC).strftime('%Y%m%d%H%M%S%f')}"
+
+
+def _nothing_staged(git: str, root: Path, pages: list[str]) -> bool:
+    """Report whether `pages` have no staged diff against HEAD."""
+    result = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
+        [git, "diff", "--cached", "--quiet", "--", *pages], cwd=root, check=False
+    )
+    return result.returncode == 0
+
+
+def start_wiki_branch(root: Path, frame: str) -> str:
+    """Create and check out a new local branch for a wiki-update session, before any pages are committed.
+
+    A batch coordinator calls this once, before dispatching any subagents, so every
+    per-source `commit_pages` call and the session's closing `propose_pr` call land on
+    the same branch (see docs/design/tickets — coordinator mechanism for batch dispatch).
+    """
+    if frame not in ALLOWED_FRAMES:
+        raise ValueError(f"invalid frame {frame!r}; must be one of {ALLOWED_FRAMES}")
+    git = _require_git()
+    branch = _new_branch_name(frame)
+    _run(git, root, "checkout", "-b", branch)
+    return branch
+
+
+def commit_pages(root: Path, pages: list[str], message: str) -> str:
+    """Add and commit `pages` onto the currently checked-out branch. Returns the commit sha.
+
+    Used for a batch coordinator's streaming per-source commits — each one lands
+    immediately on the branch opened by `start_wiki_branch`, without waiting for the
+    rest of the session's batches to finish.
+    """
+    if not pages:
+        raise ValueError("pages must not be empty")
+    git = _require_git()
+    try:
+        _run(git, root, "add", "--", *pages)
+        _run(git, root, "commit", "-m", message, "--", *pages)
+    except subprocess.CalledProcessError as e:
+        raise ValueError(f"git staging failed: {e.stderr.strip()}") from e
+    return _run(git, root, "rev-parse", "HEAD").stdout.strip()
+
+
 def propose_pr(root: Path, pages: list[str], frame: str) -> ProposePrResult:
-    """Stage `pages` as a new local git branch + commit, framed for review.
+    """Stage `pages` as a git branch + commit, framed for review, and return that branch.
 
     This is the one write path every wiki mutation is meant to route through
     (see docs/design/idea.md's "write gate" decision). v1 stops at the local
     branch + commit: it never pushes to a remote or opens a real GitHub PR.
+
+    If the current branch was already opened by `start_wiki_branch` (a batch
+    coordinator's session branch), this reuses it instead of creating a new one, and
+    tolerates `pages` having nothing left to commit — every page may already have
+    landed via that session's streaming `commit_pages` calls.
     """
     if frame not in ALLOWED_FRAMES:
         raise ValueError(f"invalid frame {frame!r}; must be one of {ALLOWED_FRAMES}")
     if not pages:
         raise ValueError("pages must not be empty")
 
-    git = shutil.which("git")
-    if git is None:
-        raise ValueError("git executable not found")
-
-    def _run(*args: str) -> subprocess.CompletedProcess:
-        return subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
-            [git, *args], cwd=root, capture_output=True, text=True, check=True
-        )
-
-    branch = f"wiki-update/{frame}-{datetime.now(UTC).strftime('%Y%m%d%H%M%S%f')}"
+    git = _require_git()
+    original_branch = _run(git, root, "branch", "--show-current").stdout.strip()
+    reusing_branch = original_branch.startswith(_BRANCH_PREFIX)
+    branch = original_branch if reusing_branch else _new_branch_name(frame)
     label = "Needs review" if frame == "needs-review" else "Routine"
     message = f"{label}: update {', '.join(pages)}"
-    original_branch = _run("branch", "--show-current").stdout.strip()
 
     try:
-        _run("checkout", "-b", branch)
-        _run("add", "--", *pages)
-        # Scope the commit to `pages` even if something else was already staged, so
-        # it contains exactly the listed pages, per the acceptance criteria.
-        _run("commit", "-m", message, "--", *pages)
-        commit_sha = _run("rev-parse", "HEAD").stdout.strip()
+        commit_sha = _stage_and_commit(git, root, branch, pages, message, checkout=not reusing_branch)
     except subprocess.CalledProcessError as e:
-        if original_branch:
+        if not reusing_branch and original_branch:
             with contextlib.suppress(subprocess.CalledProcessError):
-                _run("checkout", original_branch)
-                _run("branch", "-D", branch)
+                _run(git, root, "checkout", original_branch)
+                _run(git, root, "branch", "-D", branch)
         raise ValueError(f"git staging failed: {e.stderr.strip()}") from e
 
     return ProposePrResult(branch=branch, commit_sha=commit_sha, frame=frame, pages=list(pages))  # type: ignore[arg-type]
+
+
+def _stage_and_commit(git: str, root: Path, branch: str, pages: list[str], message: str, *, checkout: bool) -> str:
+    """Stage and commit `pages`, optionally checking out `branch` first. Returns the resulting commit sha."""
+    if checkout:
+        _run(git, root, "checkout", "-b", branch)
+    _run(git, root, "add", "--", *pages)
+    # Scope the commit to `pages` even if something else was already staged, so it
+    # contains exactly the listed pages, per the acceptance criteria. On a reused batch
+    # branch, `pages` may already be committed by streaming `commit_pages` calls — in
+    # that case there's nothing left to stage, and committing would fail for no reason.
+    if not checkout and _nothing_staged(git, root, pages):
+        return _run(git, root, "rev-parse", "HEAD").stdout.strip()
+    _run(git, root, "commit", "-m", message, "--", *pages)
+    return _run(git, root, "rev-parse", "HEAD").stdout.strip()

@@ -65,3 +65,45 @@ This sequence covers a session ingesting one or more sources, listed manually.
   just the degenerate case of this same sequence.
 - This sequence covers first-time `ingest` only. `source-update` (mutation-triggered
   re-ingest) keeps its own one-PR-per-delta behavior, unaffected by this ticket.
+
+## Batch-dispatched sessions (large source folders)
+
+When a session's sources come from `wiki-toolkit batch-plan <vault> <source-dir>`
+instead of a manual list, you (the top-level session) act as **coordinator**: you
+dispatch one subagent per batch to read and distill in parallel, but you are the
+only one who ever writes to `docs/wiki/` or touches git. This still follows the
+same one-session-one-PR sequence above — only step 2 changes.
+
+1. `wiki-toolkit source-scan --update`, same as a manual session.
+2. `wiki-toolkit start-branch --frame <routine|needs-review>` — open the
+   session's branch once, before dispatching anything. Every commit below,
+   and the closing `propose-pr` call, land on this same branch.
+3. Run `wiki-toolkit batch-plan <vault> <source-dir>` and dispatch one subagent
+   per batch. Each subagent:
+   - Reads and distills its assigned files only — it never writes to `docs/wiki/`.
+   - Drafts its pages under `docs/_staging/batch-<id>/` (git-ignored — confirm
+     `docs/_staging/` is in `.gitignore`; add it if missing) instead of
+     returning page content in its response, so the coordinator never pays to
+     echo large drafted content back through.
+   - Replies with a manifest only: `[{staged_path, dest_path, source_id}, ...]`.
+4. As each subagent's manifest arrives — do not wait for the rest of the
+   wave — for every entry:
+   - Move `staged_path` to `dest_path`.
+   - `wiki-toolkit commit-pages --pages <dest_path> --message "Ingest <source_id>: ..."`
+   - `wiki-toolkit log --action ingest --title "..." --details "..."` for that source.
+5. Once every subagent has reported and been committed, delete `docs/_staging/`
+   entirely.
+6. Close exactly as a manual session does: one `wiki-toolkit build`, one
+   `wiki-toolkit lint`, one `wiki-toolkit propose-pr --pages <every dest_path
+   from every batch> --frame <same frame as step 2>`. `propose-pr` detects
+   that it's already on the branch opened in step 2, reuses it instead of
+   opening a second one, and is a no-op commit-wise for pages already landed
+   by step 4's streaming commits.
+
+Rules specific to batch sessions:
+- No git-level merge or conflict handling is needed anywhere in this flow —
+  subagents never write or commit, so there is only ever one writer.
+- `docs/_staging/` must be empty/removed by the time the session ends,
+  regardless of how many batches ran.
+- All commits from every batch land on the one branch opened in step 2 — one
+  PR for the whole session, same rule as a manual multi-source session.

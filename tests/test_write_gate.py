@@ -4,7 +4,7 @@ import shutil
 import subprocess
 from typing import TYPE_CHECKING
 
-from wiki_toolkit.write_gate import propose_pr
+from wiki_toolkit.write_gate import commit_pages, propose_pr, start_wiki_branch
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -128,3 +128,93 @@ def test_propose_pr_empty_pages_raises(tmp_path: Path) -> None:
         pass
     else:
         raise AssertionError("expected ValueError for empty pages")
+
+
+def test_start_wiki_branch_creates_and_checks_out_branch(tmp_path: Path) -> None:
+    """start_wiki_branch opens a fresh wiki-update/ branch with nothing committed on it yet."""
+    root = _make_propose_pr_repo(tmp_path)
+    main_sha = _git(root, "rev-parse", "main").stdout.strip()
+
+    branch = start_wiki_branch(root, "routine")
+
+    assert branch.startswith("wiki-update/routine-")
+    assert _git(root, "branch", "--show-current").stdout.strip() == branch
+    assert _git(root, "rev-parse", "HEAD").stdout.strip() == main_sha
+
+
+def test_commit_pages_lands_on_current_branch(tmp_path: Path) -> None:
+    """commit_pages adds and commits the given pages onto whatever branch is checked out."""
+    root = _make_propose_pr_repo(tmp_path)
+    branch = start_wiki_branch(root, "routine")
+    (root / "docs" / "wiki" / "note.md").write_text("from batch\n")
+
+    commit_sha = commit_pages(root, ["docs/wiki/note.md"], "Ingest source-1: update note.md")
+
+    assert _git(root, "branch", "--show-current").stdout.strip() == branch
+    assert _git(root, "rev-parse", "HEAD").stdout.strip() == commit_sha
+    committed_files = _git(root, "show", "--name-only", "--format=", commit_sha).stdout.split()
+    assert committed_files == ["docs/wiki/note.md"]
+
+
+def test_streaming_batch_commits_land_on_one_branch_without_waiting(tmp_path: Path) -> None:
+    """Two batches finishing out of order still each commit immediately, both on the one session branch."""
+    root = _make_propose_pr_repo(tmp_path)
+    (root / "docs" / "wiki" / "other.md").write_text("other\n")
+    _git(root, "add", ".")
+    _git(root, "commit", "-m", "add second page")
+
+    branch = start_wiki_branch(root, "routine")
+
+    # Batch "b" (dispatched second) reports back before batch "a" — the coordinator commits
+    # it immediately rather than waiting for "a".
+    (root / "docs" / "wiki" / "other.md").write_text("from batch b\n")
+    commit_b = commit_pages(root, ["docs/wiki/other.md"], "Ingest source-b: update other.md")
+
+    (root / "docs" / "wiki" / "note.md").write_text("from batch a\n")
+    commit_a = commit_pages(root, ["docs/wiki/note.md"], "Ingest source-a: update note.md")
+
+    assert commit_b != commit_a
+    log = _git(root, "log", "--format=%H", branch).stdout.split()
+    assert log[:2] == [commit_a, commit_b]  # newest first
+    assert _git(root, "branch", "--show-current").stdout.strip() == branch
+
+
+def test_propose_pr_reuses_existing_session_branch(tmp_path: Path) -> None:
+    """A closing propose_pr call on a branch opened by start_wiki_branch reuses it, no second branch."""
+    root = _make_propose_pr_repo(tmp_path)
+    branch = start_wiki_branch(root, "routine")
+    (root / "docs" / "wiki" / "note.md").write_text("from batch\n")
+    commit_pages(root, ["docs/wiki/note.md"], "Ingest source-1: update note.md")
+
+    result = propose_pr(root, ["docs/wiki/note.md"], "routine")
+
+    assert result.branch == branch
+    branches = _git(root, "branch", "--list").stdout
+    assert branches.count("wiki-update/") == 1
+
+
+def test_propose_pr_tolerates_pages_already_committed_upstream(tmp_path: Path) -> None:
+    """The closing propose_pr call succeeds even when every listed page was already committed by commit_pages."""
+    root = _make_propose_pr_repo(tmp_path)
+    start_wiki_branch(root, "routine")
+    (root / "docs" / "wiki" / "note.md").write_text("from batch\n")
+    already_committed_sha = commit_pages(root, ["docs/wiki/note.md"], "Ingest source-1: update note.md")
+
+    result = propose_pr(root, ["docs/wiki/note.md"], "routine")
+
+    assert result.commit_sha == already_committed_sha
+
+
+def test_propose_pr_ignores_unrelated_staged_file_when_reusing_branch(tmp_path: Path) -> None:
+    """An unrelated staged file doesn't block the closing propose_pr call from recognizing pages as done."""
+    root = _make_propose_pr_repo(tmp_path)
+    start_wiki_branch(root, "routine")
+    (root / "docs" / "wiki" / "note.md").write_text("from batch\n")
+    already_committed_sha = commit_pages(root, ["docs/wiki/note.md"], "Ingest source-1: update note.md")
+    other = root / "unrelated.txt"
+    other.write_text("unrelated\n")
+    _git(root, "add", "unrelated.txt")
+
+    result = propose_pr(root, ["docs/wiki/note.md"], "routine")
+
+    assert result.commit_sha == already_committed_sha

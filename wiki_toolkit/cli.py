@@ -26,7 +26,7 @@ from wiki_toolkit.sources import (
     write_source_snapshot,
 )
 from wiki_toolkit.wiki import build_catalog, lint_wiki, search_catalog
-from wiki_toolkit.write_gate import ALLOWED_FRAMES, propose_pr
+from wiki_toolkit.write_gate import ALLOWED_FRAMES, commit_pages, propose_pr, start_wiki_branch
 
 
 @click.group()
@@ -295,6 +295,33 @@ def search_catalog_cmd(query: str, docs_dir: Path | None) -> None:
 
     for entry in matches:
         click.echo(f"{entry.get('title', '')} ({entry.get('path', '')})")
+
+
+@cli.command("start-branch")
+@click.option("--frame", type=click.Choice(ALLOWED_FRAMES), required=True, help="Reviewer framing for this session.")
+def start_branch_cmd(frame: str) -> None:
+    """Open a new local git branch for a batch coordinator session, before any source commits."""
+    try:
+        branch = start_wiki_branch(Path.cwd(), frame)
+    except ValueError as e:
+        raise click.UsageError(str(e)) from e
+
+    click.echo(branch)
+
+
+@cli.command("commit-pages")
+@click.option("--pages", required=True, multiple=True, help="Page path to commit. Repeat for multiple pages.")
+@click.option("--message", required=True, help="Commit message, e.g. naming the source that was just ingested.")
+def commit_pages_cmd(pages: tuple[str, ...], message: str) -> None:
+    """Commit PAGES onto the currently checked-out branch (a batch coordinator's per-source streaming commit)."""
+    try:
+        commit_sha = commit_pages(Path.cwd(), list(pages), message)
+    except ValueError as e:
+        raise click.UsageError(str(e)) from e
+
+    click.echo(f"Committed {commit_sha[:10]}")
+    for page in pages:
+        click.echo(f"  [staged] {page}")
 
 
 @cli.command("propose-pr")
