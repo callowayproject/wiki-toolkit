@@ -12,7 +12,7 @@
         <link rel="prev" href="../idea/">
       
       
-        <link rel="next" href="../jira-webhooks/">
+        <link rel="next" href="../job-stories/">
       
       
         
@@ -906,14 +906,6 @@
       
         
       
-        
-      
-        
-      
-        
-      
-        
-      
     
     
     
@@ -994,14 +986,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../batching-and-crosslink/" class="md-nav__link">
+      <a href="../cross-linker-scale-research/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Batching and crosslink
+    Research: prior art on cross-linking / link-suggestion at scale
   
 
     
@@ -1022,14 +1014,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../github-webhooks/" class="md-nav__link">
+      <a href="../cross-linker-spec/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    GitHub webhook events
+    Cross-linker — Skill Spec
   
 
     
@@ -1197,34 +1189,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../jira-webhooks/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Jira webhook events
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../job-stories/" class="md-nav__link">
         
   
@@ -1233,34 +1197,6 @@
     
   
     Job Stories
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../metadata-schema-summary/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Metadata schema — confidence markers &amp; typed relationships — summary for spec
   
 
     
@@ -1308,34 +1244,6 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../v1-spec/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    wiki_toolkit v1 — Build Spec
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
     
     
       
@@ -1351,10 +1259,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_11" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8" >
         
           
-          <label class="md-nav__link" for="__nav_7_11" id="__nav_7_11_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_8" id="__nav_7_8_label" tabindex="0">
             
   
   
@@ -1372,8 +1280,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_11_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7_11">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_8">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1398,95 +1306,6 @@
     
   
     Llm wiki
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-    
-    
-    
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_12" >
-        
-          
-          <label class="md-nav__link" for="__nav_7_12" id="__nav_7_12_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tickets
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_12_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7_12">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Tickets
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../tickets/cross-linker-scale-research/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Research: prior art on cross-linking / link-suggestion at scale
   
 
     
@@ -2214,7 +2033,7 @@
 
 
 <h1 id="implementation-history">Implementation history<a class="headerlink" href="#implementation-history" title="Permanent link">&para;</a></h1>
-<p>How the pitch&rsquo;s toolkit (<a href="../idea/">idea.md</a> → <a href="../toolkit-spec/">toolkit-spec.md</a> → <a href="../v1-spec/">v1-spec.md</a>) actually got built, across two closed Wayfinder maps and their follow-on tickets. This is the connective narrative; the individual resolved decisions live in <a href="../adr/"><code>docs/adr/</code></a> — link there for the &ldquo;why,&rdquo; not here.</p>
+<p>How <code>wiki_toolkit</code> (<a href="../idea/">idea.md</a> → <a href="../toolkit-spec/">toolkit-spec.md</a>) actually got built, across two closed Wayfinder maps and their follow-on tickets. This is the connective narrative; the individual resolved decisions live in <a href="../adr/"><code>docs/adr/</code></a> — link there for the &ldquo;why,&rdquo; not here.</p>
 <h2 id="phase-1-v1-cli-map-2-closed-2026-08-05">Phase 1 — v1 CLI (<a href="https://github.com/callowayproject/wiki-toolkit/issues/2">map #2</a>, closed 2026-08-05)<a class="headerlink" href="#phase-1-v1-cli-map-2-closed-2026-08-05" title="Permanent link">&para;</a></h2>
 <p>Scope: a CLI (<code>wiki_toolkit</code>) that consumes pre-materialized Markdown dropped into <code>docs/sources/</code> — no source adapters, no real GitHub PR creation, no agent-facing <code>SKILL.md</code> files yet. Five design questions had to resolve before any command ticket could start:</p>
 <table>
@@ -2257,7 +2076,7 @@
 <p><strong>Follow-on work</strong>, not part of the original map but building directly on its output:</p>
 <ul>
 <li><strong><a href="https://github.com/callowayproject/wiki-toolkit/issues/37">#37</a> — domain-module split</strong> (closed 2026-08-05): <code>core.py</code> had grown to 810 lines of six tangled domain concepts with the same directory-walk logic reimplemented six times. Split into <code>sources.py</code>/<code>wiki.py</code>/<code>write_gate.py</code>/<code>log.py</code>/<code>doctor.py</code>/<code>_io.py</code> with zero change to <code>cli.py</code>&rsquo;s observable behavior. → <a href="../../adr/0006-domain-module-split/">ADR-0006</a></li>
-<li><strong><a href="https://github.com/callowayproject/wiki-toolkit/issues/54">#54</a> — settings, init, config show</strong> (closed 2026-08-07): filled the gap between what <code>v1-spec.md</code> already specified (a <code>docs_dir</code> precedence chain, an <code>init</code> command) and what existed in code (neither). → <a href="../../adr/0007-settings-resolution-and-init/">ADR-0007</a></li>
+<li><strong><a href="https://github.com/callowayproject/wiki-toolkit/issues/54">#54</a> — settings, init, config show</strong> (closed 2026-08-07): filled the gap between what the spec already specified (a <code>docs_dir</code> precedence chain, an <code>init</code> command) and what existed in code (neither). → <a href="../../adr/0007-settings-resolution-and-init/">ADR-0007</a></li>
 </ul>
 <h2 id="phase-2-skills-package-map-62-closed-2026-08-08">Phase 2 — Skills package (<a href="https://github.com/callowayproject/wiki-toolkit/issues/62">map #62</a>, closed 2026-08-08)<a class="headerlink" href="#phase-2-skills-package-map-62-closed-2026-08-08" title="Permanent link">&para;</a></h2>
 <p>Scope: package the five agent-facing <code>SKILL.md</code> files (<code>ingest</code>, <code>query</code>, <code>lint</code>, <code>source-update</code>, <code>maintain</code>) as a standalone, installable Claude Code plugin, and make <code>init</code>/<code>doctor</code> keep a per-wiki local copy in sync with it. Four design questions:</p>
@@ -2298,8 +2117,7 @@
 <h2 id="where-to-look">Where to look<a class="headerlink" href="#where-to-look" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Resolved decisions, with context and consequences</strong>: <a href="../adr/"><code>docs/adr/</code></a></li>
-<li><strong>CLI reference, as built</strong>: <a href="../v1-spec/">v1-spec.md</a></li>
-<li><strong>Full eventual toolkit vision</strong> (adapters, webhooks) — superseded by v1-spec.md wherever they disagree: <a href="../toolkit-spec/">toolkit-spec.md</a></li>
+<li><strong>CLI reference, as built, plus the still-unbuilt full vision (adapters, webhooks) under &ldquo;Not yet built&rdquo; headings</strong>: <a href="../toolkit-spec/">toolkit-spec.md</a></li>
 <li><strong>Domain vocabulary</strong>: <a href="../CONTEXT/">CONTEXT.md</a></li>
 </ul>
 

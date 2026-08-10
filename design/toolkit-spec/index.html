@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../metadata-schema-summary/">
+        <link rel="prev" href="../job-stories/">
       
       
-        <link rel="next" href="../v1-spec/">
+        <link rel="next" href="../Reference/llm-wiki/">
       
       
         
@@ -906,14 +906,6 @@
       
         
       
-        
-      
-        
-      
-        
-      
-        
-      
     
     
     
@@ -994,14 +986,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../batching-and-crosslink/" class="md-nav__link">
+      <a href="../cross-linker-scale-research/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Batching and crosslink
+    Research: prior art on cross-linking / link-suggestion at scale
   
 
     
@@ -1022,14 +1014,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../github-webhooks/" class="md-nav__link">
+      <a href="../cross-linker-spec/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    GitHub webhook events
+    Cross-linker — Skill Spec
   
 
     
@@ -1106,34 +1098,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../jira-webhooks/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Jira webhook events
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../job-stories/" class="md-nav__link">
         
   
@@ -1142,34 +1106,6 @@
     
   
     Job Stories
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../metadata-schema-summary/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Metadata schema — confidence markers &amp; typed relationships — summary for spec
   
 
     
@@ -1258,10 +1194,31 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Wiki structure">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stack
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#sources" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1274,10 +1231,21 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#source-frontmatter" class="md-nav__link">
+  <a href="#source-lifecycle-frontmatter" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Source frontmatter
+        Source lifecycle (frontmatter)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deltas-and-revisions-source-delta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deltas and revisions (source-delta)
       
     </span>
   </a>
@@ -1288,8 +1256,8 @@
     </nav>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#source-manifest" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1316,8 +1284,8 @@
     </nav>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#catalog" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1344,8 +1312,8 @@
     </nav>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#log" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1372,56 +1340,12 @@
     </nav>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#schema" class="md-nav__link">
     <span class="md-ellipsis">
       
         Schema
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#adapter-interface" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Adapter interface
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Adapter interface">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#v1-adapters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        v1 adapters
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#skills" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Skills
       
     </span>
   </a>
@@ -1440,10 +1364,105 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#helper-tools-cli-surface" class="md-nav__link">
+  <a href="#command-surface" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Helper tools (CLI surface)
+        Command surface
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Command surface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#not-yet-built-batching-extensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Not yet built: batching extensions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#not-yet-built-adapters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Not yet built: adapters
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Not yet built: adapters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#planned-v1-adapters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Planned v1 adapters
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Planned v1 adapters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#github-adapter-payload-shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub adapter payload shape
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jira-adapter-payload-shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Jira adapter payload shape
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#not-yet-built-adapter-era-skills" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Not yet built: adapter-era skills
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing strategy
       
     </span>
   </a>
@@ -1454,34 +1473,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../v1-spec/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    wiki_toolkit v1 — Build Spec
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -1508,10 +1499,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_11" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_8" >
         
           
-          <label class="md-nav__link" for="__nav_7_11" id="__nav_7_11_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_8" id="__nav_7_8_label" tabindex="0">
             
   
   
@@ -1529,8 +1520,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_11_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7_11">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_8">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1555,95 +1546,6 @@
     
   
     Llm wiki
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-    
-    
-    
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_12" >
-        
-          
-          <label class="md-nav__link" for="__nav_7_12" id="__nav_7_12_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tickets
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_12_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7_12">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Tickets
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../tickets/cross-linker-scale-research/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Research: prior art on cross-linking / link-suggestion at scale
   
 
     
@@ -2371,70 +2273,154 @@
 
 
 <h1 id="llm-wiki-toolkit-spec">LLM Wiki Toolkit — Spec<a class="headerlink" href="#llm-wiki-toolkit-spec" title="Permanent link">&para;</a></h1>
-<p>Specifies the AI skills and helper tools that implement <a href="../Reference/llm-wiki/">llm-wiki.md</a> as a general-purpose toolkit.
-An AI Agent harness operates this toolkit; the toolkit itself is domain-agnostic.</p>
+<p>Specifies <code>wiki_toolkit</code>, the AI skills and helper tools that implement <a href="../Reference/llm-wiki/">llm-wiki.md</a>
+as a general-purpose toolkit. An AI Agent harness operates this toolkit; the toolkit itself is
+domain-agnostic.</p>
+<p>This doc merges what shipped (v1 CLI + skills plugin, see <a href="../implementation-history/">implementation-history.md</a>)
+with the still-unbuilt full vision. Content is as-built by default; anything not yet built is called
+out explicitly under <strong>&ldquo;Not yet built&rdquo;</strong> headings. See <a href="../CONTEXT/">CONTEXT.md</a> for terminology.</p>
 <h2 id="wiki-structure">Wiki structure<a class="headerlink" href="#wiki-structure" title="Permanent link">&para;</a></h2>
-<p>The basic layout of the wiki is:</p>
+<p>The basic layout of the wiki:</p>
 <div class="highlight"><pre><span></span><code>repo-root/
 └── docs/
     ├── .agents/
-    │   └── skills/            # The AI Agent skills required to manage
-    ├── catalog.jsonl          # Catalog of everything in the wiki
-    ├── log.jsonl              # Chronological listing of wiki events
-    ├── schema.md              # Evolving description of the wiki
-    ├── source-manifest.jsonl  # Index of sources, where they are linked
-    ├── sources/               # Raw sources
-    └── wiki/
+    │   └── skills/             # Local copy of the AI Agent skills, scaffolded by `init`
+    ├── catalog.jsonl           # Catalog of everything in the wiki
+    ├── log.jsonl               # Chronological listing of wiki events
+    ├── schema.md               # Evolving description of the wiki
+    ├── source-manifest.jsonl   # Index of sources, where they are linked
+    ├── sources/                # Raw sources — drop zone AND processed store, no staging dir
+    └── wiki/                   # Compiled wiki notes
 </code></pre></div>
-<h3 id="sources">Sources<a class="headerlink" href="#sources" title="Permanent link">&para;</a></h3>
+<h2 id="stack">Stack<a class="headerlink" href="#stack" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>CLI</strong>: <code>click</code></li>
+<li><strong>Frontmatter parsing</strong>: <code>python-frontmatter</code></li>
+<li><strong>Kept from scaffold</strong>: <code>orjson</code>, <code>pydantic-settings</code></li>
+<li><strong>Stripped as template cruft</strong>: <code>fastapi[standard]</code>, all <code>opentelemetry-*</code> packages, <code>structlog</code></li>
+</ul>
+<p><strong>Architecture constraint</strong>: the CLI is a thin adapter (arg parsing, delegation, output formatting).
+All business logic lives in internal library functions the CLI calls — the CLI has no logic worth
+unit-testing beyond correct delegation.</p>
+<h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
+<p>Settings (currently just the <code>docs</code> root, default <code>docs/</code>) resolve via <code>pydantic-settings</code>, in
+precedence order:</p>
+<ol>
+<li>CLI flag (<code>--docs-dir</code>, per-command where relevant)</li>
+<li>Environment variable (<code>WIKI_TOOLKIT_DOCS_DIR</code>)</li>
+<li><code>[tool.wiki_toolkit]</code> table in the project&rsquo;s <code>pyproject.toml</code>, if present</li>
+<li>Built-in default</li>
+</ol>
+<p>No dedicated config file format — reusing <code>pyproject.toml</code> avoids introducing a new file the user
+has to know about.</p>
+<h2 id="sources">Sources<a class="headerlink" href="#sources" title="Permanent link">&para;</a></h2>
 <p>There are two kinds of sources:</p>
-<p><strong>Version-controlled:</strong> (source code, PRs) These are never copied into <code>sources/</code>. Git already has an immutable history; duplicating it into <code>sources/</code> is pure redundancy. An entry for each file is maintained in the <code>catalog.jsonl</code> file.</p>
-<p><strong>Snapshot:</strong> (Jira, Slack, external wiki pages) A snapshot is anything external to the source repository. Markdown versioned snapshots of the content are copied into <code>sources/</code>, because the toolkit has to create the history the source system doesn&rsquo;t provide.</p>
-<p>A source type must expose a stable external ID (e.g., a URI, Jira ticket key, Slack permalink, or Confluence page ID) to be eligible for snapshot handling. If a source type can&rsquo;t supply one, the toolkit refuses automatic ingestion and flags it for manual filing. Fuzzy content-matching is deliberately excluded as a dedup mechanism, since a false-positive merge in an unattended, write-capable agent is worse than a missed source.</p>
+<p><strong>Version-controlled</strong> (source code, PRs) — never copied into <code>sources/</code>; git already has an
+immutable history, so duplicating it would be pure redundancy. Cited by <code>{repo, path, commit_sha}</code>.
+An entry for each file is maintained in <code>catalog.jsonl</code>. Out of scope for scanning today —
+<code>source-scan</code> skips these, since there are no adapters yet to produce them (see &ldquo;Not yet built&rdquo;
+under Adapter interface, below).</p>
+<p><strong>Snapshot source</strong> (Jira, Slack, Confluence, external wiki pages) — anything without its own
+version history. Markdown versioned snapshots of the content are copied into <code>sources/</code>, because
+the toolkit has to create the history the source system doesn&rsquo;t provide.</p>
+<p>A source type must expose a stable external ID (e.g., a URI, Jira ticket key, Slack permalink, or
+Confluence page ID) to be eligible for snapshot handling. If a source type can&rsquo;t supply one, the
+toolkit refuses automatic ingestion and flags it for manual filing. Fuzzy content-matching is
+deliberately excluded as a dedup mechanism, since a false-positive merge in an unattended,
+write-capable agent is worse than a missed source.</p>
 <p>Within a snapshot source, two mutation types are handled differently:</p>
 <ul>
-<li><strong>Comments:</strong> Each comment on a source is treated as its own source. Each comment has its own stable ID from the source system. No diffing: the toolkit tracks the highest processed comment ID per parent source and treats anything newer as new.</li>
-<li><strong>Field edits:</strong> Changes to sources (status, description, assignee, etc.) mutate in place. The toolkit diffs the full field state against the last snapshot to produce a delta of fields that have changed.</li>
+<li><strong>Comments</strong>: each comment on a source is treated as its own source, with its own stable ID.
+  No diffing: the toolkit tracks the highest processed comment ID per parent source and treats
+  anything newer as new.</li>
+<li><strong>Field edits</strong>: changes to a source&rsquo;s fields (status, description, assignee, etc.) mutate in
+  place. The toolkit diffs the full field state against the last snapshot to produce a delta of
+  changed fields.</li>
 </ul>
-<h4 id="source-frontmatter">Source frontmatter<a class="headerlink" href="#source-frontmatter" title="Permanent link">&para;</a></h4>
-<p>Each source should have the following frontmatter prepended to it:</p>
+<h3 id="source-lifecycle-frontmatter">Source lifecycle (frontmatter)<a class="headerlink" href="#source-lifecycle-frontmatter" title="Permanent link">&para;</a></h3>
+<p>Files land directly in <code>docs/sources/</code> — no separate staging/inbox directory. State is tracked
+entirely via frontmatter:</p>
 <ul>
-<li><strong>source_id:</strong> Required unique identifier for this source. A URI is recommended</li>
-<li><strong>processed:</strong> Defaults to <code>false</code> to indicate it hasn&rsquo;t been processed by the toolkit/AI Agent</li>
+<li><strong><code>source</code></strong> (required): unique identifier for this source. A URI is recommended. This is the
+  only identity field today — no <code>source_id</code>/<code>stable_id</code> split (that distinction is adapter-era,
+  not yet built).</li>
+<li><strong><code>processed</code></strong> (bool, default <code>false</code> / treated as <code>false</code> if missing): only the toolkit CLI
+  ever sets this <code>true</code>; upstream materializers never do. &ldquo;Brand-new&rdquo; vs. &ldquo;known source needing
+  reprocessing&rdquo; both read as <code>processed: false</code> — telling them apart is <code>source-scan</code>&rsquo;s job, via
+  manifest lookup.</li>
+<li><strong><code>duplicate</code></strong> (bool): set by <code>source-scan</code> when a <code>source</code> id appears under more than one
+  filename. The first-seen file stays canonical and keeps processing normally; later files with the
+  same <code>source</code> are stamped <code>duplicate: true</code> and excluded from <code>source-scan</code>/<code>build</code> until a human
+  resolves them via <code>source-dedupe</code>.</li>
 </ul>
-<h3 id="source-manifest">Source manifest<a class="headerlink" href="#source-manifest" title="Permanent link">&para;</a></h3>
-<p>The source manifest (<code>source-manifest.jsonl</code>) is an index of all sources referenced in the wiki. The toolkit will use it to determine the potential scope of a change.</p>
-<h4 id="source-manifest-schema">Source manifest schema<a class="headerlink" href="#source-manifest-schema" title="Permanent link">&para;</a></h4>
+<p><strong>Updates</strong> overwrite the same file path (not a new filename); omitting/resetting <code>processed</code> on
+the overwrite signals &ldquo;needs reprocessing.&rdquo;</p>
+<p><strong>Processed vs. covered</strong> (distinct states, both legitimate independently):
+- <em>Processed</em> — toolkit has scanned it, not a duplicate/error.
+- <em>Covered</em> — at least one wiki note&rsquo;s <code>sources:</code> frontmatter references it (tracked as
+  <code>covered_by</code> in the manifest). Processed-but-not-covered is an expected transient state;
+  <code>source-lint</code> flags sources stuck there as a backlog signal, not an ingest-time error.</p>
+<h3 id="deltas-and-revisions-source-delta">Deltas and revisions (<code>source-delta</code>)<a class="headerlink" href="#deltas-and-revisions-source-delta" title="Permanent link">&para;</a></h3>
+<p>Git history is the storage mechanism for prior states — no separate snapshot store.</p>
 <ul>
-<li><code>source_id</code>: The unique identifier for this document</li>
-<li><code>path</code>: The relative path to the document from the repo root.</li>
-<li><code>title</code>: The title of the document or the file name, if necessary.</li>
-<li><code>referenced_by</code>: A list of relative paths to wiki documents that reference this file.</li>
-<li><code>updated</code>: The ISO-8601 date-time string when it was updated.</li>
-<li><code>update_sha</code>: The SHA hash of the Git commit last processed for this file or the computed SHA hash of files for mutable sources, like Jira tickets.</li>
-<li><code>status</code>: <code>proposed</code> or <code>resolved</code>. <code>proposed</code> means the source was ingested ahead of any code change (a design doc, a ticket) and its wiki page is speculative; <code>resolved</code> means a PR has since referenced this source, confirming it against an actual diff.</li>
+<li><strong>Current state</strong> = the working-tree file.</li>
+<li><strong>Last-known revision</strong> = the prior version of that path as of the last commit on <code>main</code> (not
+  current HEAD, not whatever branch is checked out) — so <code>source-delta</code> always answers &ldquo;has the
+  canonical (merged) state changed,&rdquo; matching the write gate&rsquo;s &ldquo;main is truth&rdquo; model.</li>
+<li><strong>Diff scope</strong>: only source-content fields (status, description, assignee, etc.) are compared.
+  CLI-owned bookkeeping fields (<code>processed</code>, <code>duplicate</code>, <code>source</code>) are excluded — they&rsquo;re toolkit
+  noise, not source changes.</li>
+<li><strong>First-time ingestion</strong> (no prior commit for that path on <code>main</code>): synthetic empty baseline —
+  every content field reports as new (<code>(None, current_value)</code>). <code>source-delta</code> always produces a
+  <code>Delta</code>, no special-case failure.</li>
+<li><strong>Mechanism</strong>: <code>git log -1 --format=%H main -- &lt;path&gt;</code> to find the last commit touching the path,
+  <code>git show &lt;sha&gt;:&lt;path&gt;</code> to read its content, diff only source-content fields.</li>
+<li><strong>Requires full git history</strong> (<code>fetch-depth: 0</code>); <code>doctor</code> detects and warns on a shallow clone,
+  since a shallow clone would make any but the most recent commit indistinguishable from
+  &ldquo;first-time ingestion.&rdquo;</li>
 </ul>
-<h3 id="catalog">Catalog<a class="headerlink" href="#catalog" title="Permanent link">&para;</a></h3>
-<p>The catalog (<code>catalog.jsonl</code>) is an index of all the documents in the wiki (<code>wiki/</code>), with cross-references to the sources they reference.</p>
-<h4 id="catalog-schema">Catalog schema<a class="headerlink" href="#catalog-schema" title="Permanent link">&para;</a></h4>
+<h2 id="source-manifest">Source manifest<a class="headerlink" href="#source-manifest" title="Permanent link">&para;</a></h2>
+<p>The source manifest (<code>source-manifest.jsonl</code>) is an index of all sources referenced in the wiki.
+The toolkit uses it to determine the potential scope of a change.</p>
+<h3 id="source-manifest-schema">Source manifest schema<a class="headerlink" href="#source-manifest-schema" title="Permanent link">&para;</a></h3>
 <ul>
-<li><code>path</code>: The relative path to the document from the repo root.</li>
-<li><code>title</code>: The title of the document.</li>
-<li><code>sources</code>: A list of sources (<code>source_id</code>s) this document references.</li>
-<li><code>updated</code>: The ISO-8601 date-time string when it was updated.</li>
-<li><code>status</code>: <code>resolved</code> when all sources have a <code>status</code> of <code>resolved</code>. <code>proposed</code> if any source has a <code>status</code> of <code>proposed</code>.</li>
+<li><code>source</code>: unique identifier for this document</li>
+<li><code>path</code>: relative path to the document from the repo root</li>
+<li><code>title</code>: document title, or the file name if necessary</li>
+<li><code>referenced_by</code>: relative paths of wiki documents that reference this file</li>
+<li><code>updated</code>: ISO-8601 date-time string when it was updated</li>
+<li><code>update_sha</code>: SHA of the Git commit last processed for this file, or the computed SHA of files
+  for mutable sources like Jira tickets</li>
+<li><code>status</code>: <code>proposed</code> or <code>resolved</code>. <code>proposed</code> means the source was ingested ahead of any code
+  change (a design doc, a ticket) and its wiki page is speculative; <code>resolved</code> means a PR has since
+  referenced this source, confirming it against an actual diff.</li>
+<li><code>covered_by</code>: relative paths of wiki notes that cite this source</li>
 </ul>
-<h3 id="log">Log<a class="headerlink" href="#log" title="Permanent link">&para;</a></h3>
+<h2 id="catalog">Catalog<a class="headerlink" href="#catalog" title="Permanent link">&para;</a></h2>
+<p>The catalog (<code>catalog.jsonl</code>) is an index of all the documents in the wiki (<code>wiki/</code>), with
+cross-references to the sources they reference.</p>
+<h3 id="catalog-schema">Catalog schema<a class="headerlink" href="#catalog-schema" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>path</code>: relative path to the document from the repo root</li>
+<li><code>title</code>: the document&rsquo;s title</li>
+<li><code>sources</code>: list of <code>source</code> ids this document references</li>
+<li><code>updated</code>: ISO-8601 date-time string when it was updated</li>
+<li><code>status</code>: <code>resolved</code> when all referenced sources are <code>resolved</code>; <code>proposed</code> if any is <code>proposed</code></li>
+</ul>
+<h2 id="log">Log<a class="headerlink" href="#log" title="Permanent link">&para;</a></h2>
 <p>The log (<code>log.jsonl</code>) is an append-only chronological list of wiki events.</p>
-<h4 id="log-schema">Log schema<a class="headerlink" href="#log-schema" title="Permanent link">&para;</a></h4>
+<h3 id="log-schema">Log schema<a class="headerlink" href="#log-schema" title="Permanent link">&para;</a></h3>
 <ul>
-<li><code>date</code>: The ISO-8601 date-time string when it was created.</li>
-<li><code>action</code>: The type of event being logged. One of <code>ingest</code>,  <code>update</code>, <code>lint</code>, <code>create</code>, <code>archive</code>,  <code>delete</code>.</li>
-<li><code>message</code>: A one-line message summarizing the action.</li>
-<li><code>details</code>: Details about the action.</li>
+<li><code>date</code>: ISO-8601 date-time string when the entry was created</li>
+<li><code>action</code>: one of <code>ingest</code>, <code>update</code>, <code>lint</code>, <code>create</code>, <code>archive</code>, <code>delete</code></li>
+<li><code>message</code>: a one-line summary of the action</li>
+<li><code>details</code>: details about the action</li>
 </ul>
-<h3 id="schema">Schema<a class="headerlink" href="#schema" title="Permanent link">&para;</a></h3>
-<p>The schema (<code>schema.md</code>) provides instructions to the AI agent on how to manage this wiki. The AI agent can modify it</p>
+<h2 id="schema">Schema<a class="headerlink" href="#schema" title="Permanent link">&para;</a></h2>
+<p>The schema (<code>schema.md</code>) provides instructions to the AI agent on how to manage this wiki. The AI
+agent can modify it. <code>init</code> scaffolds it from this built-in template; the toolkit doesn&rsquo;t generate
+or validate its prose beyond keeping referenced fields (<code>catalog.jsonl</code>/<code>log.jsonl</code> entries) in
+sync.</p>
 <div class="highlight"><pre><span></span><code><span class="gh"># Wiki Schema</span>
 
 <span class="gu">## Domain</span>
@@ -2498,8 +2484,97 @@ Fixed set — unlike Tag Taxonomy, this list is not per-wiki editable; the same 
 | <span class="sb">`replaces`</span>     | This page supersedes or deprecates the target                | GPT-4 replaces GPT-3                          |
 | <span class="sb">`related_to`</span>   | Catch-all: related but no stronger directional type applies | Concept A is related to Concept B             |
 </code></pre></div>
-<h2 id="adapter-interface">Adapter interface<a class="headerlink" href="#adapter-interface" title="Permanent link">&para;</a></h2>
-<p>Each source type (GitHub, Jira, &hellip;) implements:</p>
+<h2 id="write-gate">Write gate<a class="headerlink" href="#write-gate" title="Permanent link">&para;</a></h2>
+<p>Every wiki write goes through a PR — no exceptions, no direct commits, for either LLM-authored
+content or deterministic tooling output (catalog, manifest, log). One rule, no second write path
+to audit. Today, <code>propose-pr</code> stops at a local branch + commit — no real GitHub PR yet (see &ldquo;Not
+yet built&rdquo; under Command surface).</p>
+<h2 id="command-surface">Command surface<a class="headerlink" href="#command-surface" title="Permanent link">&para;</a></h2>
+<p>All commands are keyed off <code>source</code> (frontmatter field, formerly called <code>source_id</code>/<code>stable_id</code> in
+earlier drafts — see <a href="../CONTEXT/">CONTEXT.md</a>). No adapter arguments yet.</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Contract</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>init</code></td>
+<td>Scaffold a new wiki: create <code>docs/{sources,wiki}/</code>, empty <code>catalog.jsonl</code>/<code>log.jsonl</code>/<code>source-manifest.jsonl</code>, <code>schema.md</code> from the built-in template, and a local <code>docs/.agents/skills/</code> copy of the skills plugin</td>
+</tr>
+<tr>
+<td><code>doctor</code></td>
+<td>Non-mutating health check: <code>docs/</code> folder structure, Python version, catalog/manifest sanity, note counts, shallow-clone warning, resolved configuration and its source, local skills-copy version drift</td>
+</tr>
+<tr>
+<td><code>build</code></td>
+<td>Generate <code>docs/catalog.jsonl</code> from <code>docs/wiki/</code> notes (no <code>index.md</code>/per-folder index generation)</td>
+</tr>
+<tr>
+<td><code>lint</code></td>
+<td>Validate wiki note frontmatter, allowed tags, source links, <code>source_count</code>; flags a <code>relationships:</code> entry whose <code>target</code> doesn&rsquo;t resolve to an existing page, and drift between a page&rsquo;s <code>confidence:</code> block and its recomputed marker counts. Flagged, not rejected — the write gate&rsquo;s PR review is the enforcement point</td>
+</tr>
+<tr>
+<td><code>source-scan [--update] [--accept-covered]</code></td>
+<td>Walk <code>docs/sources/</code>; classify each file <code>new</code> / <code>update</code> / <code>duplicate</code> (absorbs the old <code>source-match</code> and base-spec <code>source-delta</code> meaning — &ldquo;not in the manifest&rdquo; is just &ldquo;unprocessed&rdquo;). With <code>--update</code>, write results to <code>docs/source-manifest.jsonl</code>. Skips version-controlled source types (no Raw file to scan)</td>
+</tr>
+<tr>
+<td><code>source-lint</code></td>
+<td>Validate source frontmatter and coverage state (flags <code>processed</code> sources with no <code>covered_by</code> entries)</td>
+</tr>
+<tr>
+<td><code>source-delta &lt;source&gt;</code></td>
+<td>Diff a known source&rsquo;s current content against its last-known revision; print <code>Delta</code> (<code>new_comment_ids</code>, <code>changed_fields</code>)</td>
+</tr>
+<tr>
+<td><code>source-coverage</code></td>
+<td>Show which sources in <code>docs/sources/</code> are covered by wiki notes</td>
+</tr>
+<tr>
+<td><code>source-snapshot &lt;source&gt; --units comments\|fields</code></td>
+<td>Write the new Raw snapshot unit(s) for the given mutation type</td>
+</tr>
+<tr>
+<td><code>source-dedupe</code></td>
+<td>List <code>duplicate: true</code> files with rule-based (mtime/content-similarity) keep/discard suggestions; human confirms/executes — not auto-resolved</td>
+</tr>
+<tr>
+<td><code>search-catalog --query "text"</code></td>
+<td>Search compiled wiki notes through the catalog</td>
+</tr>
+<tr>
+<td><code>log --title "..." --details "..."</code></td>
+<td>Append entry to <code>docs/log.jsonl</code></td>
+</tr>
+<tr>
+<td><code>propose-pr --pages &lt;list&gt; --frame routine\|needs-review</code></td>
+<td>Branch + commit locally, framed per mutation type that triggered it (no real GitHub PR yet)</td>
+</tr>
+<tr>
+<td><code>config show</code></td>
+<td>Read-only: print the resolved configuration and which source (default/env/<code>pyproject.toml</code>/flag) each value came from</td>
+</tr>
+</tbody>
+</table>
+<h3 id="not-yet-built-batching-extensions">Not yet built: batching extensions<a class="headerlink" href="#not-yet-built-batching-extensions" title="Permanent link">&para;</a></h3>
+<p>Planned additions for batched multi-source ingest (one PR per ingestion session, not one per
+source) — spec written but not yet fully implemented:</p>
+<ul>
+<li><code>batch-plan &lt;vault&gt; &lt;source-dir&gt;</code> — split the files under <code>source-dir</code> into batches (100,000
+  bytes or 20 files per batch, whichever comes first), for parallel wiki-ingest subagent dispatch.</li>
+<li><code>start-branch --frame routine|needs-review</code> — open a session&rsquo;s local branch up front, before any
+  pages are committed. Used by a batch coordinator so streaming per-source commits and the closing
+  <code>propose-pr</code> call land on the same branch.</li>
+<li><code>commit-pages --pages &lt;list&gt; --message &lt;str&gt;</code> — add and commit <code>pages</code> onto the currently
+  checked-out branch. A batch coordinator calls this once per source, as soon as that source&rsquo;s
+  subagent reports back, rather than waiting for the whole batch to finish.</li>
+<li><code>propose-pr</code> extended to reuse a branch already opened by <code>start-branch</code> instead of creating a
+  new one, and to tolerate pages already committed by <code>commit-pages</code>.</li>
+</ul>
+<h2 id="not-yet-built-adapters">Not yet built: adapters<a class="headerlink" href="#not-yet-built-adapters" title="Permanent link">&para;</a></h2>
+<p>Each source type (GitHub, Jira, &hellip;) would implement:</p>
 <div class="highlight"><pre><span></span><code>kind(payload) -&gt; &quot;version_controlled&quot; | &quot;snapshot&quot;
 
 stable_id(payload) -&gt; str | None
@@ -2522,22 +2597,62 @@ diff(old_snapshot, new_snapshot) -&gt; Delta
   #   changed_fields: {name: (old_value, new_value), ...},
   # }
 </code></pre></div>
-<h3 id="v1-adapters">v1 adapters<a class="headerlink" href="#v1-adapters" title="Permanent link">&para;</a></h3>
+<h3 id="planned-v1-adapters">Planned v1 adapters<a class="headerlink" href="#planned-v1-adapters" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>GitHub</strong> — issues, PRs, Renovate PRs. Already the trigger mechanism per <code>idea.md</code>. Dependabot PRs are out of scope for the pilot (see <code>idea.md</code> Solution section).</li>
+<li><strong>GitHub</strong> — issues, PRs, Renovate PRs. Already the trigger mechanism per <code>idea.md</code>. Dependabot
+  PRs are out of scope for the pilot (see <code>idea.md</code> Solution section).</li>
 <li><strong>Jira</strong> — the concrete comment-chain case that motivated this spec.</li>
-<li><strong>Confluence</strong> — design docs. <code>stable_id</code> is the Confluence page ID. Ingesting a design doc ahead of any PR produces a <code>status: proposed</code> wiki page (see &ldquo;Write gate&rdquo; and <code>idea.md</code>&rsquo;s source-manifest schema); a later PR that references the same page ID resolves it via the normal source-linkage flow, flipping <code>status</code> to <code>resolved</code>.</li>
+<li><strong>Confluence</strong> — design docs. <code>stable_id</code> is the Confluence page ID. Ingesting a design doc ahead
+  of any PR produces a <code>status: proposed</code> wiki page (see &ldquo;Write gate&rdquo; and the source-manifest
+  schema above); a later PR that references the same page ID resolves it via the normal
+  source-linkage flow, flipping <code>status</code> to <code>resolved</code>.</li>
 </ul>
-<p>Everything else named in <code>idea.md</code>&rsquo;s &ldquo;Possible sources&rdquo; list (Slack, Teams, Azure DevOps, Linear) implements this interface later. No stub code is required now — the interface above is the contract a future adapter must satisfy.</p>
-<h2 id="skills">Skills<a class="headerlink" href="#skills" title="Permanent link">&para;</a></h2>
-<blockquote>
-<p><strong>Implementation status</strong>: the five skills below describe the full eventual toolkit&rsquo;s adapter-era design. The skills actually shipped (<code>skills/</code> at the repo root, an installable Claude Code plugin) target v1&rsquo;s adapter-less, git-history-backed CLI instead — see <a href="../implementation-history/">implementation-history.md</a> and <a href="../adr/">ADR-0008 through ADR-0010</a> for what was built and why it diverges from <code>source-update</code>&rsquo;s design below.</p>
-</blockquote>
-<p>Five skills, each a <code>SKILL.md</code> for the agent operating the toolkit:</p>
-<p><strong>ingest</strong> — unchanged from <code>llm-breakdown.md</code>: take a source (first time seen), read it, write/update wiki pages, cite the source, log it.</p>
-<p><strong>query</strong> — unchanged: search the catalog, read relevant pages, answer with citations, optionally file the answer back as a new page.</p>
-<p><strong>lint</strong> — unchanged: contradictions, staleness, orphan pages, missing cross-references. Also flags a <code>relationships:</code> entry whose <code>target</code> doesn&rsquo;t resolve to an existing page — same resolution rule as missing-cross-reference detection already uses for body <code>[[wikilinks]]</code> — and flags drift between a page&rsquo;s <code>confidence:</code> block and its recomputed marker counts. Flagged, not rejected: lint reports, it doesn&rsquo;t block; the write gate&rsquo;s PR review is the enforcement point.</p>
-<p><strong>source-update</strong> (new) — separate from <code>ingest</code> because the judgment calls differ: matching identity, computing a delta, and deciding whether that delta is safe to fold in automatically. Triggered by a source-system event (Jira webhook, GitHub event) or manual invocation:</p>
+<p>Everything else named in <code>idea.md</code>&rsquo;s &ldquo;Possible sources&rdquo; list (Slack, Teams, Azure DevOps, Linear)
+implements this interface later. No stub code is required now — the interface above is the
+contract a future adapter must satisfy.</p>
+<h4 id="github-adapter-payload-shape">GitHub adapter payload shape<a class="headerlink" href="#github-adapter-payload-shape" title="Permanent link">&para;</a></h4>
+<p>Files named by event; <code>pull_request</code> events materialize as:</p>
+<div class="highlight"><pre><span></span><code><span class="gh"># {title}</span>
+
+{body}
+</code></pre></div>
+<p>References: <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads#pull_request"><code>pull_request</code></a>, <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads#pull_request_review"><code>pull_request_review</code></a>, <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads#pull_request_review_comment"><code>pull_request_review_comment</code></a>, <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads#pull_request_review_thread"><code>pull_request_review_thread</code></a>.</p>
+<h4 id="jira-adapter-payload-shape">Jira adapter payload shape<a class="headerlink" href="#jira-adapter-payload-shape" title="Permanent link">&para;</a></h4>
+<p>An issue and its properties belong to a single snapshot; each comment is its own snapshot (<a href="https://developer.atlassian.com/cloud/jira/platform/webhooks/">webhook reference</a>).</p>
+<p><strong>Issues</strong> — file named <code>{issue-key}.md</code>. Webhooks: <code>jira:issue_created</code>, <code>jira:issue_updated</code>, <code>jira:issue_deleted</code>; issue-property webhooks <code>issue_property_set</code>, <code>issue_property_deleted</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="gh"># Main order flow broken</span>
+
+id: 10002
+key: ED-1
+url: https://your-domain.atlassian.net/rest/api/3/issue/10002
+assignee: Pat Smith
+created: 2026-07-10T08:00:00-05:00
+updated: 2026-07-20T16:00:00-05:00
+
+<span class="gu">## Description</span>
+Fix the order flow
+
+<span class="gu">## Acceptance criteria</span>
+...
+</code></pre></div>
+<p><strong>Issue comments</strong> — file named <code>{issue-key}-comment-{comment-id}.md</code>. Webhooks: <code>comment_created</code>, <code>comment_updated</code>, <code>comment_deleted</code>.</p>
+<div class="highlight"><pre><span></span><code>id: 10000
+url: https://your-domain.atlassian.net/rest/api/3/issue/10010/comment/10000
+author: Pat Smith
+created: 2026-07-20T16:00:00-05:00
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+</code></pre></div>
+<h2 id="not-yet-built-adapter-era-skills">Not yet built: adapter-era skills<a class="headerlink" href="#not-yet-built-adapter-era-skills" title="Permanent link">&para;</a></h2>
+<p>The shipped skills (<code>skills/</code> at the repo root, an installable Claude Code plugin: <code>ingest</code>,
+<code>query</code>, <code>lint</code>, <code>source-update</code>, <code>maintain</code>) target today&rsquo;s adapter-less, git-history-backed CLI —
+see <a href="../implementation-history/">implementation-history.md</a> and <a href="../adr/">ADR-0008 through ADR-0010</a>
+for what was built and why it diverges from <code>source-update</code>&rsquo;s design below, which assumes adapters
+exist:</p>
+<p><strong>source-update</strong> (adapter-era design, not what shipped) — separate from <code>ingest</code> because the
+judgment calls differ: matching identity, computing a delta, and deciding whether that delta is
+safe to fold in automatically. Triggered by a source-system event (Jira webhook, GitHub event) or
+manual invocation:</p>
 <ol>
 <li>Extract <code>stable_id</code> via the adapter. If <code>None</code>, stop — flag for manual filing, do not proceed.</li>
 <li>Look up the Raw source manifest for an existing entry with that <code>stable_id</code>.<ul>
@@ -2545,30 +2660,45 @@ diff(old_snapshot, new_snapshot) -&gt; Delta
 <li>Found → <code>fetch</code> current state, <code>diff</code> against last-known snapshot.</li>
 </ul>
 </li>
-<li>For <code>new_comment_ids</code> in the delta: write the new comment snapshot unit(s), invoke <code>ingest</code> scoped to just the new material, open a PR the same way a routine ingest would (see &ldquo;Write gate&rdquo; below).</li>
-<li>For <code>changed_fields</code> in the delta: write the new field-state snapshot version, then open a PR same as step 3 — but the PR description must explicitly flag which prior wiki claims may now be stale (&ldquo;underlying ticket status changed from X to Y — verify affected pages still hold&rdquo;), rather than presenting it as a routine update. The distinction between comments and field edits is in how confidently the PR is framed, not whether a PR exists — see &ldquo;Write gate.&rdquo;</li>
+<li>For <code>new_comment_ids</code> in the delta: write the new comment snapshot unit(s), invoke <code>ingest</code>
+   scoped to just the new material, open a PR the same way a routine ingest would (see &ldquo;Write
+   gate&rdquo;).</li>
+<li>For <code>changed_fields</code> in the delta: write the new field-state snapshot version, then open a PR
+   same as step 3 — but the PR description must explicitly flag which prior wiki claims may now be
+   stale (&ldquo;underlying ticket status changed from X to Y — verify affected pages still hold&rdquo;),
+   rather than presenting it as a routine update. The distinction between comments and field edits
+   is in how confidently the PR is framed, not whether a PR exists — see &ldquo;Write gate.&rdquo;</li>
 <li>Append an entry to <code>log.md</code> citing the source and summarizing the delta.</li>
 </ol>
-<p><strong>maintain</strong> — unchanged: periodic sweep invoking <code>lint</code>, suggesting new sources/questions to investigate.</p>
-<h2 id="write-gate">Write gate<a class="headerlink" href="#write-gate" title="Permanent link">&para;</a></h2>
-<p>Every wiki write goes through a PR — no exceptions, no direct commits, for either LLM-authored content or deterministic tooling output (catalog, index, log). One rule, no second write path to audit.</p>
-<p>This means <code>source-update</code>&rsquo;s &ldquo;auto re-ingest vs. flag for review&rdquo; split (per mutation type) is <strong>not</strong> a split between &ldquo;PR&rdquo; and &ldquo;no PR&rdquo; — it&rsquo;s a split in how the resulting PR is framed:</p>
+<p>This means the &ldquo;auto re-ingest vs. flag for review&rdquo; split (per mutation type) was never meant to be
+a split between &ldquo;PR&rdquo; and &ldquo;no PR&rdquo; — it&rsquo;s a split in how the resulting PR is framed:</p>
 <ul>
 <li>Comment-driven updates: PR reads like a normal ingest PR.</li>
-<li>Field-edit-driven updates: PR is explicitly labeled/described as needing extra scrutiny, since the underlying source may have invalidated something already written, not just added to it.</li>
+<li>Field-edit-driven updates: PR is explicitly labeled/described as needing extra scrutiny, since
+  the underlying source may have invalidated something already written, not just added to it.</li>
 </ul>
-<h2 id="helper-tools-cli-surface">Helper tools (CLI surface)<a class="headerlink" href="#helper-tools-cli-surface" title="Permanent link">&para;</a></h2>
-<p>Extends the <code>wiki_tool.py</code> command set from <code>llm-breakdown.md</code>:</p>
+<h2 id="testing-strategy">Testing strategy<a class="headerlink" href="#testing-strategy" title="Permanent link">&para;</a></h2>
+<p>Two required layers, following from the thin-CLI architectural constraint:</p>
 <ul>
-<li><code>batch-plan &lt;vault&gt; &lt;source-dir&gt;</code> — split the files under <code>source-dir</code> into batches (100,000 bytes or 20 files per batch, whichever comes first), for parallel wiki-ingest subagent dispatch.</li>
-<li><code>source-match &lt;adapter&gt; &lt;payload&gt;</code> — resolve <code>stable_id</code>, report whether it matches an existing Raw manifest entry (new vs. update).</li>
-<li><code>source-delta &lt;adapter&gt; &lt;stable_id&gt;</code> — fetch current state, diff against last-known snapshot, print the <code>Delta</code>.</li>
-<li><code>source-snapshot &lt;adapter&gt; &lt;stable_id&gt; --units comments|fields</code> — write the new Raw snapshot unit(s) for the given mutation type.</li>
-<li><code>source-scan</code> (existing) — skip <code>version_controlled</code> source types; they have no Raw file to scan.</li>
-<li><code>start-branch --frame routine|needs-review</code> — open a session&rsquo;s local branch up front, before any pages are committed. Used by a batch coordinator so streaming per-source commits and the closing <code>propose-pr</code> call land on the same branch.</li>
-<li><code>commit-pages --pages &lt;list&gt; --message &lt;str&gt;</code> — add and commit <code>pages</code> onto the currently checked-out branch. A batch coordinator calls this once per source, as soon as that source&rsquo;s subagent reports back, rather than waiting for the whole batch to finish.</li>
-<li><code>propose-pr --pages &lt;list&gt; --frame routine|needs-review</code> — branch, commit, open PR, with the description framing set per the mutation type that triggered it. If the current branch was already opened by <code>start-branch</code>, reuses it instead of creating a new one, and tolerates pages that were already committed by <code>commit-pages</code>.</li>
+<li><strong>Unit tests</strong> on internal functions: source classification (new/update/duplicate), delta
+  computation, frontmatter diffing, etc. — where real coverage lives.</li>
+<li><strong>CLI-invocation tests</strong> via <code>click.testing.CliRunner</code>: assert each command parses args correctly,
+  calls the right internal function, and produces the right exit code/output. No re-testing of
+  business logic already unit-tested.</li>
+<li>No golden-file byte-diff comparisons against <code>catalog.jsonl</code>/<code>log.jsonl</code> — structured assertions
+  on parsed output instead.</li>
 </ul>
+<p><strong><code>source-delta</code> fixture uses real git</strong>: a pytest fixture inits a throwaway repo in <code>tmp_path</code>,
+commits an initial source-file version (&ldquo;last known&rdquo;), then mutates the file on disk uncommitted
+(&ldquo;current&rdquo;). Exercises real <code>git log</code>/<code>git show</code>, including the no-prior-commit and shallow-clone
+edge cases.</p>
+<p><strong>Fixture strategy</strong>: per-command isolated fixtures via a shared factory helper (e.g.
+<code>make_source(tmp_path, source, status=..., ...)</code>) — not one shared &ldquo;golden wiki&rdquo; repo.</p>
+<p><strong>Definition of Done</strong>:
+- Every command above has (a) unit test coverage for its internal logic, (b) a <code>CliRunner</code> adapter
+  test verifying delegation/exit codes/output.
+- <code>mypy</code>, <code>ruff</code>, and pre-commit all pass clean.
+- <code>doctor</code> run against a real fixture repo state passes.</p>
 
 
 
