@@ -5,12 +5,12 @@ from dataclasses import dataclass, field
 from decimal import ROUND_HALF_UP, Decimal
 from typing import TYPE_CHECKING, Literal
 
+from wiki_toolkit._io import read_jsonl
+from wiki_toolkit.frontmatter import Post
 from wiki_toolkit.sources import SOURCE_MANIFEST_FILENAME, LintViolation, LoadError, _iter_markdown, _read_manifest
 
 if TYPE_CHECKING:
     from pathlib import Path
-
-    from wiki_toolkit.frontmatter import Post
 
 _BULLET_RE = re.compile(r"^\s*[-*]\s+(.*)$")
 _WIKILINK_RE = re.compile(r"\[\[([^\]|]+)(?:\|[^\]]*)?\]\]")
@@ -275,3 +275,83 @@ def search_catalog(query: str, entries: list[dict]) -> list[dict]:
     """Return catalog entries whose title or path contains `query`, case-insensitively."""
     needle = query.lower()
     return [e for e in entries if needle in e.get("title", "").lower() or needle in e.get("path", "").lower()]
+
+
+_FENCE_RE = re.compile(r"```.*?```", re.DOTALL)
+
+
+@dataclass
+class CrossLinkCandidate:
+    """A single literal-match cross-link candidate found in a session page's body."""
+
+    page: str
+    target: str
+    mention_text: str
+    match_type: Literal["title", "alias"]
+
+
+def _protected_spans(content: str) -> list[tuple[int, int]]:
+    """Return `(start, end)` spans in `content` that matches must not start inside: code blocks and `[[...]]`."""
+    spans = [m.span() for m in _FENCE_RE.finditer(content)]
+    spans.extend(m.span() for m in _WIKILINK_RE.finditer(content))
+    return spans
+
+
+def _build_cross_link_registry(
+    catalog_entries: list[dict], own_pages: set[str]
+) -> list[tuple[re.Pattern[str], str, Literal["title", "alias"]]]:
+    """Return `(pattern, target_path, match_type)` triples for every catalog entry outside `own_pages`."""
+
+    def compiled(match_string: str) -> re.Pattern[str]:
+        return re.compile(rf"(?<!\w){re.escape(match_string)}(?!\w)", re.IGNORECASE)
+
+    registry: list[tuple[re.Pattern[str], str, Literal["title", "alias"]]] = []
+    for entry in catalog_entries:
+        path = entry.get("path", "")
+        if not path or path in own_pages:
+            continue
+        title = entry.get("title") or ""
+        if title:
+            registry.append((compiled(title), path, "title"))
+        registry.extend((compiled(alias), path, "alias") for alias in entry.get("aliases") or [] if alias)
+    return registry
+
+
+def find_cross_link_candidates(docs_dir: Path, page_paths: list[str]) -> list[CrossLinkCandidate]:
+    """Find literal title/alias mentions of other catalog pages inside `page_paths`' bodies.
+
+    `page_paths` are the session's own pages (paths as stored in `catalog.jsonl`, relative to
+    `docs_dir.parent`) — the only bodies read. Every other catalog entry is a potential match
+    target, matched by `title` and `aliases`, never re-read as a source. A match inside a fenced
+    code block or an existing `[[...]]` wikilink is skipped; at most one candidate is reported
+    per `(page, target)` pair, preferring a `title` match over an `alias` match.
+    """
+    own_pages = set(page_paths)
+    registry = _build_cross_link_registry(read_jsonl(docs_dir / "catalog.jsonl"), own_pages)
+
+    candidates: list[CrossLinkCandidate] = []
+    for page in page_paths:
+        full_path = docs_dir.parent / page
+        if not full_path.is_file():
+            continue
+        content = Post.loads(full_path.read_text(encoding="utf-8")).content
+        spans = _protected_spans(content)
+
+        matched_targets: set[str] = set()
+        for pattern, target, match_type in registry:
+            if target in matched_targets:
+                continue
+            match = next((m for m in pattern.finditer(content) if not _in_span(m.start(), spans)), None)
+            if match is None:
+                continue
+            matched_targets.add(target)
+            candidates.append(
+                CrossLinkCandidate(page=page, target=target, mention_text=match.group(0), match_type=match_type)
+            )
+
+    return candidates
+
+
+def _in_span(pos: int, spans: list[tuple[int, int]]) -> bool:
+    """Report whether `pos` falls inside any `(start, end)` span."""
+    return any(start <= pos < end for start, end in spans)

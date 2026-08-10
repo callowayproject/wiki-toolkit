@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 import orjson
 
-from wiki_toolkit.wiki import build_catalog, lint_wiki, parse_tag_taxonomy, search_catalog
+from wiki_toolkit.wiki import build_catalog, find_cross_link_candidates, lint_wiki, parse_tag_taxonomy, search_catalog
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -472,3 +472,126 @@ def test_search_catalog_no_match_returns_empty_list() -> None:
     entries = [{"title": "Auth Middleware", "path": "docs/wiki/auth.md"}]
 
     assert search_catalog("nonexistent", entries) == []
+
+
+def _write_catalog(docs_dir: Path, entries: list[dict]) -> None:
+    lines = [orjson.dumps(entry).decode() for entry in entries]
+    (docs_dir / "catalog.jsonl").write_text("\n".join(lines) + ("\n" if lines else ""))
+
+
+def test_cross_link_candidates_matches_title(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
+    """A literal, unlinked mention of another page's title yields a `title`-type candidate."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "session.md", content="This note discusses Target Page in detail.")
+    _write_catalog(docs_dir, [{"path": "docs/wiki/target.md", "title": "Target Page", "aliases": []}])
+
+    candidates = find_cross_link_candidates(docs_dir, ["docs/wiki/session.md"])
+
+    assert len(candidates) == 1
+    candidate = candidates[0]
+    assert candidate.page == "docs/wiki/session.md"
+    assert candidate.target == "docs/wiki/target.md"
+    assert candidate.mention_text == "Target Page"
+    assert candidate.match_type == "title"
+
+
+def test_cross_link_candidates_matches_alias(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
+    """A mention matching an alias (not the title) yields an `alias`-type candidate."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "session.md", content="We use the TP acronym here.")
+    _write_catalog(docs_dir, [{"path": "docs/wiki/target.md", "title": "Target Page", "aliases": ["TP"]}])
+
+    candidates = find_cross_link_candidates(docs_dir, ["docs/wiki/session.md"])
+
+    assert len(candidates) == 1
+    assert candidates[0].mention_text == "TP"
+    assert candidates[0].match_type == "alias"
+
+
+def test_cross_link_candidates_case_insensitive(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
+    """Matching ignores case, but reports the mention text as it actually appears in the body."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "session.md", content="see target page over there.")
+    _write_catalog(docs_dir, [{"path": "docs/wiki/target.md", "title": "Target Page", "aliases": []}])
+
+    candidates = find_cross_link_candidates(docs_dir, ["docs/wiki/session.md"])
+
+    assert len(candidates) == 1
+    assert candidates[0].mention_text == "target page"
+
+
+def test_cross_link_candidates_skips_code_blocks(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
+    """A mention inside a fenced code block is not reported."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "session.md", content="Body text.\n\n```\nTarget Page\n```\n")
+    _write_catalog(docs_dir, [{"path": "docs/wiki/target.md", "title": "Target Page", "aliases": []}])
+
+    candidates = find_cross_link_candidates(docs_dir, ["docs/wiki/session.md"])
+
+    assert candidates == []
+
+
+def test_cross_link_candidates_skips_already_linked_mentions(
+    make_docs_tree: Callable[[], Path], make_wiki_note
+) -> None:
+    """A mention already wrapped in `[[...]]` is not reported as a new candidate."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "session.md", content="See [[Target Page]] for details.")
+    _write_catalog(docs_dir, [{"path": "docs/wiki/target.md", "title": "Target Page", "aliases": []}])
+
+    candidates = find_cross_link_candidates(docs_dir, ["docs/wiki/session.md"])
+
+    assert candidates == []
+
+
+def test_cross_link_candidates_skips_frontmatter(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
+    """A mention appearing only in the session page's frontmatter (not its body) is not reported."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "session.md", content="Unrelated body.", tags=["Target Page"])
+    _write_catalog(docs_dir, [{"path": "docs/wiki/target.md", "title": "Target Page", "aliases": []}])
+
+    candidates = find_cross_link_candidates(docs_dir, ["docs/wiki/session.md"])
+
+    assert candidates == []
+
+
+def test_cross_link_candidates_excludes_own_session_pages_as_targets(
+    make_docs_tree: Callable[[], Path], make_wiki_note
+) -> None:
+    """A catalog entry that is itself one of the session's own pages is never a match target."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "session.md", content="Mentions Other Session Page here.")
+    make_wiki_note(docs_dir, "other.md", content="")
+    _write_catalog(
+        docs_dir,
+        [{"path": "docs/wiki/other.md", "title": "Other Session Page", "aliases": []}],
+    )
+
+    candidates = find_cross_link_candidates(docs_dir, ["docs/wiki/session.md", "docs/wiki/other.md"])
+
+    assert candidates == []
+
+
+def test_cross_link_candidates_one_per_page_target_pair(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
+    """A target mentioned via both title and alias yields exactly one candidate, preferring the title match."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "session.md", content="Target Page also known as TP.")
+    _write_catalog(docs_dir, [{"path": "docs/wiki/target.md", "title": "Target Page", "aliases": ["TP"]}])
+
+    candidates = find_cross_link_candidates(docs_dir, ["docs/wiki/session.md"])
+
+    assert len(candidates) == 1
+    assert candidates[0].match_type == "title"
+
+
+def test_cross_link_candidates_no_matches_returns_empty_list(
+    make_docs_tree: Callable[[], Path], make_wiki_note
+) -> None:
+    """A session page with no matches against the registry returns an empty list, not an error."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "session.md", content="Nothing relevant here.")
+    _write_catalog(docs_dir, [{"path": "docs/wiki/target.md", "title": "Target Page", "aliases": []}])
+
+    candidates = find_cross_link_candidates(docs_dir, ["docs/wiki/session.md"])
+
+    assert candidates == []
