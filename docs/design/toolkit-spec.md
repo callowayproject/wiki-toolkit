@@ -201,4 +201,6 @@ Extends the `wiki_tool.py` command set from `llm-breakdown.md`:
 - `source-delta <adapter> <stable_id>` — fetch current state, diff against last-known snapshot, print the `Delta`.
 - `source-snapshot <adapter> <stable_id> --units comments|fields` — write the new Raw snapshot unit(s) for the given mutation type.
 - `source-scan` (existing) — skip `version_controlled` source types; they have no Raw file to scan.
-- `propose-pr --pages <list> --frame routine|needs-review` — branch, commit, open PR, with the description framing set per the mutation type that triggered it.
+- `start-branch --frame routine|needs-review` — open a session's local branch up front, before any pages are committed. Used by a batch coordinator so streaming per-source commits and the closing `propose-pr` call land on the same branch.
+- `commit-pages --pages <list> --message <str>` — add and commit `pages` onto the currently checked-out branch. A batch coordinator calls this once per source, as soon as that source's subagent reports back, rather than waiting for the whole batch to finish.
+- `propose-pr --pages <list> --frame routine|needs-review` — branch, commit, open PR, with the description framing set per the mutation type that triggered it. If the current branch was already opened by `start-branch`, reuses it instead of creating a new one, and tolerates pages that were already committed by `commit-pages`.

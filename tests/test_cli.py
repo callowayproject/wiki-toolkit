@@ -828,6 +828,72 @@ def test_propose_pr_never_pushes_or_opens_a_remote_pr(tmp_path: Path, monkeypatc
     assert not _git(tmp_path, "remote").stdout.strip()
 
 
+def test_start_branch_cmd_prints_branch_name(tmp_path: Path, monkeypatch) -> None:
+    """start-branch opens a wiki-update/ branch and prints its name for the coordinator to reuse."""
+    _make_propose_pr_repo(tmp_path)
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["start-branch", "--frame", "routine"])
+
+    assert result.exit_code == 0
+    branch = result.output.strip()
+    assert branch.startswith("wiki-update/routine-")
+    assert _git(tmp_path, "branch", "--show-current").stdout.strip() == branch
+
+
+def test_start_branch_cmd_rejects_invalid_frame(tmp_path: Path, monkeypatch) -> None:
+    """An unrecognized --frame value is a usage error, not a crash."""
+    _make_propose_pr_repo(tmp_path)
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["start-branch", "--frame", "bogus"])
+
+    assert result.exit_code != 0
+
+
+def test_commit_pages_cmd_commits_onto_current_branch(tmp_path: Path, monkeypatch) -> None:
+    """commit-pages stages and commits the given pages onto whatever branch is already checked out."""
+    _make_propose_pr_repo(tmp_path)
+    monkeypatch.chdir(tmp_path)
+    CliRunner().invoke(cli, ["start-branch", "--frame", "routine"])
+    (tmp_path / "docs" / "wiki" / "note.md").write_text("from batch\n")
+
+    result = CliRunner().invoke(cli, ["commit-pages", "--pages", "docs/wiki/note.md", "--message", "Ingest source-1"])
+
+    assert result.exit_code == 0
+    assert "[staged] docs/wiki/note.md" in result.output
+    committed_files = _git(tmp_path, "show", "--name-only", "--format=", "HEAD").stdout.split()
+    assert committed_files == ["docs/wiki/note.md"]
+
+
+def test_batch_coordinator_sequence_lands_two_sources_on_one_branch(tmp_path: Path, monkeypatch) -> None:
+    """start-branch, two streaming commit-pages calls, then propose-pr all land on a single branch."""
+    _make_propose_pr_repo(tmp_path)
+    second_page = tmp_path / "docs" / "wiki" / "second.md"
+    second_page.write_text("second\n")
+    _git(tmp_path, "add", ".")
+    _git(tmp_path, "-c", "user.email=t@t.com", "-c", "user.name=t", "commit", "-m", "add second")
+    monkeypatch.chdir(tmp_path)
+
+    branch = CliRunner().invoke(cli, ["start-branch", "--frame", "routine"]).output.strip()
+
+    second_page.write_text("from batch b\n")
+    CliRunner().invoke(cli, ["commit-pages", "--pages", "docs/wiki/second.md", "--message", "Ingest source-b"])
+
+    (tmp_path / "docs" / "wiki" / "note.md").write_text("from batch a\n")
+    CliRunner().invoke(cli, ["commit-pages", "--pages", "docs/wiki/note.md", "--message", "Ingest source-a"])
+
+    result = CliRunner().invoke(
+        cli,
+        ["propose-pr", "--pages", "docs/wiki/note.md", "--pages", "docs/wiki/second.md", "--frame", "routine"],
+    )
+
+    assert result.exit_code == 0
+    assert f"Created branch {branch}" in result.output
+    assert _git(tmp_path, "branch", "--list").stdout.count("wiki-update/") == 1
+    assert len(_git(tmp_path, "log", "--format=%H", branch).stdout.split()) == 4  # init + second + 2 batch commits
+
+
 def test_doctor_reports_clean_bill_of_health_on_a_populated_full_clone(
     tmp_path: Path, monkeypatch, make_docs_tree, make_source, make_wiki_note
 ) -> None:
