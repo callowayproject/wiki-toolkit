@@ -93,6 +93,80 @@ def test_build_catalog_note_with_no_sources_is_resolved(make_docs_tree: Callable
     assert result.entries[0].status == "resolved"
 
 
+def test_build_catalog_aliases_from_frontmatter(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
+    """A note's `aliases:` frontmatter is copied onto its catalog entry."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "a.md", title="Full Name", aliases=["FN", "Full-Name"])
+
+    result = build_catalog(docs_dir)
+
+    assert result.entries[0].aliases == ["FN", "Full-Name"]
+
+
+def test_build_catalog_aliases_absent_defaults_to_empty(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
+    """A note with no `aliases:` frontmatter gets an empty list, not an error."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "a.md")
+
+    result = build_catalog(docs_dir)
+
+    assert result.entries[0].aliases == []
+
+
+def test_build_catalog_links_from_body_wikilinks(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
+    """A note's outbound `[[wikilink]]` targets are collected onto its catalog entry."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "a.md", content="See [[Other Page]] and [[Third Page|the third one]].")
+
+    result = build_catalog(docs_dir)
+
+    assert result.entries[0].links == ["Other Page", "Third Page"]
+
+
+def test_build_catalog_links_deduplicated(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
+    """The same wikilink target mentioned twice appears once in `links`."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "a.md", content="See [[Other Page]] again: [[Other Page]].")
+
+    result = build_catalog(docs_dir)
+
+    assert result.entries[0].links == ["Other Page"]
+
+
+def test_build_catalog_links_strips_heading_and_block_anchors(
+    make_docs_tree: Callable[[], Path], make_wiki_note
+) -> None:
+    """A wikilink target's `#heading` or `^block-id` anchor is stripped, leaving just the page target."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "a.md", content="See [[Other Page#Section]] and [[Third Page^abc123]].")
+
+    result = build_catalog(docs_dir)
+
+    assert result.entries[0].links == ["Other Page", "Third Page"]
+
+
+def test_build_catalog_links_deduplicated_case_insensitively(
+    make_docs_tree: Callable[[], Path], make_wiki_note
+) -> None:
+    """Differently-cased mentions of the same target dedupe to one entry, keeping the first casing seen."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "a.md", content="See [[Other Page]] and also [[other page]].")
+
+    result = build_catalog(docs_dir)
+
+    assert result.entries[0].links == ["Other Page"]
+
+
+def test_build_catalog_links_absent_defaults_to_empty(make_docs_tree: Callable[[], Path], make_wiki_note) -> None:
+    """A note with no wikilinks in its body gets an empty `links` list."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "a.md", content="No links here.")
+
+    result = build_catalog(docs_dir)
+
+    assert result.entries[0].links == []
+
+
 def test_build_catalog_empty_wiki_dir(make_docs_tree: Callable[[], Path]) -> None:
     """An empty docs/wiki/ produces an empty catalog, nothing crashes."""
     docs_dir = make_docs_tree()
