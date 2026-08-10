@@ -28,3 +28,8 @@ _Avoid_: "the skills" alone when the distinction between the plugin and this cop
 
 **Provenance marker**:
 `docs/.agents/skills/.provenance` — records the `wiki_toolkit` package version a local skill copy was scaffolded from. `doctor` compares it to the installed package version to detect drift; only `init` writes it.
+_Avoid_: confidence marker (different concept — see Confidence marker entry)
+
+**Confidence marker**:
+A per-claim epistemic tag on wiki page content: **extracted** (default, no marker — a paraphrase of what a source actually says), **inferred** (`^[inferred]` suffix — an LLM-synthesized connection or implication the source doesn't state directly), or **ambiguous** (`^[ambiguous]` suffix — sources disagree or are unclear). Optionally rolled up at the page level as a `confidence:` frontmatter block (best-effort fractions written by `ingest`, recomputed and drift-checked by `lint`). Exact inline suffix syntax — including interaction with the existing `^[source_id]` footnote convention — is pinned down separately.
+_Avoid_: provenance marker (different concept — see Provenance marker entry)
