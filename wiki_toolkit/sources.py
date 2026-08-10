@@ -123,6 +123,19 @@ def _read_manifest(manifest_path: Path) -> dict[str, dict]:
     return manifest
 
 
+def _write_manifest(manifest_path: Path, manifest: dict[str, dict]) -> None:
+    """Write a `source`-keyed manifest dict back to `source-manifest.jsonl`."""
+    write_jsonl(manifest_path, [manifest[key] for key in manifest])
+
+
+def _resolve_source_entry(manifest: dict[str, dict], source: str) -> dict:
+    """Return `manifest[source]`, or raise `ValueError` if the source is unknown."""
+    entry = manifest.get(source)
+    if entry is None:
+        raise ValueError(f"unknown source: {source!r}")
+    return entry
+
+
 def scan_sources(docs_dir: Path, *, accept_covered: bool = False) -> SourceScanResult:
     """Classify each file in `docs_dir/sources/` as new, update, or duplicate.
 
@@ -221,7 +234,7 @@ def apply_source_scan(docs_dir: Path, result: SourceScanResult) -> int:
         }
         written += 1
 
-    write_jsonl(docs_dir / SOURCE_MANIFEST_FILENAME, [manifest[key] for key in manifest])
+    _write_manifest(docs_dir / SOURCE_MANIFEST_FILENAME, manifest)
 
     return written
 
@@ -409,9 +422,7 @@ def compute_source_delta(docs_dir: Path, source: str) -> Delta:
     as new) rather than erroring.
     """
     manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
-    entry = manifest.get(source)
-    if entry is None:
-        raise ValueError(f"unknown source: {source!r}")
+    entry = _resolve_source_entry(manifest, source)
 
     root = docs_dir.parent
     rel_path = entry["path"]
@@ -541,9 +552,7 @@ def write_source_snapshot(docs_dir: Path, source: str, units: str) -> SnapshotRe
         raise ValueError(f"invalid units {units!r}; must be one of {ALLOWED_SNAPSHOT_UNITS}")
 
     manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
-    entry = manifest.get(source)
-    if entry is None:
-        raise ValueError(f"unknown source: {source!r}")
+    entry = _resolve_source_entry(manifest, source)
 
     rel_path = entry["path"]
     source_path = docs_dir.parent / rel_path
@@ -552,7 +561,7 @@ def write_source_snapshot(docs_dir: Path, source: str, units: str) -> SnapshotRe
     now = datetime.now(UTC).isoformat()
     update_sha = hashlib.sha256(source_path.read_bytes()).hexdigest()
     manifest[source] = {**entry, "updated": now, "update_sha": update_sha}
-    write_jsonl(docs_dir / SOURCE_MANIFEST_FILENAME, [manifest[key] for key in manifest])
+    _write_manifest(docs_dir / SOURCE_MANIFEST_FILENAME, manifest)
     return SnapshotResult(source=source, path=rel_path, units=units, update_sha=update_sha)  # type: ignore[arg-type]
 
 
