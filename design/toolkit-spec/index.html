@@ -2403,6 +2403,7 @@ cross-references to the sources they reference.</p>
 <ul>
 <li><code>path</code>: relative path to the document from the repo root</li>
 <li><code>title</code>: the document&rsquo;s title</li>
+<li><code>aliases</code>: list of alternate names for the document, from its frontmatter <code>aliases:</code> (empty list if absent)</li>
 <li><code>sources</code>: list of <code>source</code> ids this document references</li>
 <li><code>updated</code>: ISO-8601 date-time string when it was updated</li>
 <li><code>status</code>: <code>resolved</code> when all referenced sources are <code>resolved</code>; <code>proposed</code> if any is <code>proposed</code></li>
@@ -2440,6 +2441,7 @@ sync.</p>
 <span class="k">-</span><span class="w"> </span>Mark claims with a confidence marker where relevant: no marker = extracted (a paraphrase of what a source actually says); <span class="sb">`^[inferred]`</span> suffix = an LLM-synthesized connection or implication the source doesn&#39;t state directly; <span class="sb">`^[ambiguous]`</span> suffix = sources disagree or are unclear. Default (no marker) means existing pages stay valid without changes. A claim needing both a confidence marker and a <span class="sb">`^[source_id]`</span> citation stacks them as independent suffixes, confidence marker first: <span class="sb">`^[inferred]^[design-doc-3]`</span>.
 <span class="k">-</span><span class="w"> </span>The optional <span class="sb">`confidence:`</span> frontmatter block rolls up the mix of markers on the page, one countable unit per bullet (or per paragraph on non-bulleted pages), rounded to 2 decimal places, round-half-up. <span class="sb">`ingest`</span> writes it best-effort; <span class="sb">`lint`</span> recomputes it from the page&#39;s actual markers and flags any drift — exact match after rounding, same as <span class="sb">`source_count`</span>, no tolerance band.
 <span class="k">-</span><span class="w"> </span>The optional <span class="sb">`relationships:`</span> frontmatter block adds typed, directional edges between pages, on top of plain <span class="sb">`[[wikilinks]]`</span> (which carry no semantic weight). Rules: omit the block entirely if no typed relationship is known — untagged wikilinks remain valid; if <span class="sb">`[[foo]]`</span> already appears as an inline wikilink, a <span class="sb">`relationships:`</span> entry just enriches it with a type, it is not a second link; the page declaring the entry is the <span class="ge">*source*</span>, <span class="sb">`target`</span> is the destination — only declare relationships from this page&#39;s own perspective; only add a typed entry when the source material makes the relationship&#39;s direction and type clear — when in doubt, use <span class="sb">`related_to`</span> or omit. <span class="sb">`type`</span> must be one of the fixed Relationship Types below; <span class="sb">`target`</span> must resolve to an existing page or <span class="sb">`lint`</span> flags it.
+<span class="k">-</span><span class="w"> </span>The optional <span class="sb">`aliases:`</span> frontmatter field lists alternate names a page is also known by (e.g. an acronym alongside a spelled-out title). It exists to widen <span class="sb">`cross-linker`</span>&#39;s literal-match pre-filter beyond the page&#39;s canonical <span class="sb">`title:`</span> — nothing else reads it. Omit when a page has no alternate names.
 
 <span class="gu">## Wiki Document Frontmatter</span>
 <span class="sb">  ```yaml</span>
@@ -2460,6 +2462,7 @@ sync.</p>
 <span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">extends</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;[[LSTM]]&quot;</span>
 <span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">contradicts</span>
+<span class="w">  </span><span class="nt">aliases</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">alt name</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">another alt name</span><span class="p p-Indicator">]</span><span class="w">  </span><span class="c1"># optional; alternate names this page is also known by</span>
 <span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">---</span>
 <span class="sb">  ```</span>
 
@@ -2510,7 +2513,7 @@ earlier drafts — see <a href="../CONTEXT/">CONTEXT.md</a>). No adapter argumen
 </tr>
 <tr>
 <td><code>build</code></td>
-<td>Generate <code>docs/catalog.jsonl</code> from <code>docs/wiki/</code> notes (no <code>index.md</code>/per-folder index generation)</td>
+<td>Generate <code>docs/catalog.jsonl</code> from <code>docs/wiki/</code> notes, including each page&rsquo;s <code>aliases:</code> frontmatter (empty list if absent) (no <code>index.md</code>/per-folder index generation)</td>
 </tr>
 <tr>
 <td><code>lint</code></td>

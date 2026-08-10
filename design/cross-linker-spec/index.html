@@ -1082,6 +1082,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Step 1: Read the catalog">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scale-mechanism-no-full-vault-rescan-per-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scale mechanism: no full-vault rescan per run
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2155,13 +2172,29 @@ cross-references between pages. Extracted from <code>batching-and-crosslink.md</
 sections — additional metadata, batch planner — were absorbed into
 <a href="../toolkit-spec/">toolkit-spec.md</a> and removed).</p>
 <p>Status: active design for the open <a href="https://github.com/callowayproject/wiki-toolkit/issues/94">cross-linker map, issue #94</a>.
-Scale strategy is still being researched — see <a href="../cross-linker-scale-research/">cross-linker-scale-research.md</a>
-(issue #97) for the incremental-scan and pre-filter follow-ups this spec doesn&rsquo;t yet account for.</p>
+Scale strategy: see <a href="../cross-linker-scale-research/">cross-linker-scale-research.md</a> (issue #97) for the prior-art
+survey; the &ldquo;Scale mechanism&rdquo; subsection below (issue #115) is the resolved design.</p>
 <p>You are weaving the wiki&rsquo;s knowledge graph tighter by finding and inserting missing <code>[[wikilinks]]</code> between pages that should reference each other but currently don&rsquo;t.</p>
 <p><strong>Follow the Retrieval Primitives table in <code>llm-wiki/SKILL.md</code>.</strong> Build the registry in Step 1 by grepping frontmatter only (not full pages). Reserve full <code>Read</code> for the unlinked-mention detection pass, and even there, only read pages whose summaries/titles make them plausible link targets. Blind full-vault reads are what this framework exists to avoid.</p>
 <h2 id="step-1-read-the-catalog">Step 1: Read the catalog<a class="headerlink" href="#step-1-read-the-catalog" title="Permanent link">&para;</a></h2>
 <p>The catalog (<code>catalog.jsonl</code>) is an index of all the documents in the wiki (<code>wiki/</code>), with cross-references to the sources they reference.</p>
-<p>This is your &ldquo;vocabulary&rdquo; — every entry in this table is a valid wikilink target.</p>
+<p>This is your &ldquo;vocabulary&rdquo; — every entry in this table is a valid wikilink target. Each entry&rsquo;s <code>aliases</code>
+field (see toolkit-spec.md&rsquo;s Catalog schema) widens the vocabulary beyond the canonical <code>title</code> — an alternate
+name a page is also known by.</p>
+<h3 id="scale-mechanism-no-full-vault-rescan-per-run">Scale mechanism: no full-vault rescan per run<a class="headerlink" href="#scale-mechanism-no-full-vault-rescan-per-run" title="Permanent link">&para;</a></h3>
+<p>Candidate detection scopes to <strong>this ingest session&rsquo;s pages</strong>, not the whole vault, every run:</p>
+<ul>
+<li><strong>Sources scanned</strong> — only the pages this ingest session wrote or updated. <code>cross-link-candidates</code> takes
+  these as explicit path arguments (the same page list the session is about to <code>log</code>/<code>propose-pr</code>), rather
+  than diffing <code>catalog.jsonl</code>&rsquo;s <code>updated</code> field against a persisted last-run marker. No state file is needed —
+  the session already knows which pages it touched.</li>
+<li><strong>Targets available</strong> — the full catalog registry (Step 1) stays the match target for those scanned pages;
+  existing pages are never rescanned as sources, only looked up as potential link destinations.</li>
+<li><strong>Zero-token pre-filter</strong> — before any LLM <code>Read</code>, <code>cross-link-candidates</code> runs a literal <code>grep -F</code> match of
+  every catalog <code>title</code> and <code>aliases</code> entry against the session&rsquo;s page bodies. This produces the high-confidence
+  EXTRACTED-tier candidates cheaply; only pages with a hit (or with tag/<code>sources:</code> overlap feeding the
+  INFERRED tier per #96) need a full-body <code>Read</code> for scoring and relationship-type inference.</li>
+</ul>
 <h2 id="step-2-scan-for-missing-links">Step 2: Scan for Missing Links<a class="headerlink" href="#step-2-scan-for-missing-links" title="Permanent link">&para;</a></h2>
 <p>For each page in the vault:</p>
 <ol>
@@ -2357,6 +2390,8 @@ git<span class="w"> </span>-C<span class="w"> </span><span class="s2">&quot;</sp
 </tbody>
 </table>
 <p>If the surrounding context is ambiguous or the link came from shared-tag matching (no in-body mention), default to <code>related_to</code>.</p>
+<p>If a sentence matches more than one pattern (e.g. &ldquo;RAG uses and extends the base retriever&rdquo;), take the first matching row in table order above — <code>extends</code> beats <code>uses</code> in that example. Table order is the tie-break; don&rsquo;t add a separate specificity ranking.</p>
+<p>Only infer and write a relationship type for EXTRACTED and INFERRED links. AMBIGUOUS links are skipped by Step 3 already — no relationship entry is written for them, and no type is inferred at all.</p>
 <p><strong>Writing the block:</strong></p>
 <p>Read the page&rsquo;s YAML frontmatter. If a <code>relationships:</code> block already exists, append new entries without duplicating existing targets. If the block is absent, add it after <code>aliases:</code> (or after <code>tags:</code> when <code>aliases:</code> is missing).</p>
 <div class="highlight"><pre><span></span><code><span class="nt">relationships</span><span class="p">:</span>
