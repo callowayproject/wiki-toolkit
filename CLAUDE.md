@@ -40,11 +40,8 @@ Documents covering what's actually been built, narrower than the full design abo
    built across two closed Wayfinder maps; links to `docs/adr/` for the "why"
    behind each resolved decision.
 
-Active, not-yet-resolved design work lives alongside these rather than inside them:
-
-- **[cross-linker-spec.md](docs/design/cross-linker-spec.md)** — skill spec for automated cross-referencing, still open
-  (issue #94); see [cross-linker-scale-research.md](docs/design/cross-linker-scale-research.md) for in-flight research
-  feeding into it.
+Active, not-yet-resolved design work lives alongside these rather than inside them — none open right now;
+the most recent one (cross-linker, issue #94) closed and folded into `implementation-history.md`'s Phase 3.
 
 ## Key design decisions already made (don't re-litigate without reason)
 
