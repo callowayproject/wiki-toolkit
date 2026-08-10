@@ -100,6 +100,7 @@ The schema (`schema.md`) provides instructions to the AI agent on how to manage 
 - Mark any sections referencing a proposed source with "Proposed change" or "Future implementation" to indicate it is not yet done.
 - On pages that synthesize 3+ sources, append `^[source_id]` at the end of paragraphs whose claims come from a specific source. This lets a reader trace each claim back without re-reading the whole raw file. Optional on single-source pages where the `sources:` frontmatter is enough.
 - Mark claims with a confidence marker where relevant: no marker = extracted (a paraphrase of what a source actually says); `^[inferred]` suffix = an LLM-synthesized connection or implication the source doesn't state directly; `^[ambiguous]` suffix = sources disagree or are unclear. Default (no marker) means existing pages stay valid without changes. A claim needing both a confidence marker and a `^[source_id]` citation stacks them as independent suffixes, confidence marker first: `^[inferred]^[design-doc-3]`.
+- The optional `relationships:` frontmatter block adds typed, directional edges between pages, on top of plain `[[wikilinks]]` (which carry no semantic weight). Rules: omit the block entirely if no typed relationship is known — untagged wikilinks remain valid; if `[[foo]]` already appears as an inline wikilink, a `relationships:` entry just enriches it with a type, it is not a second link; the page declaring the entry is the *source*, `target` is the destination — only declare relationships from this page's own perspective; only add a typed entry when the source material makes the relationship's direction and type clear — when in doubt, use `related_to` or omit. `type` must be one of the fixed Relationship Types below.
 
 ## Wiki Document Frontmatter
   ```yaml
@@ -115,6 +116,11 @@ The schema (`schema.md`) provides instructions to the AI agent on how to manage 
     extracted: 0.72
     inferred: 0.25
     ambiguous: 0.03
+  relationships:  # optional; typed, directional edges to other pages
+    - target: "[[Transformer Architecture]]"
+      type: extends
+    - target: "[[LSTM]]"
+      type: contradicts
   ---
   ```
 
@@ -124,6 +130,20 @@ Rule: every tag on a page must appear in this taxonomy. If a new tag is needed, 
 
 - <example tag>
 - <another tag>
+
+## Relationship Types
+
+Fixed set — unlike Tag Taxonomy, this list is not per-wiki editable; the same 7 types apply everywhere so edges stay comparable across wikis.
+
+| Type           | Meaning                                                     | Example                                       |
+|----------------|--------------------------------------------------------------|------------------------------------------------|
+| `extends`      | This page builds on or generalises the target               | GPT extends Transformer Architecture          |
+| `implements`   | This page is a concrete realisation of the target concept   | BERT implements Masked Language Modelling     |
+| `contradicts`  | This page's claims conflict with or refute the target       | Evidence A contradicts Evidence B             |
+| `derived_from` | This page is based on or adapted from the target            | Fine-tuning is derived from Transfer Learning |
+| `uses`         | This page depends on or relies on the target                | RAG uses Vector Databases                     |
+| `replaces`     | This page supersedes or deprecates the target                | GPT-4 replaces GPT-3                          |
+| `related_to`   | Catch-all: related but no stronger directional type applies | Concept A is related to Concept B             |
 
 ````
 
