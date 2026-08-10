@@ -1760,6 +1760,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#wiki_toolkit.cli.commit_pages_cmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;commit_pages_cmd
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#wiki_toolkit.cli.config" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1907,6 +1918,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;source_snapshot
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wiki_toolkit.cli.start_branch_cmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;start_branch_cmd
       
     </span>
   </a>
@@ -2424,6 +2446,14 @@
               </td>
             </tr>
             <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            commit_pages_cmd (wiki_toolkit.cli.commit_pages_cmd)" href="#wiki_toolkit.cli.commit_pages_cmd">commit_pages_cmd</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Commit PAGES onto the currently checked-out branch (a batch coordinator&rsquo;s per-source streaming commit).</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
               <td><code><a class="autorefs autorefs-internal" title="            config (wiki_toolkit.cli.config)" href="#wiki_toolkit.cli.config">config</a></code></td>
               <td class="doc-function-details">
                 <div class="doc-md-description">
@@ -2535,6 +2565,14 @@
                 </div>
               </td>
             </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            start_branch_cmd (wiki_toolkit.cli.start_branch_cmd)" href="#wiki_toolkit.cli.start_branch_cmd">start_branch_cmd</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Open a new local git branch for a batch coordinator session, before any source commits.</p>
+                </div>
+              </td>
+            </tr>
       </tbody>
     </table>
 
@@ -2607,6 +2645,26 @@
     <div class="doc doc-contents ">
 
         <p>AI skills and helper tools that implement and maintain an LLM Wiki.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wiki_toolkit.cli.commit_pages_cmd" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">commit_pages_cmd</span>
+
+
+<a href="#wiki_toolkit.cli.commit_pages_cmd" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">commit_pages_cmd</span><span class="p">(</span><span class="n">pages</span><span class="p">:</span> <span class="n"><span title="tuple">tuple</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">message</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Commit PAGES onto the currently checked-out branch (a batch coordinator&rsquo;s per-source streaming commit).</p>
 
 
     </div>
@@ -2889,6 +2947,26 @@
     <div class="doc doc-contents ">
 
         <p>Write a new Raw snapshot unit for SOURCE, for a comments or fields mutation.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wiki_toolkit.cli.start_branch_cmd" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">start_branch_cmd</span>
+
+
+<a href="#wiki_toolkit.cli.start_branch_cmd" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">start_branch_cmd</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Open a new local git branch for a batch coordinator session, before any source commits.</p>
 
 
     </div>

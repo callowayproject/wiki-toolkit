@@ -1979,10 +1979,32 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#wiki_toolkit.write_gate.commit_pages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;commit_pages
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#wiki_toolkit.write_gate.propose_pr" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;propose_pr
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wiki_toolkit.write_gate.start_wiki_branch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;start_wiki_branch
       
     </span>
   </a>
@@ -2276,10 +2298,26 @@
       </thead>
       <tbody>
             <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            commit_pages (wiki_toolkit.write_gate.commit_pages)" href="#wiki_toolkit.write_gate.commit_pages">commit_pages</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Add and commit <code>pages</code> onto the currently checked-out branch. Returns the commit sha.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
               <td><code><a class="autorefs autorefs-internal" title="            propose_pr (wiki_toolkit.write_gate.propose_pr)" href="#wiki_toolkit.write_gate.propose_pr">propose_pr</a></code></td>
               <td class="doc-function-details">
                 <div class="doc-md-description">
-                  <p>Stage <code>pages</code> as a new local git branch + commit, framed for review.</p>
+                  <p>Stage <code>pages</code> as a git branch + commit, framed for review, and return that branch.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            start_wiki_branch (wiki_toolkit.write_gate.start_wiki_branch)" href="#wiki_toolkit.write_gate.start_wiki_branch">start_wiki_branch</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Create and check out a new local branch for a wiki-update session, before any pages are committed.</p>
                 </div>
               </td>
             </tr>
@@ -2360,6 +2398,29 @@
 <div class="doc doc-object doc-function">
 
 
+<h3 id="wiki_toolkit.write_gate.commit_pages" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">commit_pages</span>
+
+
+<a href="#wiki_toolkit.write_gate.commit_pages" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">commit_pages</span><span class="p">(</span><span class="n">root</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n">pages</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">],</span> <span class="n">message</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="str">str</span></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Add and commit <code>pages</code> onto the currently checked-out branch. Returns the commit sha.</p>
+<p>Used for a batch coordinator&rsquo;s streaming per-source commits — each one lands
+immediately on the branch opened by <code>start_wiki_branch</code>, without waiting for the
+rest of the session&rsquo;s batches to finish.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h3 id="wiki_toolkit.write_gate.propose_pr" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">propose_pr</span>
 
@@ -2375,10 +2436,37 @@
 
     <div class="doc doc-contents ">
 
-        <p>Stage <code>pages</code> as a new local git branch + commit, framed for review.</p>
+        <p>Stage <code>pages</code> as a git branch + commit, framed for review, and return that branch.</p>
 <p>This is the one write path every wiki mutation is meant to route through
 (see docs/design/idea.md&rsquo;s &ldquo;write gate&rdquo; decision). v1 stops at the local
 branch + commit: it never pushes to a remote or opens a real GitHub PR.</p>
+<p>If the current branch was already opened by <code>start_wiki_branch</code> (a batch
+coordinator&rsquo;s session branch), this reuses it instead of creating a new one, and
+tolerates <code>pages</code> having nothing left to commit — every page may already have
+landed via that session&rsquo;s streaming <code>commit_pages</code> calls.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wiki_toolkit.write_gate.start_wiki_branch" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">start_wiki_branch</span>
+
+
+<a href="#wiki_toolkit.write_gate.start_wiki_branch" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">start_wiki_branch</span><span class="p">(</span><span class="n">root</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="str">str</span></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Create and check out a new local branch for a wiki-update session, before any pages are committed.</p>
+<p>A batch coordinator calls this once, before dispatching any subagents, so every
+per-source <code>commit_pages</code> call and the session&rsquo;s closing <code>propose_pr</code> call land on
+the same branch (see docs/design/tickets — coordinator mechanism for batch dispatch).</p>
 
 
     </div>

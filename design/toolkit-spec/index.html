@@ -2479,7 +2479,9 @@ diff(old_snapshot, new_snapshot) -&gt; Delta
 <li><code>source-delta &lt;adapter&gt; &lt;stable_id&gt;</code> — fetch current state, diff against last-known snapshot, print the <code>Delta</code>.</li>
 <li><code>source-snapshot &lt;adapter&gt; &lt;stable_id&gt; --units comments|fields</code> — write the new Raw snapshot unit(s) for the given mutation type.</li>
 <li><code>source-scan</code> (existing) — skip <code>version_controlled</code> source types; they have no Raw file to scan.</li>
-<li><code>propose-pr --pages &lt;list&gt; --frame routine|needs-review</code> — branch, commit, open PR, with the description framing set per the mutation type that triggered it.</li>
+<li><code>start-branch --frame routine|needs-review</code> — open a session&rsquo;s local branch up front, before any pages are committed. Used by a batch coordinator so streaming per-source commits and the closing <code>propose-pr</code> call land on the same branch.</li>
+<li><code>commit-pages --pages &lt;list&gt; --message &lt;str&gt;</code> — add and commit <code>pages</code> onto the currently checked-out branch. A batch coordinator calls this once per source, as soon as that source&rsquo;s subagent reports back, rather than waiting for the whole batch to finish.</li>
+<li><code>propose-pr --pages &lt;list&gt; --frame routine|needs-review</code> — branch, commit, open PR, with the description framing set per the mutation type that triggered it. If the current branch was already opened by <code>start-branch</code>, reuses it instead of creating a new one, and tolerates pages that were already committed by <code>commit-pages</code>.</li>
 </ul>
 
 
