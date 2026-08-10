@@ -63,12 +63,18 @@ This sequence covers a session ingesting one or more sources, listed manually.
    Regenerates `docs/catalog.jsonl` from `docs/wiki/`.
    Run once, after every page in the session has been written — not after each individual page.
 
-4. **`wiki-toolkit lint`**
-   Run once, after `build`. Validates frontmatter, tag taxonomy, source links,
-   and `source_count`. Fix any `[VIOLATION]` it reports and re-run `lint`
-   until it passes clean.
+4. **Invoke the `cross-linker` skill.** Run once, after `build` and before
+   `lint`, over every page the session wrote or updated. It scores and
+   applies cross-references to the rest of the wiki and infers relationship
+   types for the links it adds; see [cross-linker](../cross-linker/SKILL.md)
+   for its own sequence.
 
-5. **`wiki-toolkit propose-pr --pages <path> --frame routine`**
+5. **`wiki-toolkit lint`**
+   Run once, after `cross-linker`. Validates frontmatter, tag taxonomy,
+   source links, and `source_count`. Fix any `[VIOLATION]` it reports and
+   re-run `lint` until it passes clean.
+
+6. **`wiki-toolkit propose-pr --pages <path> --frame routine`**
    Stages the whole session as a single local git branch + commit (repeat
    `--pages` for every page written across every source in the session). This
    never pushes or opens a real PR — it only creates the local commit for a
@@ -79,12 +85,13 @@ This sequence covers a session ingesting one or more sources, listed manually.
 ## Rules
 
 - Never write a wiki page without a corresponding source in `docs/source-manifest.jsonl` — run `source-scan` first.
-- Never skip `build` or `lint` between writing pages and proposing them.
-  `propose-pr` should always land on a lint-clean catalog.
-- One session = one `source-scan --update` call, one `build` call, one `lint`
-  call, one `log` entry per source, and one `propose-pr` call — regardless of
-  how many sources or pages the session covers. A single-source session is
-  just the degenerate case of this same sequence.
+- Never skip `build`, `cross-linker`, or `lint` between writing pages and
+  proposing them. `propose-pr` should always land on a lint-clean catalog.
+- One session = one `source-scan --update` call, one `build` call, one
+  `cross-linker` invocation, one `lint` call, one `log` entry per source
+  (plus one per page `cross-linker` links), and one `propose-pr` call —
+  regardless of how many sources or pages the session covers. A
+  single-source session is just the degenerate case of this same sequence.
 - This sequence covers first-time `ingest` only. `source-update` (mutation-triggered
   re-ingest) keeps its own one-PR-per-delta behavior, unaffected by this ticket.
 
@@ -116,11 +123,13 @@ same one-session-one-PR sequence above — only step 2 changes.
 5. Once every subagent has reported and been committed, delete `docs/_staging/`
    entirely.
 6. Close exactly as a manual session does: one `wiki-toolkit build`, one
-   `wiki-toolkit lint`, one `wiki-toolkit propose-pr --pages <every dest_path
-   from every batch> --frame <same frame as step 2>`. `propose-pr` detects
-   that it's already on the branch opened in step 2, reuses it instead of
-   opening a second one, and is a no-op commit-wise for pages already landed
-   by step 4's streaming commits.
+   `cross-linker` invocation (once for the whole session, over every page
+   from every batch — not once per batch), one `wiki-toolkit lint`, one
+   `wiki-toolkit propose-pr --pages <every dest_path from every batch>
+   --frame <same frame as step 2>`. `propose-pr` detects that it's already
+   on the branch opened in step 2, reuses it instead of opening a second
+   one, and is a no-op commit-wise for pages already landed by step 4's
+   streaming commits.
 
 Rules specific to batch sessions:
 - No git-level merge or conflict handling is needed anywhere in this flow —
