@@ -15,6 +15,9 @@ if TYPE_CHECKING:
 _BULLET_RE = re.compile(r"^\s*[-*]\s+(.*)$")
 _CONFIDENCE_MARKER_RE = re.compile(r"\^\[(inferred|ambiguous)\]")
 _CONFIDENCE_STATES = ("extracted", "inferred", "ambiguous")
+_RELATIONSHIP_TYPES = frozenset(
+    {"extends", "implements", "contradicts", "derived_from", "uses", "replaces", "related_to"}
+)
 
 
 @dataclass
@@ -153,6 +156,62 @@ def _check_confidence_drift(post: Post, content: str) -> str | None:
     return None
 
 
+def _strip_wikilink(target: str) -> str:
+    """Strip an optional `[[...]]` wrapper from a relationship `target` string."""
+    target = target.strip()
+    if target.startswith("[[") and target.endswith("]]"):
+        return target[2:-2].strip()
+    return target
+
+
+def _check_relationships(post: Post, known_targets: set[str]) -> list[str]:
+    """Return violation messages for `post`'s `relationships:` entries.
+
+    Returns `[]` if `post` has no `relationships:` block (opt-in, unaffected by this
+    check). Each entry's `type` must be one of `_RELATIONSHIP_TYPES`; each entry's
+    `target` must resolve (by title or path, case-insensitively) against
+    `known_targets`. Unresolved targets are flagged, not rejected.
+    """
+    relationships = post.get("relationships")
+    if relationships is None:
+        return []
+    if not isinstance(relationships, list):
+        return [f"`relationships` must be a list, got {relationships!r}"]
+    messages: list[str] = []
+    for entry in relationships:
+        if not isinstance(entry, dict):
+            messages.append(f"relationship entry must be a mapping, got {entry!r}")
+            continue
+        rel_type = entry.get("type")
+        if rel_type not in _RELATIONSHIP_TYPES:
+            messages.append(f"relationship type {rel_type!r} is not one of {sorted(_RELATIONSHIP_TYPES)}")
+        target = entry.get("target") or ""
+        if not isinstance(target, str):
+            messages.append(f"relationship target must be a string, got {target!r}")
+            continue
+        if _strip_wikilink(target).lower() not in known_targets:
+            messages.append(f"relationship target {target!r} does not resolve to an existing wiki page")
+    return messages
+
+
+def _check_tags_and_sources(post: Post, allowed_tags: set[str] | None, manifest: dict[str, dict]) -> list[str]:
+    """Return violation messages for `post`'s `tags`, `sources`, and `source_count` fields."""
+    messages: list[str] = []
+    if allowed_tags is not None:
+        messages.extend(f"disallowed tag: {tag!r}" for tag in post.get("tags") or [] if tag not in allowed_tags)
+
+    sources = post.get("sources") or []
+    messages.extend(
+        f"unresolved source reference: {source_id!r}" for source_id in sources if source_id not in manifest
+    )
+
+    source_count = post.get("source_count")
+    if source_count is not None and source_count != len(sources):
+        messages.append(f"source_count is {source_count}, but sources list has {len(sources)}")
+
+    return messages
+
+
 def lint_wiki(docs_dir: Path) -> LintResult:
     """Validate every note in `docs_dir/wiki/`: frontmatter, tags, source links, `source_count`.
 
@@ -165,32 +224,30 @@ def lint_wiki(docs_dir: Path) -> LintResult:
     schema_path = docs_dir / "schema.md"
     allowed_tags = parse_tag_taxonomy(schema_path.read_text(encoding="utf-8")) if schema_path.is_file() else None
 
-    for path, post in _iter_markdown(docs_dir / "wiki"):
+    entries = list(_iter_markdown(docs_dir / "wiki"))
+    known_targets: set[str] = set()
+    for path, post in entries:
+        if isinstance(post, LoadError):
+            continue
+        known_targets.add((post.get("title") or path.stem).lower())
+        known_targets.add(path.stem.lower())
+
+    for path, post in entries:
         rel_path = str(path.relative_to(docs_dir.parent))
 
         if isinstance(post, LoadError):
             result.violations.append(LintViolation(rel_path, post.message))
             continue
 
-        if allowed_tags is not None:
-            for tag in post.get("tags") or []:
-                if tag not in allowed_tags:
-                    result.violations.append(LintViolation(rel_path, f"disallowed tag: {tag!r}"))
-
-        sources = post.get("sources") or []
-        for source_id in sources:
-            if source_id not in manifest:
-                result.violations.append(LintViolation(rel_path, f"unresolved source reference: {source_id!r}"))
-
-        source_count = post.get("source_count")
-        if source_count is not None and source_count != len(sources):
-            result.violations.append(
-                LintViolation(rel_path, f"source_count is {source_count}, but sources list has {len(sources)}")
-            )
+        for tag_source_message in _check_tags_and_sources(post, allowed_tags, manifest):
+            result.violations.append(LintViolation(rel_path, tag_source_message))
 
         confidence_message = _check_confidence_drift(post, post.content)
         if confidence_message is not None:
             result.violations.append(LintViolation(rel_path, confidence_message))
+
+        for relationship_message in _check_relationships(post, known_targets):
+            result.violations.append(LintViolation(rel_path, relationship_message))
 
     return result
 
