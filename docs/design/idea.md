@@ -34,7 +34,10 @@
 - Retiring docs for removed infrastructure: no separate mechanism needed. Whole-file/module removal is determined by the source-manifest's existing `referenced_by` list (look up the removed path and archive the wiki pages that reference it); partial removal within a file that still exists is handled by the normal ingest-on-PR flow, which reads that file's diff.
 
 ## Gaps (still open)
-- None
+- Security boundary for the receiver ingesting untrusted external content (ticket bodies, PR descriptions) into a write-capable agent.
+- Whether PR-review friction will suppress automated updates in practice.
+- Whether the LLM wiki should live in the same repo as the code or a separate one.
+- Page structure guidance: `toolkit-spec.md`'s schema section has no template for how a wiki page's body should be organized beyond frontmatter shape.
 
 ## Structure
 - [toolkit-spec.md](toolkit-spec.md): specification for the AI skills and helper tools (Agent operates these) that implement the llm-wiki pattern, including how mutable sources (Jira comment chains, changing source code) are detected, versioned, and folded into the wiki.

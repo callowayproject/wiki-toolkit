@@ -2,10 +2,13 @@
 
 Ticket: #97 (child of Cross-linker skill spec map, #94)
 
+Feeds into: [cross-linker-spec.md](cross-linker-spec.md) — this research's two follow-ups
+(incremental scan, literal-string pre-filter) aren't yet folded into that spec.
+
 ## Question
 
 Does the toolkit's existing frontmatter-registry + selective-full-read pattern
-(from `docs/design/Reference/llm-wiki.md`'s "index.md is content-oriented...
+(from `Reference/llm-wiki.md`'s "index.md is content-oriented...
 avoids the need for embedding-based RAG infrastructure" primitive) hold up as
 the scale strategy for `cross-linker`, or does prior art suggest something
 meaningfully better?

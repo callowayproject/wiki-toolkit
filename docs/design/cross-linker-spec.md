@@ -1,130 +1,13 @@
-- Need to update the ingest process to handle multiple available sources when ingesting.
-- We don't want a PR per source, but one at the end of an ingestion session.
+# Cross-linker — Skill Spec
 
-## Additional metadata
+Design for the `cross-linker` skill: scan the wiki and automatically discover missing
+cross-references between pages. Extracted from `batching-and-crosslink.md` (that file's other
+sections — additional metadata, batch planner — were absorbed into
+[toolkit-spec.md](toolkit-spec.md) and removed).
 
-```yaml
-aliases: [alternate name]
-relationships:
-  - target: "[[concepts/related-concept]]"
-    type: extends
-sources: [papers/attention.pdf]
-summary: One or two sentences, ≤200 chars, so a reader (or another skill) can preview this page without opening it.
-provenance:
-  extracted: 0.72
-  inferred: 0.25
-  ambiguous: 0.03
-```
-
-### Provenance Markers
-
-Every claim on a wiki page has one of three provenance states. Mark them inline so the reader (and future ingest passes) can tell signal from synthesis.
-
-| State         | Marker                  | Meaning                                                                                                    |
-|---------------|-------------------------|------------------------------------------------------------------------------------------------------------|
-| **Extracted** | *(no marker — default)* | A paraphrase of something a source actually says.                                                          |
-| **Inferred**  | `^[inferred]` suffix    | An LLM-synthesized claim — a connection, generalization, or implication the source doesn't state directly. |
-| **Ambiguous** | `^[ambiguous]` suffix   | Sources disagree, or the source is unclear.                                                                |
-
-Example:
-
-```markdown
-- Transformers parallelize across positions, unlike RNNs.
-- This is why they scale better on modern hardware. ^[inferred]
-- GPT-4 was trained on roughly 13T tokens. ^[ambiguous]
-```
-
-**Why this syntax:**
-- `^[...]` is footnote-adjacent in Obsidian — renders cleanly and never collides with `[[wikilinks]]`.
-- Inline (suffix) so a single bullet stays a single bullet.
-- Default = extracted means existing pages without markers stay valid.
-
-**Frontmatter summary:** Optionally surface the rough mix at the page level so the user can scan for speculation-heavy pages without reading them:
-
-```yaml
-provenance:
-  extracted: 0.72   # rough fraction of sentences/bullets with no marker
-  inferred: 0.25
-  ambiguous: 0.03
-```
-
-These are best-effort numbers written by the ingest skill at create/update time. `wiki-lint` recomputes them and flags drift. The block is optional — pages without it are treated as fully extracted by convention.
-
-### Typed Relationships
-
-Plain `[[wikilinks]]` in page bodies carry no semantic weight — they indicate "related to" but not *how*. The optional `relationships:` frontmatter block adds typed, directional edges to the knowledge graph.
-
-#### The `relationships:` block
-
-```yaml
-relationships:
-  - target: "[[Transformer Architecture]]"
-    type: extends
-  - target: "[[LSTM]]"
-    type: contradicts
-  - target: "[[Attention Mechanism]]"
-    type: implements
-```
-
-Each entry has two required fields:
-- `target` — a wikilink to the related page
-- `type` — one of the allowed semantic types below
-
-#### Allowed relationship types
-
-| Type           | Meaning                                                     | Example                                       |
-|----------------|-------------------------------------------------------------|-----------------------------------------------|
-| `extends`      | This page builds on or generalises the target               | GPT extends Transformer Architecture          |
-| `implements`   | This page is a concrete realisation of the target concept   | BERT implements Masked Language Modelling     |
-| `contradicts`  | This page's claims conflict with or refute the target       | Evidence A contradicts Evidence B             |
-| `derived_from` | This page is based on or adapted from the target            | Fine-tuning is derived from Transfer Learning |
-| `uses`         | This page depends on or relies on the target                | RAG uses Vector Databases                     |
-| `replaces`     | This page supersedes or deprecates the target               | GPT-4 replaces GPT-3                          |
-| `related_to`   | Catch-all: related but no stronger directional type applies | Concept A is related to Concept B             |
-
-### Rules
-
-- **Optional field** — omit the block entirely if no typed relationships are known. Untagged wikilinks remain valid and are treated as `related_to` by `wiki-export`.
-- **Don't duplicate** — if `[[foo]]` already appears as an inline wikilink, the `relationships:` entry just enriches it with a type; it is not a second link.
-- **Direction matters** — the page declaring the entry is the *source*; `target` is the destination. Only declare relationships from this page's perspective.
-- **Don't fabricate** — only add a typed entry when the source material makes the relationship direction and type clear. When in doubt, use `related_to` or omit.
-
-
-## Page structure guidance
-
-In the schema, we should provide a template for the page structure.
-
-## Batch planner for parallel wiki-ingest subagent dispatch.
-
-When ingesting a large folder of docs, split the source list into batches.
-Emits a dispatch plan the skill uses to spawn parallel Claude subagents, each handling one batch independently, then merging results.
-
-The agent calls `wiki-tools batch-plan <vault> <source-dir> [options]` and gets back a JSON plan:
-
-```json
-{
-  "batches": [
-    {
-      "id": 0,
-      "files": ["path/to/a.md", "path/to/b.md"],
-      "total_bytes": 45000
-    },
-    ...
-  ],
-  "stats": {
-    "total_files": N,
-    "total_bytes": N,
-    "batch_count": N
-  },
-  "merge_hint": "Run /wiki-ingest on each batch in parallel, then run /cross-linker once all batches are done."
-}
-```
-The skill dispatches each batch as a parallel subagent call, then runs cross-linker once all agents report completion.
-
-
-# Cross-linker, Automated Wiki Cross-Referencing
-
-Scan the wiki and automatically discover missing cross-references between pages.
+Status: active design for the open [cross-linker map, issue #94](https://github.com/callowayproject/wiki-toolkit/issues/94).
+Scale strategy is still being researched — see [cross-linker-scale-research.md](cross-linker-scale-research.md)
+(issue #97) for the incremental-scan and pre-filter follow-ups this spec doesn't yet account for.
 
 You are weaving the wiki's knowledge graph tighter by finding and inserting missing `[[wikilinks]]` between pages that should reference each other but currently don't.
 
