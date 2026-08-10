@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.20.0 (2026-08-10)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.19.0...0.20.0)
+
+### New
+
+- Add coordinator mechanism for serialized batch commits (#103). [ff270cf](https://github.com/callowayproject/wiki-toolkit/commit/ff270cf2cc38dbed14093cdcf3a2a6f9ba71f87c)
+
+  Adds start-branch/commit-pages primitives so a batch coordinator can open
+  one session branch, stream a real commit + log entry per source as each
+  subagent's manifest lands, and close with the existing build/lint/propose-pr
+  sequence reusing that branch — one PR per session regardless of batch count.
+  Documents the coordinator's dispatch/staging/commit protocol in the ingest
+  skill.
+
+### Other
+
+- Rewrite ingest skill sequence for session-level batching (#102). [c7d8ce3](https://github.com/callowayproject/wiki-toolkit/commit/c7d8ce3181ebfad4fcf21ee1ba60db71621c76aa)
+
+  A session covering multiple manually-listed sources now runs source-scan,
+  build, and lint once each and closes with a single propose-pr, instead of
+  producing one PR per source. log stays per-source.
+
 ## 0.19.0 (2026-08-10)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.18.2...0.19.0)
