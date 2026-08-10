@@ -269,25 +269,13 @@ earlier drafts — see [CONTEXT.md](CONTEXT.md)). No adapter arguments yet.
 | `source-snapshot <source> --units comments\|fields` | Write the new Raw snapshot unit(s) for the given mutation type |
 | `source-dedupe` | List `duplicate: true` files with rule-based (mtime/content-similarity) keep/discard suggestions; human confirms/executes — not auto-resolved |
 | `search-catalog --query "text"` | Search compiled wiki notes through the catalog |
+| `cross-link-candidates <page-paths...>` | Literal, case-insensitive title/alias match of `page-paths`' bodies against every other `catalog.jsonl` entry (skipping code blocks, frontmatter, and mentions already wrapped in `[[...]]`); emits one JSONL candidate per line (`page`, `target`, `mention_text`, `match_type`). Zero LLM judgment — scoring and relationship-type inference are `cross-linker`'s job |
 | `log --title "..." --details "..."` | Append entry to `docs/log.jsonl` |
-| `propose-pr --pages <list> --frame routine\|needs-review` | Branch + commit locally, framed per mutation type that triggered it (no real GitHub PR yet) |
+| `batch-plan <vault> <source-dir>` | Split the files under `source-dir` into batches (100,000 bytes or 20 files per batch, whichever comes first) for parallel wiki-ingest subagent dispatch; prints `{batches: [{id, files, total_bytes}], stats: {total_files, total_bytes, batch_count}}` |
+| `start-branch --frame routine\|needs-review` | Open a session's local branch up front, before any pages are committed — used by a batch coordinator so streaming `commit-pages` calls and the closing `propose-pr` call land on the same branch |
+| `commit-pages --pages <list> --message <str>` | Add and commit `pages` onto the currently checked-out branch — a batch coordinator calls this once per source, as soon as that source's subagent reports back, rather than waiting for the whole batch to finish |
+| `propose-pr --pages <list> --frame routine\|needs-review` | Branch + commit locally, framed per mutation type that triggered it (no real GitHub PR yet). If the current branch was already opened by `start-branch`, reuses it instead of creating a new one, and tolerates pages already committed via `commit-pages` |
 | `config show` | Read-only: print the resolved configuration and which source (default/env/`pyproject.toml`/flag) each value came from |
-
-### Not yet built: batching extensions
-
-Planned additions for batched multi-source ingest (one PR per ingestion session, not one per
-source) — spec written but not yet fully implemented:
-
-- `batch-plan <vault> <source-dir>` — split the files under `source-dir` into batches (100,000
-  bytes or 20 files per batch, whichever comes first), for parallel wiki-ingest subagent dispatch.
-- `start-branch --frame routine|needs-review` — open a session's local branch up front, before any
-  pages are committed. Used by a batch coordinator so streaming per-source commits and the closing
-  `propose-pr` call land on the same branch.
-- `commit-pages --pages <list> --message <str>` — add and commit `pages` onto the currently
-  checked-out branch. A batch coordinator calls this once per source, as soon as that source's
-  subagent reports back, rather than waiting for the whole batch to finish.
-- `propose-pr` extended to reuse a branch already opened by `start-branch` instead of creating a
-  new one, and to tolerate pages already committed by `commit-pages`.
 
 ## Not yet built: adapters
 

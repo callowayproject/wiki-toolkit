@@ -1,6 +1,6 @@
 # Implementation history
 
-How `wiki_toolkit` ([idea.md](idea.md) → [toolkit-spec.md](toolkit-spec.md)) actually got built, across two closed Wayfinder maps and their follow-on tickets. This is the connective narrative; the individual resolved decisions live in [`docs/adr/`](../adr/) — link there for the "why," not here.
+How `wiki_toolkit` ([idea.md](idea.md) → [toolkit-spec.md](toolkit-spec.md)) actually got built, across closed Wayfinder maps and their follow-on tickets. This is the connective narrative; the individual resolved decisions live in [`docs/adr/`](../adr/) — link there for the "why," not here.
 
 ## Phase 1 — v1 CLI ([map #2](https://github.com/callowayproject/wiki-toolkit/issues/2), closed 2026-08-05)
 
@@ -33,6 +33,21 @@ Scope: package the five agent-facing `SKILL.md` files (`ingest`, `query`, `lint`
 | `source-update` without adapters | Git-history-driven, always `needs-review`; comments route to `ingest` | [0010](../adr/0010-source-update-redefined-without-adapters.md) |
 
 [#68](https://github.com/callowayproject/wiki-toolkit/issues/68) turned those four decisions into a build spec; #69–#75 implemented it: the plugin scaffold plus `ingest`/`query` (#70), `lint` (#71), `source-update` (#72), `maintain` (#73), `init`'s skills-copy scaffolding (#74), and `doctor`'s drift check (#75) — shipped as `wiki-toolkit` 0.18.0–0.18.2.
+
+## Phase 3 — Cross-linker skill ([map #94](https://github.com/callowayproject/wiki-toolkit/issues/94), closed 2026-08-10)
+
+Scope: weave newly-ingested pages into the rest of the wiki's knowledge graph automatically, instead of relying on whatever `[[wikilink]]`s the agent happens to add while drafting. No ADRs for this map — its design questions were resolved directly into `toolkit-spec.md`'s schema/CLI surface and the `cross-linker` skill file itself, via [#116](https://github.com/callowayproject/wiki-toolkit/issues/116) (the map's implementation-spec handoff ticket):
+
+| Question | Resolved as |
+|---|---|
+| Candidate detection at scale | Scope to the session's own pages, not a full-vault rescan; a zero-token literal `grep -F` pre-filter over `catalog.jsonl` titles/aliases before any LLM read (research: issue #97) |
+| Scoring rubric | 4-signal composite (exact match, partial match, shared sources, tag overlap, co-citation) with EXTRACTED/INFERRED/AMBIGUOUS tiers (issue #96) |
+| Relationship-type inference | Seven fixed sentence patterns, first match in table order wins, default `related_to` (issue #98) |
+| Alias/co-citation data | New optional `aliases:` frontmatter field plus `aliases`/`links` catalog fields, both additive with no migration (issue #115) |
+
+[#116](https://github.com/callowayproject/wiki-toolkit/issues/116) turned those decisions into a build spec; #117–#120 implemented it: `aliases`/`links` catalog fields (#117), the deterministic `cross-link-candidates` CLI subcommand (#118), narrowing `lint`'s semantic pass to report-only for cross-references (#119), and the `cross-linker` skill wired into `ingest` between `build` and `lint` (#120).
+
+`docs/design/cross-linker-spec.md` and `cross-linker-scale-research.md` were the map's working design docs (spec draft + prior-art research feeding into it) and are deleted now that it's closed — the as-built behavior lives in `skills/cross-linker/SKILL.md`, and the schema/CLI surface in [toolkit-spec.md](toolkit-spec.md). Two ideas from the spec draft were considered and explicitly dropped rather than carried forward: a git-snapshot/`reset --hard` undo mechanism (the existing `--frame needs-review` PR is the undo path) and misc-page affinity/promotion scoring (this toolkit has no `misc/`/`projects/` folder concept).
 
 ## What's still open
 
