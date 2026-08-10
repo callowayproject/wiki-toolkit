@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.22.0 (2026-08-10)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.21.0...0.22.0)
+
+### New
+
+- Add typed-relationships lint check (resolves #109). [8419c74](https://github.com/callowayproject/wiki-toolkit/commit/8419c748e37f91bf1e585829d35e75cbff2d389e)
+
+  lint_wiki() now validates each relationships: entry's type against the
+  fixed 7-value enum and resolves target against the wiki's known pages
+  by title or path, flagging (not blocking) unrecognized types and
+  unresolved targets. Malformed relationships blocks/entries are
+  reported as violations instead of crashing lint.
+
 ## 0.21.0 (2026-08-10)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.20.0...0.21.0)
