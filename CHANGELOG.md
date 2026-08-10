@@ -1,5 +1,45 @@
 # Changelog
 
+## 0.23.0 (2026-08-10)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.22.0...0.23.0)
+
+### New
+
+- Add aliases and links fields to catalog.jsonl (resolves #117). [3f3881a](https://github.com/callowayproject/wiki-toolkit/commit/3f3881a168921e87b9e39f2fdca6b33d26e82b9e)
+
+  build now copies each page's aliases: frontmatter and extracts its
+  outbound \[[wikilink]\] targets onto the catalog entry, giving
+  cross-linker's upcoming candidate matching and co-citation scoring a
+  registry to read from.
+
+- Add aliases: frontmatter field and cross-linker scale mechanism (resolves #115). [c948b4f](https://github.com/callowayproject/wiki-toolkit/commit/c948b4f52c4b0dd214a9b1e9f388f72b9ee3ff07)
+
+  Scopes cross-link-candidates to the ingest session's own pages instead of a
+  persisted last-run marker, and grounds the grep -F pre-filter against a real
+  titles+aliases registry (new optional aliases: field on wiki pages and
+  catalog.jsonl entries).
+
+- Add tie-break rule for cross-linker relationship-type inference (resolves #98). [b7887fe](https://github.com/callowayproject/wiki-toolkit/commit/b7887fef34b17ebbeb5822701ea1f8d3701d0b2f)
+
+### Other
+
+- Consolidate docs/design/ and reframe CLAUDE.md as an active build, not a pitch. [6d18857](https://github.com/callowayproject/wiki-toolkit/commit/6d18857bc6faff2f17c9114b2184bb5a7cddaff5)
+
+  Removes stale/absorbed handoff docs (metadata-schema-summary.md,
+  batching-and-crosslink.md, github-webhooks.md, jira-webhooks.md), merges
+  v1-spec.md into toolkit-spec.md as-built with explicit "Not yet built"
+  sections for unshipped scope, and splits the still-active cross-linker skill
+  spec into its own file. CLAUDE.md now describes wiki_toolkit as a tool under
+  active development with a living design record, rather than a pitch awaiting
+  org approval.
+
+- Document confidence markers and typed relationships in ingest skill (resolves #110). [14c3389](https://github.com/callowayproject/wiki-toolkit/commit/14c3389bcb7d808bf614a8a5eb51fffdc4efff5e)
+
+  SKILL.md's page-writing step now covers the inline ^[inferred]/^[ambiguous]
+  markers, their stacking order with ^[source_id] citations, and the
+  **confidence:** rollup's counting/rounding rule, plus the relationships: block's
+
 ## 0.22.0 (2026-08-10)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.21.0...0.22.0)
