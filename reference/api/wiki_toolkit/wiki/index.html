@@ -1824,6 +1824,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#wiki_toolkit.wiki.CrossLinkCandidate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CrossLinkCandidate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#wiki_toolkit.wiki.LintResult" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1890,6 +1901,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;build_catalog
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wiki_toolkit.wiki.find_cross_link_candidates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;find_cross_link_candidates
       
     </span>
   </a>
@@ -2243,6 +2265,19 @@
             </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            CrossLinkCandidate
+
+
+  
+      dataclass
+   (wiki_toolkit.wiki.CrossLinkCandidate)" href="#wiki_toolkit.wiki.CrossLinkCandidate">CrossLinkCandidate</a></code></td>
+            <td class="doc-class-details">
+              <div class="doc-md-description">
+                <p>A single literal-match cross-link candidate found in a session page&rsquo;s body.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
             <td><code><a class="autorefs autorefs-internal" title="            LintResult
 
 
@@ -2274,6 +2309,14 @@
               <td class="doc-function-details">
                 <div class="doc-md-description">
                   <p>Walk <code>docs_dir/wiki/</code>, parsing frontmatter into a catalog entry per note.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            find_cross_link_candidates (wiki_toolkit.wiki.find_cross_link_candidates)" href="#wiki_toolkit.wiki.find_cross_link_candidates">find_cross_link_candidates</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Find literal title/alias mentions of other catalog pages inside <code>page_paths</code>&rsquo; bodies.</p>
                 </div>
               </td>
             </tr>
@@ -2455,6 +2498,67 @@
 
 
 
+<h3 id="wiki_toolkit.wiki.CrossLinkCandidate" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">CrossLinkCandidate</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#wiki_toolkit.wiki.CrossLinkCandidate" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">CrossLinkCandidate</span><span class="p">(</span>
+    <span class="n">page</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
+    <span class="n">target</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
+    <span class="n">mention_text</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span>
+    <span class="n">match_type</span><span class="p">:</span> <span class="n"><span title="typing.Literal">Literal</span></span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;alias&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>A single literal-match cross-link candidate found in a session page&rsquo;s body.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
 <h3 id="wiki_toolkit.wiki.LintResult" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">LintResult</span>
 
@@ -2591,6 +2695,38 @@
 in the source manifest (vacuously true for a note with no sources), else
 <code>proposed</code>. A note with malformed frontmatter is reported as a violation
 instead of raising.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wiki_toolkit.wiki.find_cross_link_candidates" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">find_cross_link_candidates</span>
+
+
+<a href="#wiki_toolkit.wiki.find_cross_link_candidates" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">find_cross_link_candidates</span><span class="p">(</span>
+    <span class="n">docs_dir</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n">page_paths</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            CrossLinkCandidate
+
+
+  
+      dataclass
+   (wiki_toolkit.wiki.CrossLinkCandidate)" href="#wiki_toolkit.wiki.CrossLinkCandidate">CrossLinkCandidate</a></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Find literal title/alias mentions of other catalog pages inside <code>page_paths</code>&rsquo; bodies.</p>
+<p><code>page_paths</code> are the session&rsquo;s own pages (paths as stored in <code>catalog.jsonl</code>, relative to
+<code>docs_dir.parent</code>) — the only bodies read. Every other catalog entry is a potential match
+target, matched by <code>title</code> and <code>aliases</code>, never re-read as a source. A match inside a fenced
+code block or an existing <code>[[...]]</code> wikilink is skipped; at most one candidate is reported
+per <code>(page, target)</code> pair, preferring a <code>title</code> match over an <code>alias</code> match.</p>
 
 
     </div>
