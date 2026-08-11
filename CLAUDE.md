@@ -4,14 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-`wiki_toolkit` — a CLI plus agent-facing skills that maintain an LLM-Wiki (an
-AI-agent-readable infra-documentation set) alongside a codebase, kept in sync
-as that codebase changes. The tool has shipped a working v1 (CLI + skills
-plugin, see [implementation-history.md](docs/design/implementation-history.md))
-and is under active development. `docs/design/` is the living design record —
-why the tool is shaped the way it is, and what's still unbuilt — not a
-proposal awaiting approval. Docs-only changes update that record; changes
-under the toolkit's own code follow normal build/lint/test discipline.
+`wiki_toolkit` — six agent-facing skills
+(`ingest`, `source-update`, `lint`, `cross-linker`, `maintain`, `query`) that operate an LLM-Wiki
+(an AI-agent-readable infra-documentation set) alongside a codebase, kept in sync as that codebase changes.
+The skill workflow is the primary interface;
+the Python CLI (`wiki-toolkit`) is the deterministic engine each skill calls,
+not something a human or agent is expected to drive directly day to day.
+The tool has shipped a working v1 (CLI + skills plugin, see [implementation-history.md](docs/design/implementation-history.md)) and is
+under active development.
+`docs/design/` is the living design record — why the tool is shaped the way it is, and what's still unbuilt.
+Docs-only changes update that record;
+changes under the toolkit's own code follow normal build/lint/test discipline.
 
 ## How the design record is organized
 
