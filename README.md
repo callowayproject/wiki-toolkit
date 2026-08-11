@@ -1,6 +1,6 @@
 # Wiki Toolkit
 
-AI skills and helper tools that implement and maintain an [LLM Wiki](https://karpathy.bearblog.dev/llm-wiki/) — a
+AI skills and helper tools that implement and maintain an [LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) — a
 Raw/Wiki/Schema knowledge base kept current by routing every mutation through a reviewed PR.
 
 ## Install

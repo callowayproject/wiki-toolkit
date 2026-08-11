@@ -12,29 +12,38 @@ By the end you'll have a clean `doctor` report and one entry in the catalog.
 
 ## Prerequisites
 
-- Python 3.14+
+- [`uv` installed](https://docs.astral.sh/uv/getting-started/installation/)
 - A git repository to work in
 - `wiki-toolkit` installed:
 
 ```console
-$ pip install wiki-toolkit
+$ uv tool install wiki-toolkit
 ```
 
 ## 1. Scaffold the structure
 
-`wiki-toolkit` doesn't create a wiki for you — there's no `init` command yet, so you build the
-skeleton by hand. From the root of your git repo:
+From the root of your git repo:
 
 ```console
-$ mkdir -p docs/sources docs/wiki
-$ touch docs/catalog.jsonl docs/log.jsonl docs/schema.md docs/source-manifest.jsonl
+$ wiki-toolkit init
+  [created] docs/sources
+  [created] docs/wiki
+  [created] docs/catalog.jsonl
+  [created] docs/log.jsonl
+  [created] docs/source-manifest.jsonl
+  [created] docs/schema.md
+  [created] docs/.agents/skills
 ```
+
+`init` also drops an `.agents/skills/` bundle for AI agents working in this wiki; this
+tutorial sticks to the by-hand CLI flow, so it's not covered further here.
 
 Check that it's recognized:
 
 ```console
 $ wiki-toolkit doctor
 Python: 3.14.0
+Config: docs_dir=/path/to/repo/docs (source: default)
 Notes in docs/wiki/: 0
   [ok] docs/catalog.jsonl
   [ok] docs/log.jsonl
@@ -48,7 +57,7 @@ No `[MISSING]` or `[MALFORMED]` lines means the structure is sound.
 
 ## 2. Add a source
 
-Every wiki note has to cite at least one **source** — a Raw snapshot of something outside the
+Every wiki note has to cite at least one **source**: a Raw snapshot of something outside the
 wiki (a ticket, a PR, a doc). Create `docs/sources/abc-1.md`:
 
 ```markdown
@@ -120,8 +129,8 @@ OAuth2 scopes for the ingest API (docs/wiki/oauth2-scopes.md)
 
 ## 6. Stage it as a PR
 
-`wiki-toolkit` never writes to your wiki directly — every mutation goes through this **write
-gate**: a local git branch + commit that you then push and open for review yourself.
+`wiki-toolkit` never writes to your wiki directly. Every mutation goes through this **write
+gate**, a local git branch + commit that you then push and open for review yourself.
 
 ```console
 $ wiki-toolkit propose-pr --pages docs/wiki/oauth2-scopes.md --pages docs/catalog.jsonl --frame routine

@@ -43,6 +43,7 @@
 - [toolkit-spec.md](toolkit-spec.md): specification for the AI skills and helper tools (Agent operates these) that implement the llm-wiki pattern, including how mutable sources (Jira comment chains, changing source code) are detected, versioned, and folded into the wiki.
 
 References:
+- https://github.com/langchain-ai/openwiki
 - https://github.com/AlmanacCode/codealmanac/
 - https://github.com/NousResearch/hermes-agent/blob/main/skills/research/llm-wiki/SKILL.md
 - https://github.com/lucasastorian/llmwiki/tree/master
