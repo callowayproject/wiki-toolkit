@@ -1885,21 +1885,29 @@
 By the end you&rsquo;ll have a clean <code>doctor</code> report and one entry in the catalog.</p>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Python 3.14+</li>
+<li><a href="https://docs.astral.sh/uv/getting-started/installation/"><code>uv</code> installed</a></li>
 <li>A git repository to work in</li>
 <li><code>wiki-toolkit</code> installed:</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>wiki-toolkit
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>uv<span class="w"> </span>tool<span class="w"> </span>install<span class="w"> </span>wiki-toolkit
 </code></pre></div>
 <h2 id="1-scaffold-the-structure">1. Scaffold the structure<a class="headerlink" href="#1-scaffold-the-structure" title="Permanent link">&para;</a></h2>
-<p><code>wiki-toolkit</code> doesn&rsquo;t create a wiki for you — there&rsquo;s no <code>init</code> command yet, so you build the
-skeleton by hand. From the root of your git repo:</p>
-<div class="highlight"><pre><span></span><code><span class="gp">$ </span>mkdir<span class="w"> </span>-p<span class="w"> </span>docs/sources<span class="w"> </span>docs/wiki
-<span class="gp">$ </span>touch<span class="w"> </span>docs/catalog.jsonl<span class="w"> </span>docs/log.jsonl<span class="w"> </span>docs/schema.md<span class="w"> </span>docs/source-manifest.jsonl
+<p>From the root of your git repo:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>wiki-toolkit<span class="w"> </span>init
+<span class="go">  [created] docs/sources</span>
+<span class="go">  [created] docs/wiki</span>
+<span class="go">  [created] docs/catalog.jsonl</span>
+<span class="go">  [created] docs/log.jsonl</span>
+<span class="go">  [created] docs/source-manifest.jsonl</span>
+<span class="go">  [created] docs/schema.md</span>
+<span class="go">  [created] docs/.agents/skills</span>
 </code></pre></div>
+<p><code>init</code> also drops an <code>.agents/skills/</code> bundle for AI agents working in this wiki; this
+tutorial sticks to the by-hand CLI flow, so it&rsquo;s not covered further here.</p>
 <p>Check that it&rsquo;s recognized:</p>
 <div class="highlight"><pre><span></span><code><span class="gp">$ </span>wiki-toolkit<span class="w"> </span>doctor
 <span class="go">Python: 3.14.0</span>
+<span class="go">Config: docs_dir=/path/to/repo/docs (source: default)</span>
 <span class="go">Notes in docs/wiki/: 0</span>
 <span class="go">  [ok] docs/catalog.jsonl</span>
 <span class="go">  [ok] docs/log.jsonl</span>
@@ -1910,7 +1918,7 @@ skeleton by hand. From the root of your git repo:</p>
 </code></pre></div>
 <p>No <code>[MISSING]</code> or <code>[MALFORMED]</code> lines means the structure is sound.</p>
 <h2 id="2-add-a-source">2. Add a source<a class="headerlink" href="#2-add-a-source" title="Permanent link">&para;</a></h2>
-<p>Every wiki note has to cite at least one <strong>source</strong> — a Raw snapshot of something outside the
+<p>Every wiki note has to cite at least one <strong>source</strong>: a Raw snapshot of something outside the
 wiki (a ticket, a PR, a doc). Create <code>docs/sources/abc-1.md</code>:</p>
 <div class="highlight"><pre><span></span><code>---
 source: jira:ABC-1
@@ -1959,8 +1967,8 @@ new webhook receiver.
 <span class="go">OAuth2 scopes for the ingest API (docs/wiki/oauth2-scopes.md)</span>
 </code></pre></div>
 <h2 id="6-stage-it-as-a-pr">6. Stage it as a PR<a class="headerlink" href="#6-stage-it-as-a-pr" title="Permanent link">&para;</a></h2>
-<p><code>wiki-toolkit</code> never writes to your wiki directly — every mutation goes through this <strong>write
-gate</strong>: a local git branch + commit that you then push and open for review yourself.</p>
+<p><code>wiki-toolkit</code> never writes to your wiki directly. Every mutation goes through this <strong>write
+gate</strong>, a local git branch + commit that you then push and open for review yourself.</p>
 <div class="highlight"><pre><span></span><code><span class="gp">$ </span>wiki-toolkit<span class="w"> </span>propose-pr<span class="w"> </span>--pages<span class="w"> </span>docs/wiki/oauth2-scopes.md<span class="w"> </span>--pages<span class="w"> </span>docs/catalog.jsonl<span class="w"> </span>--frame<span class="w"> </span>routine
 <span class="go">Created branch wiki-update/routine-20260806101500123456 (commit a1b2c3d4e5, frame=routine)</span>
 <span class="go">  [staged] docs/wiki/oauth2-scopes.md</span>
