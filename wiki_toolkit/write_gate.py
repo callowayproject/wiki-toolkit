@@ -45,12 +45,28 @@ def _new_branch_name(frame: str) -> str:
     return f"{_BRANCH_PREFIX}{frame}-{datetime.now(UTC).strftime('%Y%m%d%H%M%S%f')}"
 
 
-def _nothing_staged(git: str, root: Path, pages: list[str]) -> bool:
-    """Report whether `pages` have no staged diff against HEAD."""
+def _nothing_staged(git: str, root: Path) -> bool:
+    """Report whether the index has no staged diff against HEAD."""
     result = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
-        [git, "diff", "--cached", "--quiet", "--", *pages], cwd=root, check=False
+        [git, "diff", "--cached", "--quiet"], cwd=root, check=False
     )
     return result.returncode == 0
+
+
+def stage_paths(root: Path, paths: list[str]) -> None:
+    """Git-add `paths` into the index, for a producer command to self-stage its own output.
+
+    Called by `build`, `log`, and `source-scan --update` right after each writes its
+    output file(s), so the state files they regenerate ride along in the same commit as
+    the pages that triggered them (see docs/design/toolkit-spec.md's "Write gate").
+    """
+    if not paths:
+        return
+    git = _require_git()
+    try:
+        _run(git, root, "add", "--", *paths)
+    except subprocess.CalledProcessError as e:
+        raise ValueError(f"git staging failed: {e.stderr.strip()}") from e
 
 
 def start_wiki_branch(root: Path, frame: str) -> str:
@@ -69,7 +85,13 @@ def start_wiki_branch(root: Path, frame: str) -> str:
 
 
 def commit_pages(root: Path, pages: list[str], message: str) -> str:
-    """Add and commit `pages` onto the currently checked-out branch. Returns the commit sha.
+    """Add `pages` and commit exactly what's currently staged. Returns the commit sha.
+
+    `pages` is added to the index but is no longer a `git commit` pathspec filter — the
+    commit picks up anything else already staged too (e.g. `catalog.jsonl`/`log.jsonl`/
+    `source-manifest.jsonl` self-staged by `build`/`log`/`source-scan --update` earlier
+    in the same session), so the state those commands regenerated rides along with the
+    pages that triggered them.
 
     Used for a batch coordinator's streaming per-source commits — each one lands
     immediately on the branch opened by `start_wiki_branch`, without waiting for the
@@ -80,7 +102,7 @@ def commit_pages(root: Path, pages: list[str], message: str) -> str:
     git = _require_git()
     try:
         _run(git, root, "add", "--", *pages)
-        _run(git, root, "commit", "-m", message, "--", *pages)
+        _run(git, root, "commit", "-m", message)
     except subprocess.CalledProcessError as e:
         raise ValueError(f"git staging failed: {e.stderr.strip()}") from e
     return _run(git, root, "rev-parse", "HEAD").stdout.strip()
@@ -93,10 +115,16 @@ def propose_pr(root: Path, pages: list[str], frame: str) -> ProposePrResult:
     (see docs/design/idea.md's "write gate" decision). v1 stops at the local
     branch + commit: it never pushes to a remote or opens a real GitHub PR.
 
+    `pages` is added to the index but, like `commit_pages`, is no longer a `git commit`
+    pathspec filter — the commit picks up exactly what's staged, `pages` included,
+    which is how the session's self-staged `catalog.jsonl`/`log.jsonl`/
+    `source-manifest.jsonl` writes ride along.
+
     If the current branch was already opened by `start_wiki_branch` (a batch
     coordinator's session branch), this reuses it instead of creating a new one, and
     tolerates `pages` having nothing left to commit — every page may already have
-    landed via that session's streaming `commit_pages` calls.
+    landed via that session's streaming `commit_pages` calls, in which case this
+    commits whatever else is still staged, if anything.
     """
     if frame not in ALLOWED_FRAMES:
         raise ValueError(f"invalid frame {frame!r}; must be one of {ALLOWED_FRAMES}")
@@ -123,15 +151,17 @@ def propose_pr(root: Path, pages: list[str], frame: str) -> ProposePrResult:
 
 
 def _stage_and_commit(git: str, root: Path, branch: str, pages: list[str], message: str, *, checkout: bool) -> str:
-    """Stage and commit `pages`, optionally checking out `branch` first. Returns the resulting commit sha."""
+    """Stage `pages` and commit whatever's staged, optionally checking out `branch` first.
+
+    Returns the resulting commit sha.
+    """
     if checkout:
         _run(git, root, "checkout", "-b", branch)
     _run(git, root, "add", "--", *pages)
-    # Scope the commit to `pages` even if something else was already staged, so it
-    # contains exactly the listed pages, per the acceptance criteria. On a reused batch
-    # branch, `pages` may already be committed by streaming `commit_pages` calls — in
-    # that case there's nothing left to stage, and committing would fail for no reason.
-    if not checkout and _nothing_staged(git, root, pages):
+    # On a reused batch branch, `pages` may already be committed by streaming
+    # `commit_pages` calls, and nothing else may be staged either — in that case there's
+    # nothing left to commit, and committing would fail for no reason.
+    if not checkout and _nothing_staged(git, root):
         return _run(git, root, "rev-parse", "HEAD").stdout.strip()
-    _run(git, root, "commit", "-m", message, "--", *pages)
+    _run(git, root, "commit", "-m", message)
     return _run(git, root, "rev-parse", "HEAD").stdout.strip()

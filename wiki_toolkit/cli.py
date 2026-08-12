@@ -3,6 +3,7 @@
 Commands parse arguments and delegate to wiki_toolkit's domain modules; no business logic lives here.
 """
 
+import contextlib
 from dataclasses import asdict
 from pathlib import Path
 
@@ -16,6 +17,7 @@ from wiki_toolkit.log import ALLOWED_LOG_ACTIONS, append_log_entry, build_log_en
 from wiki_toolkit.settings import resolve_docs_dir
 from wiki_toolkit.sources import (
     ALLOWED_SNAPSHOT_UNITS,
+    SOURCE_MANIFEST_FILENAME,
     apply_source_scan,
     compute_source_delta,
     lint_sources,
@@ -26,7 +28,18 @@ from wiki_toolkit.sources import (
     write_source_snapshot,
 )
 from wiki_toolkit.wiki import build_catalog, find_cross_link_candidates, lint_wiki, search_catalog
-from wiki_toolkit.write_gate import ALLOWED_FRAMES, commit_pages, propose_pr, start_wiki_branch
+from wiki_toolkit.write_gate import ALLOWED_FRAMES, commit_pages, propose_pr, stage_paths, start_wiki_branch
+
+
+def _stage_best_effort(paths: list[str]) -> None:
+    """Self-stage `paths` if `cwd` is a git repo; silently no-op otherwise (e.g. `init` run standalone).
+
+    The file write this follows has already succeeded either way — staging just means
+    the change rides along in the next `commit-pages`/`propose-pr` call, and there's no
+    such call to feed if there's no repo to stage into.
+    """
+    with contextlib.suppress(ValueError):
+        stage_paths(Path.cwd(), paths)
 
 
 @click.group()
@@ -112,7 +125,9 @@ def build(docs_dir: Path | None) -> None:
     docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
     result = build_catalog(docs_dir)
 
-    write_jsonl(docs_dir / "catalog.jsonl", [asdict(entry) for entry in result.entries])
+    catalog_path = docs_dir / "catalog.jsonl"
+    write_jsonl(catalog_path, [asdict(entry) for entry in result.entries])
+    _stage_best_effort([str(catalog_path)])
 
     click.echo(f"Wrote {len(result.entries)} entries to docs/catalog.jsonl")
 
@@ -165,6 +180,10 @@ def source_scan(update_manifest: bool, accept_covered: bool, docs_dir: Path | No
 
     if update_manifest:
         written = apply_source_scan(docs_dir, result)
+        touched_sources = [
+            entry.path for entry in result.entries if entry.classification == "duplicate" or entry.accepted
+        ]
+        _stage_best_effort([str(docs_dir / SOURCE_MANIFEST_FILENAME), *touched_sources])
         click.echo(f"Wrote {written} entries to docs/source-manifest.jsonl")
 
     if result.needs_attention:
@@ -365,5 +384,6 @@ def log(message: str, details: str, action: str, docs_dir: Path | None) -> None:
     docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
     entry = build_log_entry(action, message, details)
     append_log_entry(docs_dir, entry)
+    _stage_best_effort([str(docs_dir / "log.jsonl")])
 
     click.echo(f"Appended {action} entry to docs/log.jsonl")
