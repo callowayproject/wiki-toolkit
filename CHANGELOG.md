@@ -1,5 +1,51 @@
 # Changelog
 
+## 0.24.2 (2026-08-12)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.24.1...0.24.2)
+
+### Other
+
+- Bump github/codeql-action in the github-actions group. [de68620](https://github.com/callowayproject/wiki-toolkit/commit/de68620b44f82ec1dabb835c689fe555b85b38e7)
+
+  Bumps the github-actions group with 1 update: [github/codeql-action](https://github.com/github/codeql-action).
+
+  Updates `github/codeql-action` from 4.37.4 to 4.37.6
+
+  - [Release notes](https://github.com/github/codeql-action/releases)
+  - [Changelog](https://github.com/github/codeql-action/blob/main/CHANGELOG.md)
+  - [Commits](https://github.com/github/codeql-action/compare/v4.37.4...v4.37.6)
+
+  ______________________________________________________________________
+
+  **updated-dependencies:** - dependency-name: github/codeql-action
+  dependency-version: 4.37.6
+  dependency-type: direct:production
+  update-type: version-update:semver-patch
+  dependency-group: github-actions
+
+  **signed-off-by:** dependabot[bot] <support@github.com>
+
+- [pre-commit.ci] pre-commit autoupdate. [303d5e3](https://github.com/callowayproject/wiki-toolkit/commit/303d5e3c79f709acab317023f386d4e57491b2b2)
+
+  **updates:** - [github.com/astral-sh/ruff-pre-commit: v0.16.1 → v0.16.2](https://github.com/astral-sh/ruff-pre-commit/compare/v0.16.1...v0.16.2)
+
+- Document `source-scan` and commit behavior changes: clarify `--source` flag, self-staging producer commands, and scoped commits. [1d3bb16](https://github.com/callowayproject/wiki-toolkit/commit/1d3bb1695995cf45de7e3703450124d468cba0d9)
+
+- Self-stage producer commands' output; commit-pages/propose-pr commit exactly what's staged. [473a27d](https://github.com/callowayproject/wiki-toolkit/commit/473a27d1f0f9dd7d5a39bc8166c670bd5345c673)
+
+  build, log, and source-scan --update now git-add their own output
+  (catalog.jsonl, log.jsonl, source-manifest.jsonl + stamped docs/sources/\*.md)
+  as they write it, via a new stage_paths() helper. commit_pages()/propose_pr()
+  drop the --pages pathspec filter on git commit, so a session's self-staged
+  state files ride along with the pages that triggered them instead of being
+  left dirty after the PR branch is cut.
+
+  Self-staging is best-effort: build/log/source-scan still succeed outside a
+  git repo, since the file write itself doesn't depend on git.
+
+  Implements #133 (issue #125's revised resolution via #132).
+
 ## 0.24.1 (2026-08-12)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.24.0...0.24.1)
