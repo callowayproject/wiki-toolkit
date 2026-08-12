@@ -103,6 +103,9 @@ the overwrite signals "needs reprocessing."
 - *Covered* — at least one wiki note's `sources:` frontmatter references it (tracked as
   `covered_by` in the manifest). Processed-but-not-covered is an expected transient state;
   `source-lint` flags sources stuck there as a backlog signal, not an ingest-time error.
+  `source-lint` and `source-coverage` read `covered_by` straight from the manifest — coverage
+  is only as fresh as the last `build`, the same staleness tolerance `build_catalog` already
+  applies to a note's `resolved`/`proposed` status.
 
 ### Deltas and revisions (`source-delta`)
 
@@ -134,14 +137,14 @@ The toolkit uses it to determine the potential scope of a change.
 - `source`: unique identifier for this document
 - `path`: relative path to the document from the repo root
 - `title`: document title, or the file name if necessary
-- `referenced_by`: relative paths of wiki documents that reference this file
 - `updated`: ISO-8601 date-time string when it was updated
 - `update_sha`: SHA of the Git commit last processed for this file, or the computed SHA of files
   for mutable sources like Jira tickets
 - `status`: `proposed` or `resolved`. `proposed` means the source was ingested ahead of any code
   change (a design doc, a ticket) and its wiki page is speculative; `resolved` means a PR has since
   referenced this source, confirming it against an actual diff.
-- `covered_by`: relative paths of wiki notes that cite this source
+- `covered_by`: relative paths of wiki notes that cite this source. Recomputed by `build` from
+  `docs/wiki/` notes' `sources:` frontmatter (see Command surface below) — not hand-edited.
 
 ## Catalog
 
@@ -260,7 +263,7 @@ earlier drafts — see [CONTEXT.md](CONTEXT.md)). No adapter arguments yet.
 |---|---|
 | `init` | Scaffold a new wiki: create `docs/{sources,wiki}/`, empty `catalog.jsonl`/`log.jsonl`/`source-manifest.jsonl`, `schema.md` from the built-in template, and a local `docs/.agents/skills/` copy of the skills plugin |
 | `doctor` | Non-mutating health check: `docs/` folder structure, Python version, catalog/manifest sanity, note counts, shallow-clone warning, resolved configuration and its source, local skills-copy version drift |
-| `build` | Generate `docs/catalog.jsonl` from `docs/wiki/` notes, including each page's `aliases:` frontmatter and outbound `[[wikilink]]` targets as `links` (both empty lists if absent/none) (no `index.md`/per-folder index generation) |
+| `build` | Generate `docs/catalog.jsonl` from `docs/wiki/` notes, including each page's `aliases:` frontmatter and outbound `[[wikilink]]` targets as `links` (both empty lists if absent/none) (no `index.md`/per-folder index generation). Also recomputes `covered_by` in `docs/source-manifest.jsonl` by inverting each note's `sources:` frontmatter into per-source citing-page lists, full overwrite each run (no incremental state). A `sources:` id absent from the manifest is skipped here — `lint` already flags it as an unresolved source reference |
 | `lint` | Validate wiki note frontmatter, allowed tags, source links, `source_count`; flags a `relationships:` entry whose `target` doesn't resolve to an existing page, and drift between a page's `confidence:` block and its recomputed marker counts. Flagged, not rejected — the write gate's PR review is the enforcement point |
 | `source-scan [--update] [--accept-covered]` | Walk `docs/sources/`; classify each file `new` / `update` / `duplicate` (absorbs the old `source-match` and base-spec `source-delta` meaning — "not in the manifest" is just "unprocessed"). With `--update`, write results to `docs/source-manifest.jsonl`. Skips version-controlled source types (no Raw file to scan) |
 | `source-lint` | Validate source frontmatter and coverage state (flags `processed` sources with no `covered_by` entries) |
@@ -273,8 +276,8 @@ earlier drafts — see [CONTEXT.md](CONTEXT.md)). No adapter arguments yet.
 | `log --title "..." --details "..."` | Append entry to `docs/log.jsonl` |
 | `batch-plan <vault> <source-dir>` | Split the files under `source-dir` into batches (100,000 bytes or 20 files per batch, whichever comes first) for parallel wiki-ingest subagent dispatch; prints `{batches: [{id, files, total_bytes}], stats: {total_files, total_bytes, batch_count}}` |
 | `start-branch --frame routine\|needs-review` | Open a session's local branch up front, before any pages are committed — used by a batch coordinator so streaming `commit-pages` calls and the closing `propose-pr` call land on the same branch |
-| `commit-pages --pages <list> --message <str>` | Add and commit `pages` onto the currently checked-out branch — a batch coordinator calls this once per source, as soon as that source's subagent reports back, rather than waiting for the whole batch to finish |
-| `propose-pr --pages <list> --frame routine\|needs-review` | Branch + commit locally, framed per mutation type that triggered it (no real GitHub PR yet). If the current branch was already opened by `start-branch`, reuses it instead of creating a new one, and tolerates pages already committed via `commit-pages` |
+| `commit-pages --pages <list> --message <str>` | Add and commit `pages`, plus every other currently modified/untracked file under `docs_dir` (`catalog.jsonl`, `log.jsonl`, `source-manifest.jsonl`, stamped `docs/sources/*.md`, etc.), onto the currently checked-out branch — a batch coordinator calls this once per source, as soon as that source's subagent reports back, rather than waiting for the whole batch to finish |
+| `propose-pr --pages <list> --frame routine\|needs-review` | Branch + commit locally, framed per mutation type that triggered it (no real GitHub PR yet). Commits `pages` plus every other currently modified/untracked file under `docs_dir`, so the session's `build`/`log`/`source-scan` side effects ride the same commit as the pages that triggered them — the git-dirty scan never reaches outside `docs_dir`. If the current branch was already opened by `start-branch`, reuses it instead of creating a new one, and tolerates pages already committed via `commit-pages` |
 | `config show` | Read-only: print the resolved configuration and which source (default/env/`pyproject.toml`/flag) each value came from |
 
 ## Not yet built: adapters

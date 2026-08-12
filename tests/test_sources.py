@@ -108,6 +108,24 @@ def test_scan_covered_update_needs_accept_covered(make_docs_tree: Callable[[], P
     assert accepted_result.entries[0].accepted is True
 
 
+def test_scan_accept_covered_preserves_manifest_title_when_frontmatter_lacks_one(
+    make_docs_tree: Callable[[], Path], make_source
+) -> None:
+    """A covered update accepted via --accept-covered keeps the manifest's title if the source file has none."""
+    docs_dir = make_docs_tree()
+    manifest_entry = {
+        "source": "jira:AUTH-200",
+        "title": "AUTH-200: JWT expiry is 24h",
+        "covered_by": ["docs/wiki/foo.md"],
+    }
+    (docs_dir / "source-manifest.jsonl").write_text(orjson.dumps(manifest_entry).decode() + "\n")
+    make_source(docs_dir, "jira:AUTH-200", filename="jira-auth-200.md")
+
+    result = scan_sources(docs_dir, accept_covered=True)
+
+    assert result.entries[0].title == "AUTH-200: JWT expiry is 24h"
+
+
 def test_scan_flags_malformed_frontmatter(make_docs_tree: Callable[[], Path]) -> None:
     """A source file with unparsable YAML frontmatter is flagged, not raised."""
     docs_dir = make_docs_tree()

@@ -1,5 +1,86 @@
 # Changelog
 
+## 0.24.1 (2026-08-12)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.24.0...0.24.1)
+
+### Fixes
+
+- Fix manifest title clobber on --accept-covered rescan. [85ba126](https://github.com/callowayproject/wiki-toolkit/commit/85ba126e17bbe89a87a91f9e9ad49f9ea24033d6)
+
+  scan_sources fell back to a filename-derived title (post.get("title")
+  or path.stem) whenever a source file's frontmatter lacked a title
+  key. apply_source_scan wrote that fallback straight into the
+  manifest, permanently overwriting a previously-good human title
+  (e.g. "AUTH-200: JWT expiry is 24h" -> "jira-auth-200") on any
+  rescan that hit such a file, including via --accept-covered.
+
+  Prefer the manifest's existing title over the filename fallback,
+  matching the pattern already used for covered_by.
+
+### New
+
+- Add cross-linker skill, wire it into ingest (resolves #120). [aea9183](https://github.com/callowayproject/wiki-toolkit/commit/aea9183a71f6e4fe02a4a1bf867f7ce983ba3636)
+
+  New skills/cross-linker/SKILL.md: scores cross-link-candidates output
+  plus shared-sources/tags/co-citation pairs with the toolkit-native
+  4-signal rubric, tiers into EXTRACTED/INFERRED/AMBIGUOUS, places links
+  inline or in a Related section, infers a relationship type per the
+  fixed sentence-pattern table, and reports in-session.
+
+  skills/ingest/SKILL.md splices cross-linker between build and lint
+  (manual and batch-dispatched sequences), renumbering later steps.
+
+### Other
+
+- Reconcile toolkit-spec.md with commit-pages/propose-pr's docs_dir-wide commit sweep; drop referenced_by, spec covered_by as build-recomputed. [377504b](https://github.com/callowayproject/wiki-toolkit/commit/377504bd431bcf366a9c82bbdb88b9f9e6e5de08)
+
+  - commit-pages/propose-pr rows: document that both now sweep every modified/
+    untracked file under docs_dir (catalog.jsonl, log.jsonl, source-manifest.jsonl,
+    stamped sources), not just --pages.
+  - Source manifest schema: remove referenced_by (superseded by covered_by, was
+    dead schema kept only as a doc-merge artifact from the toolkit-spec.md/
+    v1-spec.md consolidation). Note covered_by is recomputed by build, not
+    hand-edited.
+  - build Command-surface row: describe the covered_by recompute (inverts each
+    wiki note's sources: frontmatter into per-source citing-page lists).
+  - Processed vs. covered: note source-lint/source-coverage now read covered_by
+    straight from the manifest.
+  - idea.md: fix a stale referenced_by mention in the "retiring docs" note to
+    covered_by.
+
+  Resolves the design phase of wayfinder map #126; implementation (wiring build
+  to actually write covered_by) is a follow-up.
+
+- Revise docs: clarify skill workflow as primary interface, restructure solution breakdown. [03f3e3f](https://github.com/callowayproject/wiki-toolkit/commit/03f3e3f496f04200963056b8cb0988805bc2a752)
+
+- Reconcile toolkit-spec.md with shipped batching/cross-linker CLI (closes #84, #116). [dfefbc5](https://github.com/callowayproject/wiki-toolkit/commit/dfefbc587a5f427fd1cbc814cb37d3ee13849a20)
+
+  batch-plan, start-branch, and commit-pages (issues #101-#103) and
+  cross-link-candidates (issue #118) all shipped in earlier commits, but the
+  spec's Command surface table and "Not yet built" section never caught up.
+
+- Narrow lint's semantic pass to report-only (resolves #119). [ddac3d8](https://github.com/callowayproject/wiki-toolkit/commit/ddac3d85fa09676cdc9890f282041b44bddc7435)
+
+  Drops "Missing cross-references" from lint's semantic categories and
+  removes the "mechanical, safe" auto-fix path entirely — all findings
+  (contradictions, staleness, orphan pages) now go to a human report.
+  Clears the way for cross-linker (#121) to own adding links.
+
+### Updates
+
+- Update CLAUDE.md: document skills paths, git workflow, code review, defensive parsing, and writing style guidelines. [e6743eb](https://github.com/callowayproject/wiki-toolkit/commit/e6743eb90db096191eff63f34a7d31e73e9b42cd)
+
+- Update docs: add link to openwiki, revise tutorial for `wiki-toolkit init`. [2eefda6](https://github.com/callowayproject/wiki-toolkit/commit/2eefda637a7d4956ae3a7ff56a4767daa03fcc09)
+
+- Delete stale cross-linker design docs, fold into implementation-history.md. [2cc50c8](https://github.com/callowayproject/wiki-toolkit/commit/2cc50c84354865215c93c841032a4340b9aa7925)
+
+  cross-linker-spec.md and cross-linker-scale-research.md were working docs
+  for the now-closed map #94 (issue #116, this PR). The as-built behavior
+  lives in skills/cross-linker/SKILL.md and toolkit-spec.md; two ideas from
+  the spec draft (git-snapshot undo, misc-page affinity) were considered and
+  explicitly dropped, not carried forward.
+
 ## 0.24.0 (2026-08-10)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.23.0...0.24.0)

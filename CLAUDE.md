@@ -4,14 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-`wiki_toolkit` — a CLI plus agent-facing skills that maintain an LLM-Wiki (an
-AI-agent-readable infra-documentation set) alongside a codebase, kept in sync
-as that codebase changes. The tool has shipped a working v1 (CLI + skills
-plugin, see [implementation-history.md](docs/design/implementation-history.md))
-and is under active development. `docs/design/` is the living design record —
-why the tool is shaped the way it is, and what's still unbuilt — not a
-proposal awaiting approval. Docs-only changes update that record; changes
-under the toolkit's own code follow normal build/lint/test discipline.
+`wiki_toolkit` — six agent-facing skills
+(`ingest`, `source-update`, `lint`, `cross-linker`, `maintain`, `query`) that operate an LLM-Wiki
+(an AI-agent-readable infra-documentation set) alongside a codebase, kept in sync as that codebase changes.
+The skill workflow is the primary interface;
+the Python CLI (`wiki-toolkit`) is the deterministic engine each skill calls,
+not something a human or agent is expected to drive directly day to day.
+The tool has shipped a working v1 (CLI + skills plugin, see [implementation-history.md](docs/design/implementation-history.md)) and is
+under active development.
+`docs/design/` is the living design record — why the tool is shaped the way it is, and what's still unbuilt.
+Docs-only changes update that record;
+changes under the toolkit's own code follow normal build/lint/test discipline.
 
 ## How the design record is organized
 
@@ -63,6 +66,31 @@ the most recent one (cross-linker, issue #94) closed and folded into `implementa
 - Whether the LLM wiki should live in the same repo as the code or a separate one.
 
 When extending the tool, prefer resolving or explicitly narrowing these gaps over adding new speculative scope.
+
+
+## Skills & References
+
+Skills and their reference/script files live in `~/.claude/skills/<name>/` (personal) and `~/.agents/skills/<name>/` (agents). Do NOT look in `.agents/skills` at the project root. Resolve the skill directory once at the start of a skill invocation and reuse that path.
+
+
+## Git Workflow
+
+Never commit directly to `main`. Before the first edit of an implementation task, create a feature branch (`git checkout -b <issue-number>-<slug>`). Commit there, then open the PR with `gh pr create`.
+Add under the '## Testing' or '## Workflow' section of CLAUDE.md.
+
+## Code Review
+
+Run the code-review agent in the foreground and wait for its output, or poll it. If it produces no findings within one check, fall back to a manual `git diff` review rather than idling. Always re-run tests after applying review fixes.
+Add under the wiki/ingest or lint-checks section of CLAUDE.md.
+
+## Defensive Frontmatter Parsing
+
+All frontmatter fields (`relationships:`, `confidence:`, etc.) may be missing, a scalar, or malformed. Never assume a mapping — guard with isinstance checks and add a malformed-input test case for every new lint check.
+Add under a '## Documentation' or '## Writing Style' section.
+
+## Writing Style
+
+No em dashes. No bold for emphasis in prose. Keep prose plain and solution-agnostic in job stories and specs. After any doc edit, grep for `—` to verify.
 
 ## Agent skills
 
