@@ -1714,6 +1714,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#wiki_toolkit.sources.ApplySourceScanResult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ApplySourceScanResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#wiki_toolkit.sources.Batch" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2502,6 +2513,19 @@
       </thead>
       <tbody>
           <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            ApplySourceScanResult
+
+
+  
+      dataclass
+   (wiki_toolkit.sources.ApplySourceScanResult)" href="#wiki_toolkit.sources.ApplySourceScanResult">ApplySourceScanResult</a></code></td>
+            <td class="doc-class-details">
+              <div class="doc-md-description">
+                <p>What <code>apply_source_scan</code> actually wrote/stamped.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
             <td><code><a class="autorefs autorefs-internal" title="            Batch
 
 
@@ -2806,6 +2830,62 @@
 
 
 <h2 id="wiki_toolkit.sources-classes">Classes<a href="#wiki_toolkit.sources-classes" class="headerlink" title="Permanent link">&para;</a></h2>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="wiki_toolkit.sources.ApplySourceScanResult" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">ApplySourceScanResult</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#wiki_toolkit.sources.ApplySourceScanResult" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">ApplySourceScanResult</span><span class="p">(</span><span class="n">written</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">touched_paths</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="list">list</span></span><span class="p">())</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>What <code>apply_source_scan</code> actually wrote/stamped.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-class">
 
@@ -4073,12 +4153,22 @@
 
 
 <a href="#wiki_toolkit.sources.apply_source_scan" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">apply_source_scan</span><span class="p">(</span><span class="n">docs_dir</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            SourceScanResult
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">apply_source_scan</span><span class="p">(</span>
+    <span class="n">docs_dir</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span>
+    <span class="n">result</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            SourceScanResult
 
 
   
       dataclass
-   (wiki_toolkit.sources.SourceScanResult)" href="#wiki_toolkit.sources.SourceScanResult">SourceScanResult</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="int">int</span></span>
+   (wiki_toolkit.sources.SourceScanResult)" href="#wiki_toolkit.sources.SourceScanResult">SourceScanResult</a></span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">source_ids</span><span class="p">:</span> <span class="n"><span title="set">set</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            ApplySourceScanResult
+
+
+  
+      dataclass
+   (wiki_toolkit.sources.ApplySourceScanResult)" href="#wiki_toolkit.sources.ApplySourceScanResult">ApplySourceScanResult</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4086,7 +4176,8 @@
         <p>Write a <code>scan_sources</code> result: stamp source frontmatter, update the manifest.</p>
 <p>Duplicate files are stamped <code>duplicate: true</code> and get no manifest entry.
 Unaccepted (covered, not <code>--accept-covered</code>) updates are left untouched.
-Returns the number of manifest entries written.</p>
+<code>source_ids</code>, if given, narrows the write/stamp step to only those source ids —
+every other classified entry is skipped, unwritten until a later unscoped call.</p>
 
 
     </div>
