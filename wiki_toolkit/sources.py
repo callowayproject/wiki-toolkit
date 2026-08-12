@@ -180,7 +180,7 @@ def scan_sources(docs_dir: Path, *, accept_covered: bool = False) -> SourceScanR
             SourceScanEntry(
                 source=source_id,
                 path=rel_path,
-                title=post.get("title") or path.stem,
+                title=post.get("title") or manifest.get(source_id, {}).get("title") or path.stem,
                 classification=classification,
                 covered=covered,
                 accepted=accepted,
