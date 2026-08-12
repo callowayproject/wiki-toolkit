@@ -6,7 +6,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-# ruff: file-ignore[start-process-with-partial-path, subprocess-without-shell-equals-true]
+# ruff: file-ignore[start-process-with-partial-path, subprocess-without-shell-equals-true, line-too-long]
 
 ROOT = Path(__file__).parent
 EVALS_PATH = ROOT.joinpath("evals.json")
