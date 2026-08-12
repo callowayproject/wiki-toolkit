@@ -1,5 +1,46 @@
 # Changelog
 
+## 0.25.0 (2026-08-12)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.24.2...0.25.0)
+
+### New
+
+- Add grader implementation for ingest evals and update eval definitions. [4735722](https://github.com/callowayproject/wiki-toolkit/commit/473572275b7887458a876a94c17843b015fcd2d6)
+
+  - Introduced `grade.py` to automate grading of single-source, multi-source, and covered-source evaluation scenarios.
+  - Updated `evals.json` to include grader instructions for all test cases.
+
+- Address code-review findings on --source scoping. [1eecbf7](https://github.com/callowayproject/wiki-toolkit/commit/1eecbf723c4ee65437ce58cb8b4e241c236b82b9)
+
+  - apply_source_scan now returns an ApplySourceScanResult (written count +
+    touched_paths) instead of a bare int, so cli.py no longer re-derives its
+    own copy of the write/duplicate scoping predicate to know what to stage.
+  - source-scan --update --source <id> now fails loud (exit 1, [ERROR] line)
+    when a requested id matches no classified entry, instead of silently
+    writing zero entries and exiting 0.
+  - Drop em dashes introduced in the ingest/source-update SKILL.md rewrites,
+    per the repo's no-em-dash writing-style rule.
+
+- Add --source scoping to source-scan, thread through ingest/source-update. [7dfe2c5](https://github.com/callowayproject/wiki-toolkit/commit/7dfe2c5f642b9914b2719ff1c1eb05921641b203)
+
+  Resolves #134. apply_source_scan/CLI now accept repeatable --source <id>
+  to narrow the --update write/stage step to specific sources, leaving the
+  rest for a later unscoped sweep (e.g. maintain). ingest's per-session
+  scan call now scopes to that session's sources; source-update splits its
+  sweep into an unscoped classification pass plus a per-source scoped
+  write inside its update loop.
+
+- Add ingest evals and fixtures for testing wiki skills. [28d5a73](https://github.com/callowayproject/wiki-toolkit/commit/28d5a73d74d9fb1abda7f226ff756af84acbd778)
+
+  - Introduced `skills/ingest/evals/evals.json` defining eval scenarios for single-source, multi-source, and covered-source updates.
+  - Added `skills/ingest/evals/build_fixture.py` script to generate test fixtures.
+  - Test cases include Redis eviction policy fix, rate-limiting middleware ingestion, and a JWT expiry update.
+
+### Other
+
+- Expand ruff file-ignore rules to include long lines in `grade.py`. [4908e3d](https://github.com/callowayproject/wiki-toolkit/commit/4908e3d4779f9acef5fa34c277386943a256adf0)
+
 ## 0.24.2 (2026-08-12)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.24.1...0.24.2)
