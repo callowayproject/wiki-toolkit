@@ -14,10 +14,14 @@ This sequence covers a session ingesting one or more sources, listed manually.
 
 ## Sequence
 
-1. **`wiki-toolkit source-scan --update`**
-   Run once at the start of the session, covering every source in `docs/sources/`
-   in a single call. Classifies every source file as new, update, or duplicate
-   and writes the result to `source-manifest.jsonl`.
+1. **`wiki-toolkit source-scan --update --source <id> [--source <id> ...]`**
+   Run once at the start of the session, with one `--source <id>` per source
+   being ingested this session (repeatable in the same call). Classification
+   still covers every source file in `docs/sources/` (needed for accurate
+   `needs_attention`/duplicate detection), but the write/stamp into
+   `source-manifest.jsonl` is scoped to just the named source(s); sources
+   outside this session are left untouched until a later unscoped call
+   (e.g. `maintain`'s sweep) catches them up.
    If a source needs `--accept-covered` (an update to a source already covered by a wiki note),
    re-run with that flag once you've confirmed the update is real.
 
@@ -87,7 +91,8 @@ This sequence covers a session ingesting one or more sources, listed manually.
 - Never write a wiki page without a corresponding source in `docs/source-manifest.jsonl` — run `source-scan` first.
 - Never skip `build`, `cross-linker`, or `lint` between writing pages and
   proposing them. `propose-pr` should always land on a lint-clean catalog.
-- One session = one `source-scan --update` call, one `build` call, one
+- One session = one `source-scan --update` call (with one `--source <id>` per
+  source ingested this session), one `build` call, one
   `cross-linker` invocation, one `lint` call, one `log` entry per source
   (plus one per page `cross-linker` links), and one `propose-pr` call —
   regardless of how many sources or pages the session covers. A
@@ -103,7 +108,9 @@ dispatch one subagent per batch to read and distill in parallel, but you are the
 only one who ever writes to `docs/wiki/` or touches git. This still follows the
 same one-session-one-PR sequence above — only step 2 changes.
 
-1. `wiki-toolkit source-scan --update`, same as a manual session.
+1. `wiki-toolkit source-scan --update`, same as a manual session, but omit
+   `--source` here since a batch-dispatched session covers the whole
+   `source-dir`, not a hand-picked subset.
 2. `wiki-toolkit start-branch --frame <routine|needs-review>` — open the
    session's branch once, before dispatching anything. Every commit below,
    and the closing `propose-pr` call, land on this same branch.

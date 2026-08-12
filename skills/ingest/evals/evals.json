@@ -7,7 +7,8 @@
       "prompt": "There's a new source file at docs/sources/redis-eviction-fix.md (jira:INFRA-142) that hasn't been ingested yet \u2014 it's a ticket about the Redis cache OOM-crashing because it runs with the noeviction policy, fixed by switching to allkeys-lru. Ingest it into the wiki.",
       "expected_output": "One new wiki page (or an update to the existing Redis Cache page) citing jira:INFRA-142, correct frontmatter, at least 2 outbound wikilinks, source-manifest/catalog/log updated, a lint-clean local git commit staged via propose-pr. Basic single-source sequence correctness.",
       "files": [
-        "fixture: run build_fixture.py <dest> from this directory, then point the agent at <dest>"
+        "fixture: run build_fixture.py <dest> from this directory, then point the agent at <dest>",
+        "grader: run grade.py <iteration_dir> from this directory and point the agent at <iteration_dir>"
       ],
       "expectations": [
         "docs/source-manifest.jsonl contains an entry for jira:INFRA-142",
@@ -27,7 +28,8 @@
       "prompt": "Three new sources about the rate-limiting middleware just landed under docs/sources/: ratelimit-design-doc.md (confluence:RATE-001, the design doc), ratelimit-implementation-ticket.md (jira:RATE-002, the implementation ticket), and ratelimit-slack-thread.md (slack:rate-limit-launch, the launch announcement). Ingest all three in one session.",
       "expected_output": "One coherent ingest session covering all 3 sources \u2014 one source-scan, one build, one cross-linker pass, one lint, one propose-pr for the whole session (not one PR per source), each page citing the right source(s), at least 2 outbound wikilinks per page (stubs created if needed), log entries for each source. Tests the one-session/one-PR batching rule and multi-source citation.",
       "files": [
-        "fixture: run build_fixture.py <dest> from this directory, then point the agent at <dest>"
+        "fixture: run build_fixture.py <dest> from this directory, then point the agent at <dest>",
+        "grader: run grade.py <iteration_dir> from this directory and point the agent at <iteration_dir>"
       ],
       "expectations": [
         "confluence:RATE-001, jira:RATE-002, and slack:rate-limit-launch all appear in the final source-manifest.jsonl",
@@ -45,7 +47,8 @@
       "prompt": "docs/sources/jira-auth-200.md (jira:AUTH-200) was just updated \u2014 the JWT token expiry changed from 24h to 1h. This source is already covered by the existing Auth Service wiki page. Make sure the wiki reflects the change.",
       "expected_output": "Agent recognizes this as an update to an already-covered source (source-scan flags it 'needs --accept-covered'), confirms the change is real, re-scans with --accept-covered, and updates the Auth Service page's content (24h -> 1h) rather than creating a duplicate page or silently accepting the other two unrelated already-covered sources (INFRA-100, infra-overview-v1) that also show up as needing accept-covered but weren't actually asked about.",
       "files": [
-        "fixture: run build_fixture.py <dest> from this directory, then point the agent at <dest>"
+        "fixture: run build_fixture.py <dest> from this directory, then point the agent at <dest>",
+        "grader: run grade.py <iteration_dir> from this directory and point the agent at <iteration_dir>"
       ],
       "expectations": [
         "The Auth Service wiki page's body reflects the 1h expiry, not only the stale 24h claim",
