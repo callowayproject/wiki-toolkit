@@ -186,18 +186,19 @@ def source_scan(
     for path in result.skipped:
         click.echo(f"[skip] {path} (version-controlled)")
 
+    unmatched: set[str] = set()
     if update_manifest:
         scope = set(source_ids) or None
-        written = apply_source_scan(docs_dir, result, source_ids=scope)
-        touched_sources = [
-            entry.path
-            for entry in result.entries
-            if (entry.classification == "duplicate" or entry.accepted) and (scope is None or entry.source in scope)
-        ]
-        _stage_best_effort([str(docs_dir / SOURCE_MANIFEST_FILENAME), *touched_sources])
-        click.echo(f"Wrote {written} entries to docs/source-manifest.jsonl")
+        if scope is not None:
+            unmatched = scope - {entry.source for entry in result.entries}
+            for source_id in sorted(unmatched):
+                click.echo(f"[ERROR] --source {source_id} matched no classified entry")
 
-    if result.needs_attention:
+        apply_result = apply_source_scan(docs_dir, result, source_ids=scope)
+        _stage_best_effort([str(docs_dir / SOURCE_MANIFEST_FILENAME), *apply_result.touched_paths])
+        click.echo(f"Wrote {apply_result.written} entries to docs/source-manifest.jsonl")
+
+    if result.needs_attention or unmatched:
         raise SystemExit(1)
 
 

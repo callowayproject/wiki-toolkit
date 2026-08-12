@@ -23,7 +23,7 @@ threads — those are `new` in `source-scan` and go through `ingest`.
 
 2. **For each `update`-classified source, in its own iteration:**
    - **`wiki-toolkit source-scan --update --accept-covered --source <id>`**
-     Scoped write/stamp for just this source — the manifest entry and
+     Scoped write/stamp for just this source; the manifest entry and
      source frontmatter for every other classified source are left
      untouched, unwritten until a later unscoped call (e.g. `maintain`'s
      sweep) catches them up.

@@ -148,9 +148,9 @@ def test_apply_source_scan_stamps_processed_and_writes_manifest(
     path = make_source(docs_dir, "jira:ABC-1")
 
     result = scan_sources(docs_dir)
-    written = apply_source_scan(docs_dir, result)
+    apply_result = apply_source_scan(docs_dir, result)
 
-    assert written == 1
+    assert apply_result.written == 1
     assert "processed: true" in path.read_text(encoding="utf-8")
     manifest_lines = (docs_dir / "source-manifest.jsonl").read_text(encoding="utf-8").splitlines()
     manifest = [orjson.loads(line) for line in manifest_lines]
@@ -185,9 +185,10 @@ def test_apply_source_scan_source_ids_scopes_the_write(make_docs_tree: Callable[
     other_path = make_source(docs_dir, "jira:ABC-2", filename="b.md")
 
     result = scan_sources(docs_dir)
-    written = apply_source_scan(docs_dir, result, source_ids={"jira:ABC-1"})
+    apply_result = apply_source_scan(docs_dir, result, source_ids={"jira:ABC-1"})
 
-    assert written == 1
+    assert apply_result.written == 1
+    assert apply_result.touched_paths == ["docs/sources/a.md"]
     assert "processed: true" in scoped_path.read_text(encoding="utf-8")
     assert "processed: true" not in other_path.read_text(encoding="utf-8")
     manifest_lines = (docs_dir / "source-manifest.jsonl").read_text(encoding="utf-8").splitlines()
@@ -204,9 +205,9 @@ def test_apply_source_scan_skips_unaccepted_covered_update(make_docs_tree: Calla
     path = make_source(docs_dir, "jira:ABC-1")
 
     result = scan_sources(docs_dir)
-    written = apply_source_scan(docs_dir, result)
+    apply_result = apply_source_scan(docs_dir, result)
 
-    assert written == 0
+    assert apply_result.written == 0
     assert "processed: true" not in path.read_text(encoding="utf-8")
 
 

@@ -349,6 +349,24 @@ def test_source_scan_update_source_scopes_the_write(tmp_path: Path, monkeypatch,
     assert "Wrote 1 entries" in result.output
 
 
+def test_source_scan_update_source_unmatched_id_fails_loud(
+    tmp_path: Path, monkeypatch, make_docs_tree, make_source
+) -> None:
+    """A `--source` id that matches no classified entry (e.g. a typo) errors instead of silently writing nothing."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "source-manifest.jsonl").write_text("")
+    make_source(docs_dir, "jira:ABC-1", filename="a.md")
+    _init_git(tmp_path)
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["source-scan", "--update", "--source", "jira:ABC-99"])
+
+    assert result.exit_code == 1
+    assert "jira:ABC-99" in result.output
+    manifest = (docs_dir / "source-manifest.jsonl").read_text(encoding="utf-8")
+    assert not manifest
+
+
 def test_lint_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_docs_tree, make_wiki_note) -> None:
     """Lint --docs-dir reads from the overridden tree, not cwd/docs (which doesn't exist here)."""
     docs_dir = make_docs_tree()

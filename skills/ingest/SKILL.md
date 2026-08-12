@@ -19,7 +19,7 @@ This sequence covers a session ingesting one or more sources, listed manually.
    being ingested this session (repeatable in the same call). Classification
    still covers every source file in `docs/sources/` (needed for accurate
    `needs_attention`/duplicate detection), but the write/stamp into
-   `source-manifest.jsonl` is scoped to just the named source(s) — sources
+   `source-manifest.jsonl` is scoped to just the named source(s); sources
    outside this session are left untouched until a later unscoped call
    (e.g. `maintain`'s sweep) catches them up.
    If a source needs `--accept-covered` (an update to a source already covered by a wiki note),
@@ -108,7 +108,7 @@ dispatch one subagent per batch to read and distill in parallel, but you are the
 only one who ever writes to `docs/wiki/` or touches git. This still follows the
 same one-session-one-PR sequence above — only step 2 changes.
 
-1. `wiki-toolkit source-scan --update`, same as a manual session — omit
+1. `wiki-toolkit source-scan --update`, same as a manual session, but omit
    `--source` here since a batch-dispatched session covers the whole
    `source-dir`, not a hand-picked subset.
 2. `wiki-toolkit start-branch --frame <routine|needs-review>` — open the

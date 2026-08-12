@@ -198,18 +198,28 @@ def _stamp_frontmatter(path: Path, **fields: Any) -> None:
     path.write_bytes(Post.dumps(post).encode())
 
 
-def apply_source_scan(docs_dir: Path, result: SourceScanResult, *, source_ids: set[str] | None = None) -> int:
+@dataclass
+class ApplySourceScanResult:
+    """What `apply_source_scan` actually wrote/stamped."""
+
+    written: int  # number of manifest entries written
+    touched_paths: list[str] = field(default_factory=list)  # every file stamped, duplicate or manifest-written
+
+
+def apply_source_scan(
+    docs_dir: Path, result: SourceScanResult, *, source_ids: set[str] | None = None
+) -> ApplySourceScanResult:
     """Write a `scan_sources` result: stamp source frontmatter, update the manifest.
 
     Duplicate files are stamped `duplicate: true` and get no manifest entry.
     Unaccepted (covered, not `--accept-covered`) updates are left untouched.
     `source_ids`, if given, narrows the write/stamp step to only those source ids —
     every other classified entry is skipped, unwritten until a later unscoped call.
-    Returns the number of manifest entries written.
     """
     manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
     now = datetime.now(UTC).isoformat()
     written = 0
+    touched_paths: list[str] = []
 
     for entry in result.entries:
         if source_ids is not None and entry.source not in source_ids:
@@ -219,12 +229,14 @@ def apply_source_scan(docs_dir: Path, result: SourceScanResult, *, source_ids: s
 
         if entry.classification == "duplicate":
             _stamp_frontmatter(source_path, duplicate=True)
+            touched_paths.append(entry.path)
             continue
 
         if not entry.accepted:
             continue
 
         _stamp_frontmatter(source_path, processed=True)
+        touched_paths.append(entry.path)
 
         existing = manifest.get(entry.source, {})
         manifest[entry.source] = {
@@ -241,7 +253,7 @@ def apply_source_scan(docs_dir: Path, result: SourceScanResult, *, source_ids: s
 
     _write_manifest(docs_dir / SOURCE_MANIFEST_FILENAME, manifest)
 
-    return written
+    return ApplySourceScanResult(written=written, touched_paths=touched_paths)
 
 
 @dataclass
