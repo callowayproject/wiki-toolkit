@@ -177,6 +177,25 @@ def test_apply_source_scan_stamps_duplicate_without_touching_manifest(
     assert orjson.loads(manifest_lines[0])["path"] == "docs/sources/a-first.md"
 
 
+def test_apply_source_scan_source_ids_scopes_the_write(make_docs_tree: Callable[[], Path], make_source) -> None:
+    """`source_ids` narrows the write/stamp step to only the named sources."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "source-manifest.jsonl").write_text("")
+    scoped_path = make_source(docs_dir, "jira:ABC-1", filename="a.md")
+    other_path = make_source(docs_dir, "jira:ABC-2", filename="b.md")
+
+    result = scan_sources(docs_dir)
+    written = apply_source_scan(docs_dir, result, source_ids={"jira:ABC-1"})
+
+    assert written == 1
+    assert "processed: true" in scoped_path.read_text(encoding="utf-8")
+    assert "processed: true" not in other_path.read_text(encoding="utf-8")
+    manifest_lines = (docs_dir / "source-manifest.jsonl").read_text(encoding="utf-8").splitlines()
+    manifest = [orjson.loads(line) for line in manifest_lines]
+    assert len(manifest) == 1
+    assert manifest[0]["source"] == "jira:ABC-1"
+
+
 def test_apply_source_scan_skips_unaccepted_covered_update(make_docs_tree: Callable[[], Path], make_source) -> None:
     """An unaccepted covered update is neither stamped `processed` nor rewritten into the manifest."""
     docs_dir = make_docs_tree()

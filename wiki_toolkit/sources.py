@@ -198,11 +198,13 @@ def _stamp_frontmatter(path: Path, **fields: Any) -> None:
     path.write_bytes(Post.dumps(post).encode())
 
 
-def apply_source_scan(docs_dir: Path, result: SourceScanResult) -> int:
+def apply_source_scan(docs_dir: Path, result: SourceScanResult, *, source_ids: set[str] | None = None) -> int:
     """Write a `scan_sources` result: stamp source frontmatter, update the manifest.
 
     Duplicate files are stamped `duplicate: true` and get no manifest entry.
     Unaccepted (covered, not `--accept-covered`) updates are left untouched.
+    `source_ids`, if given, narrows the write/stamp step to only those source ids —
+    every other classified entry is skipped, unwritten until a later unscoped call.
     Returns the number of manifest entries written.
     """
     manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
@@ -210,6 +212,9 @@ def apply_source_scan(docs_dir: Path, result: SourceScanResult) -> int:
     written = 0
 
     for entry in result.entries:
+        if source_ids is not None and entry.source not in source_ids:
+            continue
+
         source_path = docs_dir.parent / entry.path
 
         if entry.classification == "duplicate":

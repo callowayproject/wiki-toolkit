@@ -163,9 +163,17 @@ def batch_plan_cmd(vault: Path, source_dir: Path) -> None:
 @click.option("--update", "update_manifest", is_flag=True, help="Write results into docs/source-manifest.jsonl.")
 @click.option("--accept-covered", is_flag=True, help="Accept updates to sources already covered by a wiki note.")
 @click.option(
+    "--source",
+    "source_ids",
+    multiple=True,
+    help="Limit --update's write/stage step to this source id (repeatable). Omit to write every classified source.",
+)
+@click.option(
     "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
 )
-def source_scan(update_manifest: bool, accept_covered: bool, docs_dir: Path | None) -> None:
+def source_scan(
+    update_manifest: bool, accept_covered: bool, source_ids: tuple[str, ...], docs_dir: Path | None
+) -> None:
     """Classify docs/sources/ files as new, update, or duplicate."""
     docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
     result = scan_sources(docs_dir, accept_covered=accept_covered)
@@ -179,9 +187,12 @@ def source_scan(update_manifest: bool, accept_covered: bool, docs_dir: Path | No
         click.echo(f"[skip] {path} (version-controlled)")
 
     if update_manifest:
-        written = apply_source_scan(docs_dir, result)
+        scope = set(source_ids) or None
+        written = apply_source_scan(docs_dir, result, source_ids=scope)
         touched_sources = [
-            entry.path for entry in result.entries if entry.classification == "duplicate" or entry.accepted
+            entry.path
+            for entry in result.entries
+            if (entry.classification == "duplicate" or entry.accepted) and (scope is None or entry.source in scope)
         ]
         _stage_best_effort([str(docs_dir / SOURCE_MANIFEST_FILENAME), *touched_sources])
         click.echo(f"Wrote {written} entries to docs/source-manifest.jsonl")

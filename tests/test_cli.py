@@ -331,6 +331,24 @@ def test_source_scan_update_succeeds_outside_a_git_repo(
     assert "jira:ABC-1" in (docs_dir / "source-manifest.jsonl").read_text(encoding="utf-8")
 
 
+def test_source_scan_update_source_scopes_the_write(tmp_path: Path, monkeypatch, make_docs_tree, make_source) -> None:
+    """--source narrows --update's write step to that source, leaving the other classified source unwritten."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "source-manifest.jsonl").write_text("")
+    make_source(docs_dir, "jira:ABC-1", filename="a.md")
+    make_source(docs_dir, "jira:ABC-2", filename="b.md")
+    _init_git(tmp_path)
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["source-scan", "--update", "--source", "jira:ABC-1"])
+
+    assert result.exit_code == 0
+    manifest = (docs_dir / "source-manifest.jsonl").read_text(encoding="utf-8")
+    assert "jira:ABC-1" in manifest
+    assert "jira:ABC-2" not in manifest
+    assert "Wrote 1 entries" in result.output
+
+
 def test_lint_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_docs_tree, make_wiki_note) -> None:
     """Lint --docs-dir reads from the overridden tree, not cwd/docs (which doesn't exist here)."""
     docs_dir = make_docs_tree()
