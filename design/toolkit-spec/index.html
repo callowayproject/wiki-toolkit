@@ -2282,7 +2282,10 @@ the overwrite signals &ldquo;needs reprocessing.&rdquo;</p>
 - <em>Processed</em> — toolkit has scanned it, not a duplicate/error.
 - <em>Covered</em> — at least one wiki note&rsquo;s <code>sources:</code> frontmatter references it (tracked as
   <code>covered_by</code> in the manifest). Processed-but-not-covered is an expected transient state;
-  <code>source-lint</code> flags sources stuck there as a backlog signal, not an ingest-time error.</p>
+  <code>source-lint</code> flags sources stuck there as a backlog signal, not an ingest-time error.
+  <code>source-lint</code> and <code>source-coverage</code> read <code>covered_by</code> straight from the manifest — coverage
+  is only as fresh as the last <code>build</code>, the same staleness tolerance <code>build_catalog</code> already
+  applies to a note&rsquo;s <code>resolved</code>/<code>proposed</code> status.</p>
 <h3 id="deltas-and-revisions-source-delta">Deltas and revisions (<code>source-delta</code>)<a class="headerlink" href="#deltas-and-revisions-source-delta" title="Permanent link">&para;</a></h3>
 <p>Git history is the storage mechanism for prior states — no separate snapshot store.</p>
 <ul>
@@ -2310,14 +2313,14 @@ The toolkit uses it to determine the potential scope of a change.</p>
 <li><code>source</code>: unique identifier for this document</li>
 <li><code>path</code>: relative path to the document from the repo root</li>
 <li><code>title</code>: document title, or the file name if necessary</li>
-<li><code>referenced_by</code>: relative paths of wiki documents that reference this file</li>
 <li><code>updated</code>: ISO-8601 date-time string when it was updated</li>
 <li><code>update_sha</code>: SHA of the Git commit last processed for this file, or the computed SHA of files
   for mutable sources like Jira tickets</li>
 <li><code>status</code>: <code>proposed</code> or <code>resolved</code>. <code>proposed</code> means the source was ingested ahead of any code
   change (a design doc, a ticket) and its wiki page is speculative; <code>resolved</code> means a PR has since
   referenced this source, confirming it against an actual diff.</li>
-<li><code>covered_by</code>: relative paths of wiki notes that cite this source</li>
+<li><code>covered_by</code>: relative paths of wiki notes that cite this source. Recomputed by <code>build</code> from
+  <code>docs/wiki/</code> notes&rsquo; <code>sources:</code> frontmatter (see Command surface below) — not hand-edited.</li>
 </ul>
 <h2 id="catalog">Catalog<a class="headerlink" href="#catalog" title="Permanent link">&para;</a></h2>
 <p>The catalog (<code>catalog.jsonl</code>) is an index of all the documents in the wiki (<code>wiki/</code>), with
@@ -2437,7 +2440,7 @@ earlier drafts — see <a href="../CONTEXT/">CONTEXT.md</a>). No adapter argumen
 </tr>
 <tr>
 <td><code>build</code></td>
-<td>Generate <code>docs/catalog.jsonl</code> from <code>docs/wiki/</code> notes, including each page&rsquo;s <code>aliases:</code> frontmatter and outbound <code>[[wikilink]]</code> targets as <code>links</code> (both empty lists if absent/none) (no <code>index.md</code>/per-folder index generation)</td>
+<td>Generate <code>docs/catalog.jsonl</code> from <code>docs/wiki/</code> notes, including each page&rsquo;s <code>aliases:</code> frontmatter and outbound <code>[[wikilink]]</code> targets as <code>links</code> (both empty lists if absent/none) (no <code>index.md</code>/per-folder index generation). Also recomputes <code>covered_by</code> in <code>docs/source-manifest.jsonl</code> by inverting each note&rsquo;s <code>sources:</code> frontmatter into per-source citing-page lists, full overwrite each run (no incremental state). A <code>sources:</code> id absent from the manifest is skipped here — <code>lint</code> already flags it as an unresolved source reference</td>
 </tr>
 <tr>
 <td><code>lint</code></td>
@@ -2489,11 +2492,11 @@ earlier drafts — see <a href="../CONTEXT/">CONTEXT.md</a>). No adapter argumen
 </tr>
 <tr>
 <td><code>commit-pages --pages &lt;list&gt; --message &lt;str&gt;</code></td>
-<td>Add and commit <code>pages</code> onto the currently checked-out branch — a batch coordinator calls this once per source, as soon as that source&rsquo;s subagent reports back, rather than waiting for the whole batch to finish</td>
+<td>Add and commit <code>pages</code>, plus every other currently modified/untracked file under <code>docs_dir</code> (<code>catalog.jsonl</code>, <code>log.jsonl</code>, <code>source-manifest.jsonl</code>, stamped <code>docs/sources/*.md</code>, etc.), onto the currently checked-out branch — a batch coordinator calls this once per source, as soon as that source&rsquo;s subagent reports back, rather than waiting for the whole batch to finish</td>
 </tr>
 <tr>
 <td><code>propose-pr --pages &lt;list&gt; --frame routine\|needs-review</code></td>
-<td>Branch + commit locally, framed per mutation type that triggered it (no real GitHub PR yet). If the current branch was already opened by <code>start-branch</code>, reuses it instead of creating a new one, and tolerates pages already committed via <code>commit-pages</code></td>
+<td>Branch + commit locally, framed per mutation type that triggered it (no real GitHub PR yet). Commits <code>pages</code> plus every other currently modified/untracked file under <code>docs_dir</code>, so the session&rsquo;s <code>build</code>/<code>log</code>/<code>source-scan</code> side effects ride the same commit as the pages that triggered them — the git-dirty scan never reaches outside <code>docs_dir</code>. If the current branch was already opened by <code>start-branch</code>, reuses it instead of creating a new one, and tolerates pages already committed via <code>commit-pages</code></td>
 </tr>
 <tr>
 <td><code>config show</code></td>
