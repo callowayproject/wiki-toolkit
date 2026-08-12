@@ -2447,8 +2447,8 @@ earlier drafts — see <a href="../CONTEXT/">CONTEXT.md</a>). No adapter argumen
 <td>Validate wiki note frontmatter, allowed tags, source links, <code>source_count</code>; flags a <code>relationships:</code> entry whose <code>target</code> doesn&rsquo;t resolve to an existing page, and drift between a page&rsquo;s <code>confidence:</code> block and its recomputed marker counts. Flagged, not rejected — the write gate&rsquo;s PR review is the enforcement point</td>
 </tr>
 <tr>
-<td><code>source-scan [--update] [--accept-covered]</code></td>
-<td>Walk <code>docs/sources/</code>; classify each file <code>new</code> / <code>update</code> / <code>duplicate</code> (absorbs the old <code>source-match</code> and base-spec <code>source-delta</code> meaning — &ldquo;not in the manifest&rdquo; is just &ldquo;unprocessed&rdquo;). With <code>--update</code>, write results to <code>docs/source-manifest.jsonl</code>. Skips version-controlled source types (no Raw file to scan)</td>
+<td><code>source-scan [--update] [--accept-covered] [--source &lt;id&gt;]</code></td>
+<td>Walk <code>docs/sources/</code>; classify each file <code>new</code> / <code>update</code> / <code>duplicate</code> (absorbs the old <code>source-match</code> and base-spec <code>source-delta</code> meaning — &ldquo;not in the manifest&rdquo; is just &ldquo;unprocessed&rdquo;). Classification is always full (cheap, read-only, needed for accurate <code>needs_attention</code>/backlog reporting). With <code>--update</code>, write/stamp results into <code>docs/source-manifest.jsonl</code> and stage the touched files (see Write gate); <code>--source &lt;id&gt;</code> narrows that write/stage step to a single classified source, leaving every other classified source unwritten until a later unscoped call (e.g. <code>maintain</code>&rsquo;s sweep) catches it up. Skips version-controlled source types (no Raw file to scan)</td>
 </tr>
 <tr>
 <td><code>source-lint</code></td>
@@ -2492,11 +2492,11 @@ earlier drafts — see <a href="../CONTEXT/">CONTEXT.md</a>). No adapter argumen
 </tr>
 <tr>
 <td><code>commit-pages --pages &lt;list&gt; --message &lt;str&gt;</code></td>
-<td>Add and commit <code>pages</code>, plus every other currently modified/untracked file under <code>docs_dir</code> (<code>catalog.jsonl</code>, <code>log.jsonl</code>, <code>source-manifest.jsonl</code>, stamped <code>docs/sources/*.md</code>, etc.), onto the currently checked-out branch — a batch coordinator calls this once per source, as soon as that source&rsquo;s subagent reports back, rather than waiting for the whole batch to finish</td>
+<td>Commit exactly what&rsquo;s currently staged onto the currently checked-out branch — <code>pages</code> is informational (goes into the commit message), not a git pathspec filter. Every command that mutates a <code>docs_dir</code> file (<code>build</code>, <code>cross-linker</code>, <code>log</code>, <code>source-scan --update</code>) stages its own output as it writes, so by the time <code>commit-pages</code> runs, the git index already holds <code>pages</code> plus whatever else that source&rsquo;s producer commands touched. A batch coordinator calls this once per source, as soon as that source&rsquo;s subagent reports back, rather than waiting for the whole batch to finish</td>
 </tr>
 <tr>
 <td><code>propose-pr --pages &lt;list&gt; --frame routine\|needs-review</code></td>
-<td>Branch + commit locally, framed per mutation type that triggered it (no real GitHub PR yet). Commits <code>pages</code> plus every other currently modified/untracked file under <code>docs_dir</code>, so the session&rsquo;s <code>build</code>/<code>log</code>/<code>source-scan</code> side effects ride the same commit as the pages that triggered them — the git-dirty scan never reaches outside <code>docs_dir</code>. If the current branch was already opened by <code>start-branch</code>, reuses it instead of creating a new one, and tolerates pages already committed via <code>commit-pages</code></td>
+<td>Branch + commit locally, framed per mutation type that triggered it (no real GitHub PR yet). Same self-staging contract as <code>commit-pages</code>: commits exactly what&rsquo;s staged, <code>pages</code> informational only. Because producer commands self-stage at write time rather than <code>propose-pr</code> scanning <code>docs_dir</code> for dirty files afterward, only what the session&rsquo;s own commands actually touched ever lands in the commit. If the current branch was already opened by <code>start-branch</code>, reuses it instead of creating a new one, and tolerates pages already committed via <code>commit-pages</code></td>
 </tr>
 <tr>
 <td><code>config show</code></td>
