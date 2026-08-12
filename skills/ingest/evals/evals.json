@@ -1,0 +1,60 @@
+{
+  "skill_name": "ingest",
+  "evals": [
+    {
+      "id": 1,
+      "name": "single-new-source",
+      "prompt": "There's a new source file at docs/sources/redis-eviction-fix.md (jira:INFRA-142) that hasn't been ingested yet \u2014 it's a ticket about the Redis cache OOM-crashing because it runs with the noeviction policy, fixed by switching to allkeys-lru. Ingest it into the wiki.",
+      "expected_output": "One new wiki page (or an update to the existing Redis Cache page) citing jira:INFRA-142, correct frontmatter, at least 2 outbound wikilinks, source-manifest/catalog/log updated, a lint-clean local git commit staged via propose-pr. Basic single-source sequence correctness.",
+      "files": [
+        "fixture: run build_fixture.py <dest> from this directory, then point the agent at <dest>"
+      ],
+      "expectations": [
+        "docs/source-manifest.jsonl contains an entry for jira:INFRA-142",
+        "A wiki page's `sources:` frontmatter lists jira:INFRA-142",
+        "That page has at least 2 outbound [[wikilinks]]",
+        "docs/catalog.jsonl reflects the new/updated page",
+        "docs/log.jsonl has an `ingest` action entry mentioning INFRA-142",
+        "Exactly one git commit was created for the session",
+        "`wiki-toolkit lint` reports no violations on the final state",
+        "The three unrelated already-covered sources (INFRA-100, AUTH-200, infra-overview-v1) were left untouched",
+        "At least one claim sourced from jira:INFRA-142 is cited inline with `^[jira:INFRA-142]`"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "multi-source-one-session",
+      "prompt": "Three new sources about the rate-limiting middleware just landed under docs/sources/: ratelimit-design-doc.md (confluence:RATE-001, the design doc), ratelimit-implementation-ticket.md (jira:RATE-002, the implementation ticket), and ratelimit-slack-thread.md (slack:rate-limit-launch, the launch announcement). Ingest all three in one session.",
+      "expected_output": "One coherent ingest session covering all 3 sources \u2014 one source-scan, one build, one cross-linker pass, one lint, one propose-pr for the whole session (not one PR per source), each page citing the right source(s), at least 2 outbound wikilinks per page (stubs created if needed), log entries for each source. Tests the one-session/one-PR batching rule and multi-source citation.",
+      "files": [
+        "fixture: run build_fixture.py <dest> from this directory, then point the agent at <dest>"
+      ],
+      "expectations": [
+        "confluence:RATE-001, jira:RATE-002, and slack:rate-limit-launch all appear in the final source-manifest.jsonl",
+        "Every one of the three sources is cited by at least one wiki page's `sources:` frontmatter (none dropped)",
+        "Exactly one git commit/branch was created for the whole session, not one per source",
+        "Every new or touched page has at least 2 outbound [[wikilinks]]",
+        "docs/log.jsonl has one `ingest` action entry per source (3 entries total for this session)",
+        "`wiki-toolkit lint` reports no violations on the final state",
+        "At least one page has a `relationships:` entry enriching an existing [[wikilink]] in its body"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "update-to-covered-source",
+      "prompt": "docs/sources/jira-auth-200.md (jira:AUTH-200) was just updated \u2014 the JWT token expiry changed from 24h to 1h. This source is already covered by the existing Auth Service wiki page. Make sure the wiki reflects the change.",
+      "expected_output": "Agent recognizes this as an update to an already-covered source (source-scan flags it 'needs --accept-covered'), confirms the change is real, re-scans with --accept-covered, and updates the Auth Service page's content (24h -> 1h) rather than creating a duplicate page or silently accepting the other two unrelated already-covered sources (INFRA-100, infra-overview-v1) that also show up as needing accept-covered but weren't actually asked about.",
+      "files": [
+        "fixture: run build_fixture.py <dest> from this directory, then point the agent at <dest>"
+      ],
+      "expectations": [
+        "The Auth Service wiki page's body reflects the 1h expiry, not only the stale 24h claim",
+        "jira:AUTH-200 was accepted via --accept-covered (manifest/log shows it was reprocessed)",
+        "The two unrelated flagged sources (INFRA-100, infra-overview-v1) were NOT accepted or modified",
+        "docs/log.jsonl records an update/ingest entry mentioning AUTH-200",
+        "`wiki-toolkit lint` reports no violations on the final state",
+        "Exactly one git commit was created for the session"
+      ]
+    }
+  ]
+}
