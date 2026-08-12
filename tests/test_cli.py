@@ -22,6 +22,13 @@ def _git(root: Path, *args: str) -> subprocess.CompletedProcess:
     )
 
 
+def _init_git(root: Path) -> None:
+    """Init a git repo at `root`, for commands that now self-stage their output (`build`/`log`/`source-scan`)."""
+    _git(root, "init", "-b", "main")
+    _git(root, "config", "user.email", "t@t.com")
+    _git(root, "config", "user.name", "t")
+
+
 def test_cli_group_resolves() -> None:
     """The Click group runs and shows help without error."""
     result = CliRunner().invoke(cli, ["--help"])
@@ -184,6 +191,7 @@ def test_build_writes_catalog(tmp_path: Path, monkeypatch, make_docs_tree, make_
     """Build writes one catalog entry per note in docs/wiki/ and exits 0."""
     docs_dir = make_docs_tree()
     make_wiki_note(docs_dir, "a.md", title="A Page", updated="2026-01-01", sources=[])
+    _init_git(tmp_path)
     monkeypatch.chdir(tmp_path)
 
     result = CliRunner().invoke(cli, ["build"])
@@ -211,6 +219,7 @@ def test_build_skips_malformed_note_without_crashing(
     docs_dir = make_docs_tree()
     make_wiki_note(docs_dir, "a.md", title="A Page")
     (docs_dir / "wiki" / "bad.md").write_text("---\ntitle: [unclosed\n---\nbody")
+    _init_git(tmp_path)
     monkeypatch.chdir(tmp_path)
 
     result = CliRunner().invoke(cli, ["build"])
@@ -228,6 +237,7 @@ def test_build_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_docs_tree,
     make_wiki_note(docs_dir, "a.md", title="A Page", updated="2026-01-01", sources=[])
     elsewhere = tmp_path / "elsewhere"
     elsewhere.mkdir()
+    _init_git(tmp_path)
     monkeypatch.chdir(elsewhere)
 
     result = CliRunner().invoke(cli, ["build", "--docs-dir", str(docs_dir)])
@@ -241,6 +251,7 @@ def test_build_overwrites_existing_catalog(tmp_path: Path, monkeypatch, make_doc
     docs_dir = make_docs_tree()
     (docs_dir / "catalog.jsonl").write_text('{"path": "stale.md"}\n')
     make_wiki_note(docs_dir, "a.md", title="A Page")
+    _init_git(tmp_path)
     monkeypatch.chdir(tmp_path)
 
     result = CliRunner().invoke(cli, ["build"])
@@ -249,6 +260,18 @@ def test_build_overwrites_existing_catalog(tmp_path: Path, monkeypatch, make_doc
     catalog = (docs_dir / "catalog.jsonl").read_text(encoding="utf-8")
     assert "stale.md" not in catalog
     assert "A Page" in catalog
+
+
+def test_build_succeeds_outside_a_git_repo(tmp_path: Path, monkeypatch, make_docs_tree, make_wiki_note) -> None:
+    """Build still writes the catalog and exits 0 when cwd isn't a git repo (self-staging is best-effort)."""
+    docs_dir = make_docs_tree()
+    make_wiki_note(docs_dir, "a.md", title="A Page")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["build"])
+
+    assert result.exit_code == 0
+    assert "A Page" in (docs_dir / "catalog.jsonl").read_text(encoding="utf-8")
 
 
 def test_source_scan_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_docs_tree, make_source) -> None:
@@ -283,6 +306,7 @@ def test_source_scan_update_writes_manifest(tmp_path: Path, monkeypatch, make_do
     docs_dir = make_docs_tree()
     (docs_dir / "source-manifest.jsonl").write_text("")
     make_source(docs_dir, "jira:ABC-1")
+    _init_git(tmp_path)
     monkeypatch.chdir(tmp_path)
 
     result = CliRunner().invoke(cli, ["source-scan", "--update"])
@@ -290,6 +314,21 @@ def test_source_scan_update_writes_manifest(tmp_path: Path, monkeypatch, make_do
     assert result.exit_code == 0
     manifest = (docs_dir / "source-manifest.jsonl").read_text(encoding="utf-8")
     assert "jira:ABC-1" in manifest
+
+
+def test_source_scan_update_succeeds_outside_a_git_repo(
+    tmp_path: Path, monkeypatch, make_docs_tree, make_source
+) -> None:
+    """source-scan --update still writes the manifest and exits 0 outside a git repo (self-staging is best-effort)."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "source-manifest.jsonl").write_text("")
+    make_source(docs_dir, "jira:ABC-1")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["source-scan", "--update"])
+
+    assert result.exit_code == 0
+    assert "jira:ABC-1" in (docs_dir / "source-manifest.jsonl").read_text(encoding="utf-8")
 
 
 def test_lint_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_docs_tree, make_wiki_note) -> None:
@@ -597,6 +636,7 @@ def test_log_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_docs_tree) -
     (docs_dir / "log.jsonl").write_text("")
     elsewhere = tmp_path / "elsewhere"
     elsewhere.mkdir()
+    _init_git(tmp_path)
     monkeypatch.chdir(elsewhere)
 
     result = CliRunner().invoke(
@@ -612,6 +652,7 @@ def test_log_appends_entry(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
     """Log writes one well-formed entry to docs/log.jsonl and exits 0."""
     docs_dir = make_docs_tree()
     (docs_dir / "log.jsonl").write_text("")
+    _init_git(tmp_path)
     monkeypatch.chdir(tmp_path)
 
     result = CliRunner().invoke(
@@ -629,8 +670,21 @@ def test_log_appends_entry(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
     assert entry["date"]
 
 
+def test_log_succeeds_outside_a_git_repo(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
+    """Log still appends the entry and exits 0 outside a git repo (self-staging is best-effort)."""
+    docs_dir = make_docs_tree()
+    (docs_dir / "log.jsonl").write_text("")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["log", "--title", "x", "--details", "y", "--action", "create"])
+
+    assert result.exit_code == 0
+    assert len((docs_dir / "log.jsonl").read_text(encoding="utf-8").splitlines()) == 1
+
+
 def test_log_creates_docs_dir_if_missing(tmp_path: Path, monkeypatch) -> None:
     """Log succeeds even if docs/ doesn't exist yet, rather than crashing."""
+    _init_git(tmp_path)
     monkeypatch.chdir(tmp_path)
 
     result = CliRunner().invoke(cli, ["log", "--title", "x", "--details", "y", "--action", "create"])
@@ -644,6 +698,7 @@ def test_log_preserves_existing_entries(tmp_path: Path, monkeypatch, make_docs_t
     docs_dir = make_docs_tree()
     first_entry = {"date": "2026-01-01T00:00:00", "action": "create", "message": "first", "details": ""}
     (docs_dir / "log.jsonl").write_text(orjson.dumps(first_entry).decode() + "\n")
+    _init_git(tmp_path)
     monkeypatch.chdir(tmp_path)
 
     result = CliRunner().invoke(cli, ["log", "--title", "second", "--details", "", "--action", "update"])

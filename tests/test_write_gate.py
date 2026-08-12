@@ -4,7 +4,7 @@ import shutil
 import subprocess
 from typing import TYPE_CHECKING
 
-from wiki_toolkit.write_gate import commit_pages, propose_pr, start_wiki_branch
+from wiki_toolkit.write_gate import commit_pages, propose_pr, stage_paths, start_wiki_branch
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -75,18 +75,18 @@ def test_propose_pr_never_touches_main_or_a_remote(tmp_path: Path) -> None:
     assert not _git(root, "remote").stdout.strip()
 
 
-def test_propose_pr_ignores_unrelated_staged_changes(tmp_path: Path) -> None:
-    """A commit contains exactly the listed pages, even if other files were already `git add`-ed."""
+def test_propose_pr_includes_other_already_staged_files(tmp_path: Path) -> None:
+    """A commit contains the listed pages plus anything else already `git add`-ed (self-staged state files)."""
     root = _make_propose_pr_repo(tmp_path)
     (root / "docs" / "wiki" / "note.md").write_text("updated\n")
-    other = root / "unrelated.txt"
-    other.write_text("unrelated\n")
-    _git(root, "add", "unrelated.txt")
+    other = root / "docs" / "catalog.jsonl"
+    other.write_text("catalog\n")
+    _git(root, "add", "docs/catalog.jsonl")
 
     result = propose_pr(root, ["docs/wiki/note.md"], "routine")
 
     committed_files = _git(root, "show", "--name-only", "--format=", "HEAD").stdout.split()
-    assert committed_files == ["docs/wiki/note.md"]
+    assert committed_files == ["docs/catalog.jsonl", "docs/wiki/note.md"]
     assert result.pages == ["docs/wiki/note.md"]
 
 
@@ -156,6 +156,41 @@ def test_commit_pages_lands_on_current_branch(tmp_path: Path) -> None:
     assert committed_files == ["docs/wiki/note.md"]
 
 
+def test_commit_pages_includes_other_already_staged_files(tmp_path: Path) -> None:
+    """commit_pages commits the given pages plus any other file already `git add`-ed (self-staged state files)."""
+    root = _make_propose_pr_repo(tmp_path)
+    start_wiki_branch(root, "routine")
+    (root / "docs" / "wiki" / "note.md").write_text("from batch\n")
+    other = root / "docs" / "catalog.jsonl"
+    other.write_text("catalog\n")
+    _git(root, "add", "docs/catalog.jsonl")
+
+    commit_sha = commit_pages(root, ["docs/wiki/note.md"], "Ingest source-1: update note.md")
+
+    committed_files = _git(root, "show", "--name-only", "--format=", commit_sha).stdout.split()
+    assert committed_files == ["docs/catalog.jsonl", "docs/wiki/note.md"]
+
+
+def test_stage_paths_adds_files_to_the_index(tmp_path: Path) -> None:
+    """stage_paths git-adds the given paths without committing them."""
+    root = _make_propose_pr_repo(tmp_path)
+    (root / "docs" / "catalog.jsonl").write_text("catalog\n")
+
+    stage_paths(root, ["docs/catalog.jsonl"])
+
+    staged = _git(root, "diff", "--cached", "--name-only").stdout.split()
+    assert staged == ["docs/catalog.jsonl"]
+
+
+def test_stage_paths_noop_on_empty_list(tmp_path: Path) -> None:
+    """stage_paths with an empty list is a no-op, not a git error."""
+    root = _make_propose_pr_repo(tmp_path)
+
+    stage_paths(root, [])
+
+    assert not _git(root, "diff", "--cached", "--name-only").stdout.strip()
+
+
 def test_streaming_batch_commits_land_on_one_branch_without_waiting(tmp_path: Path) -> None:
     """Two batches finishing out of order still each commit immediately, both on the one session branch."""
     root = _make_propose_pr_repo(tmp_path)
@@ -205,16 +240,17 @@ def test_propose_pr_tolerates_pages_already_committed_upstream(tmp_path: Path) -
     assert result.commit_sha == already_committed_sha
 
 
-def test_propose_pr_ignores_unrelated_staged_file_when_reusing_branch(tmp_path: Path) -> None:
-    """An unrelated staged file doesn't block the closing propose_pr call from recognizing pages as done."""
+def test_propose_pr_commits_other_staged_file_when_reusing_branch(tmp_path: Path) -> None:
+    """A closing propose_pr call still commits self-staged state files even when every listed page is done."""
     root = _make_propose_pr_repo(tmp_path)
     start_wiki_branch(root, "routine")
     (root / "docs" / "wiki" / "note.md").write_text("from batch\n")
-    already_committed_sha = commit_pages(root, ["docs/wiki/note.md"], "Ingest source-1: update note.md")
-    other = root / "unrelated.txt"
-    other.write_text("unrelated\n")
-    _git(root, "add", "unrelated.txt")
+    commit_pages(root, ["docs/wiki/note.md"], "Ingest source-1: update note.md")
+    other = root / "docs" / "catalog.jsonl"
+    other.write_text("catalog\n")
+    _git(root, "add", "docs/catalog.jsonl")
 
     result = propose_pr(root, ["docs/wiki/note.md"], "routine")
 
-    assert result.commit_sha == already_committed_sha
+    committed_files = _git(root, "show", "--name-only", "--format=", result.commit_sha).stdout.split()
+    assert committed_files == ["docs/catalog.jsonl"]
