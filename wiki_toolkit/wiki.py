@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Literal
 
 from wiki_toolkit._io import read_jsonl
 from wiki_toolkit.frontmatter import Post
-from wiki_toolkit.sources import SOURCE_MANIFEST_FILENAME, LintViolation, LoadError, _iter_markdown, _read_manifest
+from wiki_toolkit.sources import SOURCE_MANIFEST_FILENAME, LintViolation, LoadError, SourceManifest, _iter_markdown
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -64,7 +64,7 @@ def build_catalog(docs_dir: Path) -> CatalogResult:
     `proposed`. A note with malformed frontmatter is reported as a violation
     instead of raising.
     """
-    manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
+    manifest = SourceManifest(docs_dir / SOURCE_MANIFEST_FILENAME)
     result = CatalogResult()
 
     for path, post in _iter_markdown(docs_dir / "wiki"):
@@ -213,7 +213,7 @@ def _check_relationships(post: Post, known_targets: set[str]) -> list[str]:
     return messages
 
 
-def _check_tags_and_sources(post: Post, allowed_tags: set[str] | None, manifest: dict[str, dict]) -> list[str]:
+def _check_tags_and_sources(post: Post, allowed_tags: set[str] | None, manifest: SourceManifest) -> list[str]:
     """Return violation messages for `post`'s `tags`, `sources`, and `source_count` fields."""
     messages: list[str] = []
     if allowed_tags is not None:
@@ -238,7 +238,7 @@ def lint_wiki(docs_dir: Path) -> LintResult:
     is absent). Sources are checked against `docs_dir/source-manifest.jsonl`.
     """
     result = LintResult()
-    manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
+    manifest = SourceManifest(docs_dir / SOURCE_MANIFEST_FILENAME)
 
     schema_path = docs_dir / "schema.md"
     allowed_tags = parse_tag_taxonomy(schema_path.read_text(encoding="utf-8")) if schema_path.is_file() else None

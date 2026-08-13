@@ -11,6 +11,7 @@ import orjson
 import pytest
 
 from wiki_toolkit.sources import (
+    SourceManifest,
     apply_source_scan,
     compute_source_delta,
     diff_content_fields,
@@ -668,3 +669,71 @@ def test_write_source_snapshot_invalid_units_raises(make_docs_tree: Callable[[],
         pass
     else:
         raise AssertionError("expected ValueError for invalid units")
+
+
+def test_source_manifest_missing_file_is_empty(tmp_path: Path) -> None:
+    """Constructing over a nonexistent manifest file behaves as an empty manifest."""
+    manifest = SourceManifest(tmp_path / "source-manifest.jsonl")
+
+    assert "jira:ABC-1" not in manifest
+    assert manifest.get("jira:ABC-1") is None
+    assert list(manifest) == []
+
+
+def test_source_manifest_loads_existing_entries(tmp_path: Path) -> None:
+    """Constructing over an existing manifest file loads its entries, keyed by `source`."""
+    manifest_path = tmp_path / "source-manifest.jsonl"
+    manifest_path.write_text(orjson.dumps({"source": "jira:ABC-1", "path": "docs/sources/abc-1.md"}).decode() + "\n")
+
+    manifest = SourceManifest(manifest_path)
+
+    assert "jira:ABC-1" in manifest
+    assert manifest["jira:ABC-1"]["path"] == "docs/sources/abc-1.md"
+    assert list(manifest) == ["jira:ABC-1"]
+
+
+def test_source_manifest_getitem_missing_raises_keyerror(tmp_path: Path) -> None:
+    """`__getitem__` on an unknown source id raises `KeyError`, matching plain-dict semantics."""
+    manifest = SourceManifest(tmp_path / "source-manifest.jsonl")
+
+    try:
+        manifest["jira:MISSING"]
+    except KeyError:
+        pass
+    else:
+        raise AssertionError("expected KeyError for unknown source")
+
+
+def test_source_manifest_get_returns_default(tmp_path: Path) -> None:
+    """`get` returns the given default for an unknown source id."""
+    manifest = SourceManifest(tmp_path / "source-manifest.jsonl")
+
+    assert manifest.get("jira:MISSING", {"placeholder": True}) == {"placeholder": True}
+
+
+def test_source_manifest_setitem_rejects_mismatched_source_field(tmp_path: Path) -> None:
+    """Setting an entry whose `source` field doesn't match the key raises, guarding against key/entry drift."""
+    manifest = SourceManifest(tmp_path / "source-manifest.jsonl")
+
+    try:
+        manifest["jira:ABC-1"] = {"source": "jira:OTHER-1"}
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("expected ValueError for mismatched source field")
+
+
+def test_source_manifest_setitem_and_save_round_trips(tmp_path: Path) -> None:
+    """A newly set entry and an overwritten existing entry both survive `.save()` and reload."""
+    manifest_path = tmp_path / "source-manifest.jsonl"
+    manifest_path.write_text(orjson.dumps({"source": "jira:OLD-1", "path": "docs/sources/old-1.md"}).decode() + "\n")
+
+    manifest = SourceManifest(manifest_path)
+    manifest["jira:NEW-1"] = {"source": "jira:NEW-1", "path": "docs/sources/new-1.md"}
+    manifest["jira:OLD-1"] = {"source": "jira:OLD-1", "path": "docs/sources/old-1-updated.md"}
+    manifest.save()
+
+    reloaded = SourceManifest(manifest_path)
+    assert set(reloaded) == {"jira:OLD-1", "jira:NEW-1"}
+    assert reloaded["jira:NEW-1"]["path"] == "docs/sources/new-1.md"
+    assert reloaded["jira:OLD-1"]["path"] == "docs/sources/old-1-updated.md"

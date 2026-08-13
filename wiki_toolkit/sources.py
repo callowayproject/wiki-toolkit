@@ -6,7 +6,7 @@ import subprocess
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from difflib import SequenceMatcher
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, overload
 
 import orjson
 import yaml
@@ -110,25 +110,48 @@ class SourceScanResult:
         return any(e.classification == "duplicate" or not e.accepted for e in self.entries)
 
 
-def _read_manifest(manifest_path: Path) -> dict[str, dict]:
-    """Read `source-manifest.jsonl` into a dict keyed by `source` id."""
-    if not manifest_path.is_file():
-        return {}
-    manifest: dict[str, dict] = {}
-    for line in manifest_path.read_text(encoding="utf-8").splitlines():
-        if not line.strip():
-            continue
-        entry = orjson.loads(line)
-        manifest[entry["source"]] = entry
-    return manifest
+class SourceManifest:
+    """A `source`-keyed view over `source-manifest.jsonl`, loaded once and saved explicitly."""
+
+    def __init__(self, path: Path) -> None:
+        self._path = path
+        self._entries: dict[str, dict] = {}
+        if path.is_file():
+            for line in path.read_text(encoding="utf-8").splitlines():
+                if not line.strip():
+                    continue
+                entry = orjson.loads(line)
+                self._entries[entry["source"]] = entry
+
+    def __getitem__(self, source: str) -> dict:
+        return self._entries[source]
+
+    def __setitem__(self, source: str, entry: dict) -> None:
+        if entry.get("source") != source:
+            raise ValueError(f"entry['source'] {entry.get('source')!r} must match key {source!r}")
+        self._entries[source] = entry
+
+    def __contains__(self, source: str) -> bool:
+        return source in self._entries
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._entries)
+
+    @overload
+    def get(self, source: str) -> dict | None: ...
+    @overload
+    def get(self, source: str, default: dict) -> dict: ...
+
+    def get(self, source: str, default: dict | None = None) -> dict | None:
+        """Return the entry for `source`, or `default` if it's not in the manifest."""
+        return self._entries.get(source, default)
+
+    def save(self) -> None:
+        """Write current entries back to `source-manifest.jsonl`."""
+        write_jsonl(self._path, [self._entries[key] for key in self._entries])
 
 
-def _write_manifest(manifest_path: Path, manifest: dict[str, dict]) -> None:
-    """Write a `source`-keyed manifest dict back to `source-manifest.jsonl`."""
-    write_jsonl(manifest_path, [manifest[key] for key in manifest])
-
-
-def _resolve_source_entry(manifest: dict[str, dict], source: str) -> dict:
+def _resolve_source_entry(manifest: SourceManifest, source: str) -> dict:
     """Return `manifest[source]`, or raise `ValueError` if the source is unknown."""
     entry = manifest.get(source)
     if entry is None:
@@ -146,7 +169,7 @@ def scan_sources(docs_dir: Path, *, accept_covered: bool = False) -> SourceScanR
     scan order, until a human resolves it via `source-dedupe`. A file with
     malformed frontmatter is reported as a violation instead of raising.
     """
-    manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
+    manifest = SourceManifest(docs_dir / SOURCE_MANIFEST_FILENAME)
     sources_dir = docs_dir / "sources"
     result = SourceScanResult()
     seen: set[str] = set()
@@ -216,7 +239,7 @@ def apply_source_scan(
     `source_ids`, if given, narrows the write/stamp step to only those source ids —
     every other classified entry is skipped, unwritten until a later unscoped call.
     """
-    manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
+    manifest = SourceManifest(docs_dir / SOURCE_MANIFEST_FILENAME)
     now = datetime.now(UTC).isoformat()
     written = 0
     touched_paths: list[str] = []
@@ -251,7 +274,7 @@ def apply_source_scan(
         }
         written += 1
 
-    _write_manifest(docs_dir / SOURCE_MANIFEST_FILENAME, manifest)
+    manifest.save()
 
     return ApplySourceScanResult(written=written, touched_paths=touched_paths)
 
@@ -276,7 +299,7 @@ def lint_sources(docs_dir: Path) -> SourceLintResult:
     as a backlog list, distinct from hard errors.
     """
     result = SourceLintResult()
-    manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
+    manifest = SourceManifest(docs_dir / SOURCE_MANIFEST_FILENAME)
 
     for path, raw_post in _iter_markdown(docs_dir / "sources"):
         post = _load_or_record_violation(path, raw_post, result.violations, docs_dir)
@@ -338,7 +361,7 @@ def source_coverage(docs_dir: Path) -> SourceCoverageResult:
     sharing a `source` id already seen in this pass. A file with malformed
     frontmatter is reported as a violation instead of raising.
     """
-    manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
+    manifest = SourceManifest(docs_dir / SOURCE_MANIFEST_FILENAME)
     catalog = read_jsonl(docs_dir / "catalog.jsonl")
 
     covering_notes: dict[str, set[str]] = {}
@@ -438,7 +461,7 @@ def compute_source_delta(docs_dir: Path, source: str) -> Delta:
     commit on `main` diffs against a synthetic empty baseline (every field reports
     as new) rather than erroring.
     """
-    manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
+    manifest = SourceManifest(docs_dir / SOURCE_MANIFEST_FILENAME)
     entry = _resolve_source_entry(manifest, source)
 
     root = docs_dir.parent
@@ -568,7 +591,7 @@ def write_source_snapshot(docs_dir: Path, source: str, units: str) -> SnapshotRe
     if units not in ALLOWED_SNAPSHOT_UNITS:
         raise ValueError(f"invalid units {units!r}; must be one of {ALLOWED_SNAPSHOT_UNITS}")
 
-    manifest = _read_manifest(docs_dir / SOURCE_MANIFEST_FILENAME)
+    manifest = SourceManifest(docs_dir / SOURCE_MANIFEST_FILENAME)
     entry = _resolve_source_entry(manifest, source)
 
     rel_path = entry["path"]
@@ -578,5 +601,5 @@ def write_source_snapshot(docs_dir: Path, source: str, units: str) -> SnapshotRe
     now = datetime.now(UTC).isoformat()
     update_sha = hashlib.sha256(source_path.read_bytes()).hexdigest()
     manifest[source] = {**entry, "updated": now, "update_sha": update_sha}
-    _write_manifest(docs_dir / SOURCE_MANIFEST_FILENAME, manifest)
+    manifest.save()
     return SnapshotResult(source=source, path=rel_path, units=units, update_sha=update_sha)  # type: ignore[arg-type]
