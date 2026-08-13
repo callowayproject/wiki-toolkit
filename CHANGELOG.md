@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.25.1 (2026-08-13)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.25.0...0.25.1)
+
+### Other
+
+- Split batch planning out of sources.py into batches.py. [dc25858](https://github.com/callowayproject/wiki-toolkit/commit/dc25858e7a0611371b47fc79c38465a32640c7ec)
+
+  plan_batches never touches the source manifest or frontmatter, unlike
+  every other command in sources.py, so ADR-0006's rejection of a
+  per-command split doesn't apply to it. Narrows that decision in
+  ADR-0011 and adds the missing "Batch" glossary entry to CONTEXT.md.
+
 ## 0.25.0 (2026-08-12)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.24.2...0.25.0)
