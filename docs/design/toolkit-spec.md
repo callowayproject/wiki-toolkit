@@ -28,9 +28,7 @@ repo-root/
 ## Stack
 
 - **CLI**: `click`
-- **Frontmatter parsing**: `python-frontmatter`
-- **Kept from scaffold**: `orjson`, `pydantic-settings`
-- **Stripped as template cruft**: `fastapi[standard]`, all `opentelemetry-*` packages, `structlog`
+- **Other dependencies**: `orjson`, `pydantic-settings`, `pyyaml`
 
 **Architecture constraint**: the CLI is a thin adapter (arg parsing, delegation, output formatting).
 All business logic lives in internal library functions the CLI calls — the CLI has no logic worth

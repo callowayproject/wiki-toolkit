@@ -29,17 +29,18 @@ SCHEMA_TEMPLATE = """# Wiki Schema
 - On pages that synthesize 3+ sources, append `^[source_id]` at the end of paragraphs whose claims come from a specific source. This lets a reader trace each claim back without re-reading the whole raw file. Optional on single-source pages where the `sources:` frontmatter is enough.
 
 ## Wiki Document Frontmatter
-  ```yaml
-  ---
-  title: Page Title
-  created: YYYY-MM-DD
-  updated: YYYY-MM-DD
-  tags: [from taxonomy below]
-  sources: [source_id]
-  source_count: 1  # must equal len(sources); checked by `lint`
-  status: resolved  # or `proposed` for speculative pages ingested ahead of any code change
-  ---
-  ```
+
+```yaml
+---
+title: Page Title
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+tags: [from taxonomy below]
+sources: [source_id]
+source_count: 1  # must equal len(sources); checked by `lint`
+status: resolved  # or `proposed` for speculative pages ingested ahead of any code change
+---
+```
 
 ## Tag Taxonomy
 
