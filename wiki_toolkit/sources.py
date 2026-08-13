@@ -13,6 +13,7 @@ import yaml
 
 from wiki_toolkit._io import read_jsonl, write_jsonl
 from wiki_toolkit.frontmatter import Post
+from wiki_toolkit.write_gate import stage_best_effort
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -146,9 +147,12 @@ class SourceManifest:
         """Return the entry for `source`, or `default` if it's not in the manifest."""
         return self._entries.get(source, default)
 
-    def save(self) -> None:
-        """Write current entries back to `source-manifest.jsonl`."""
-        write_jsonl(self._path, [self._entries[key] for key in self._entries])
+    def save(self, *, stage_root: Path | None = None) -> None:
+        """Write current entries back to `source-manifest.jsonl`.
+
+        If `stage_root` is given, best-effort git-stages the manifest right after writing it.
+        """
+        write_jsonl(self._path, [self._entries[key] for key in self._entries], stage_root=stage_root)
 
 
 def _resolve_source_entry(manifest: SourceManifest, source: str) -> dict:
@@ -213,12 +217,17 @@ def scan_sources(docs_dir: Path, *, accept_covered: bool = False) -> SourceScanR
     return result
 
 
-def _stamp_frontmatter(path: Path, **fields: Any) -> None:
-    """Merge `fields` into a source file's frontmatter and write it back."""
+def _stamp_frontmatter(path: Path, *, stage_root: Path | None = None, **fields: Any) -> None:
+    """Merge `fields` into a source file's frontmatter and write it back.
+
+    If `stage_root` is given, best-effort git-stages `path` right after writing it.
+    """
     post = Post.loads(path.read_text(encoding="utf-8"))
     for key, value in fields.items():
         post[key] = value
     path.write_bytes(Post.dumps(post).encode())
+    if stage_root is not None:
+        stage_best_effort(stage_root, [str(path)])
 
 
 @dataclass
@@ -230,7 +239,7 @@ class ApplySourceScanResult:
 
 
 def apply_source_scan(
-    docs_dir: Path, result: SourceScanResult, *, source_ids: set[str] | None = None
+    docs_dir: Path, result: SourceScanResult, *, source_ids: set[str] | None = None, stage_root: Path | None = None
 ) -> ApplySourceScanResult:
     """Write a `scan_sources` result: stamp source frontmatter, update the manifest.
 
@@ -238,6 +247,9 @@ def apply_source_scan(
     Unaccepted (covered, not `--accept-covered`) updates are left untouched.
     `source_ids`, if given, narrows the write/stamp step to only those source ids —
     every other classified entry is skipped, unwritten until a later unscoped call.
+    If `stage_root` is given, every file this writes is best-effort git-staged — one
+    `git add` per touched file rather than a single batched call, trading a few extra
+    subprocess spawns for staging that can't drift out of sync with the write.
     """
     manifest = SourceManifest(docs_dir / SOURCE_MANIFEST_FILENAME)
     now = datetime.now(UTC).isoformat()
@@ -251,14 +263,14 @@ def apply_source_scan(
         source_path = docs_dir.parent / entry.path
 
         if entry.classification == "duplicate":
-            _stamp_frontmatter(source_path, duplicate=True)
+            _stamp_frontmatter(source_path, duplicate=True, stage_root=stage_root)
             touched_paths.append(entry.path)
             continue
 
         if not entry.accepted:
             continue
 
-        _stamp_frontmatter(source_path, processed=True)
+        _stamp_frontmatter(source_path, processed=True, stage_root=stage_root)
         touched_paths.append(entry.path)
 
         existing = manifest.get(entry.source, {})
@@ -274,7 +286,7 @@ def apply_source_scan(
         }
         written += 1
 
-    manifest.save()
+    manifest.save(stage_root=stage_root)
 
     return ApplySourceScanResult(written=written, touched_paths=touched_paths)
 
@@ -576,7 +588,9 @@ class SnapshotResult:
     update_sha: str
 
 
-def write_source_snapshot(docs_dir: Path, source: str, units: str) -> SnapshotResult:
+def write_source_snapshot(
+    docs_dir: Path, source: str, units: str, *, stage_root: Path | None = None
+) -> SnapshotResult:
     """Write a new Raw snapshot unit for `source`, for the given mutation type (`comments` or `fields`).
 
     Resolves the source's path via `source-manifest.jsonl`, resets `processed: false` on the
@@ -596,10 +610,10 @@ def write_source_snapshot(docs_dir: Path, source: str, units: str) -> SnapshotRe
 
     rel_path = entry["path"]
     source_path = docs_dir.parent / rel_path
-    _stamp_frontmatter(source_path, processed=False)
+    _stamp_frontmatter(source_path, processed=False, stage_root=stage_root)
 
     now = datetime.now(UTC).isoformat()
     update_sha = hashlib.sha256(source_path.read_bytes()).hexdigest()
     manifest[source] = {**entry, "updated": now, "update_sha": update_sha}
-    manifest.save()
+    manifest.save(stage_root=stage_root)
     return SnapshotResult(source=source, path=rel_path, units=units, update_sha=update_sha)  # type: ignore[arg-type]

@@ -4,14 +4,21 @@ from typing import TYPE_CHECKING
 
 import orjson
 
+from wiki_toolkit.write_gate import stage_best_effort
+
 if TYPE_CHECKING:
     from pathlib import Path
 
 
-def write_jsonl(path: Path, records: list[dict]) -> None:
-    """Write `records` to `path` as JSONL, one object per line."""
+def write_jsonl(path: Path, records: list[dict], *, stage_root: Path | None = None) -> None:
+    """Write `records` to `path` as JSONL, one object per line.
+
+    If `stage_root` is given, best-effort git-stages `path` right after writing it.
+    """
     lines = [orjson.dumps(record).decode() for record in records]
     path.write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
+    if stage_root is not None:
+        stage_best_effort(stage_root, [str(path)])
 
 
 def read_jsonl(path: Path) -> list[dict]:

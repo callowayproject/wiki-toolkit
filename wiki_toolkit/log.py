@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, Literal
 
 import orjson
 
+from wiki_toolkit.write_gate import stage_best_effort
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -30,8 +32,14 @@ def build_log_entry(action: str, message: str, details: str) -> LogEntry:
     return LogEntry(date=datetime.now(UTC).isoformat(), action=action, message=message, details=details)  # type: ignore[arg-type]
 
 
-def append_log_entry(docs_dir: Path, entry: LogEntry) -> None:
-    """Append `entry` as one JSONL line to `docs_dir/log.jsonl`, never rewriting existing lines."""
+def append_log_entry(docs_dir: Path, entry: LogEntry, *, stage_root: Path | None = None) -> None:
+    """Append `entry` as one JSONL line to `docs_dir/log.jsonl`, never rewriting existing lines.
+
+    If `stage_root` is given, best-effort git-stages `log.jsonl` right after appending.
+    """
     docs_dir.mkdir(parents=True, exist_ok=True)
-    with (docs_dir / "log.jsonl").open("a", encoding="utf-8") as f:
+    log_path = docs_dir / "log.jsonl"
+    with log_path.open("a", encoding="utf-8") as f:
         f.write(orjson.dumps(asdict(entry)).decode() + "\n")
+    if stage_root is not None:
+        stage_best_effort(stage_root, [str(log_path)])
