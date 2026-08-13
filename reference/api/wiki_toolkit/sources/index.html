@@ -396,6 +396,8 @@
       
         
       
+        
+      
     
     
     
@@ -708,6 +710,34 @@
     
   
     ADR-0010: source-update skill redefined without adapters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adr/0011-batch-module-split/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0011: Batch planning split into its own module
   
 
     
@@ -1409,6 +1439,8 @@
       
         
       
+        
+      
     
     
     
@@ -1458,6 +1490,34 @@
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../batches/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code> batches
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
               
             
               
@@ -1718,39 +1778,6 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ApplySourceScanResult
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#wiki_toolkit.sources.Batch" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Batch
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#wiki_toolkit.sources.BatchPlan" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BatchPlan
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#wiki_toolkit.sources.BatchStats" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BatchStats
       
     </span>
   </a>
@@ -2143,17 +2170,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#wiki_toolkit.sources.plan_batches" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;plan_batches
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#wiki_toolkit.sources.scan_sources" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2526,45 +2542,6 @@
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code><a class="autorefs autorefs-internal" title="            Batch
-
-
-  
-      dataclass
-   (wiki_toolkit.sources.Batch)" href="#wiki_toolkit.sources.Batch">Batch</a></code></td>
-            <td class="doc-class-details">
-              <div class="doc-md-description">
-                <p>A single batch of files for parallel ingest dispatch.</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td><code><a class="autorefs autorefs-internal" title="            BatchPlan
-
-
-  
-      dataclass
-   (wiki_toolkit.sources.BatchPlan)" href="#wiki_toolkit.sources.BatchPlan">BatchPlan</a></code></td>
-            <td class="doc-class-details">
-              <div class="doc-md-description">
-                <p>The full result of a <code>batch-plan</code> pass.</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td><code><a class="autorefs autorefs-internal" title="            BatchStats
-
-
-  
-      dataclass
-   (wiki_toolkit.sources.BatchStats)" href="#wiki_toolkit.sources.BatchStats">BatchStats</a></code></td>
-            <td class="doc-class-details">
-              <div class="doc-md-description">
-                <p>Aggregate totals across a <code>batch-plan</code> run.</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
             <td><code><a class="autorefs autorefs-internal" title="            DedupeCandidate
 
 
@@ -2775,14 +2752,6 @@
               </td>
             </tr>
             <tr class="doc-section-item">
-              <td><code><a class="autorefs autorefs-internal" title="            plan_batches (wiki_toolkit.sources.plan_batches)" href="#wiki_toolkit.sources.plan_batches">plan_batches</a></code></td>
-              <td class="doc-function-details">
-                <div class="doc-md-description">
-                  <p>Split the files under <code>source_dir</code> into batches of at most <code>BATCH_BYTE_CAP</code> bytes or <code>BATCH_FILE_CAP</code> files.</p>
-                </div>
-              </td>
-            </tr>
-            <tr class="doc-section-item">
               <td><code><a class="autorefs autorefs-internal" title="            scan_sources (wiki_toolkit.sources.scan_sources)" href="#wiki_toolkit.sources.scan_sources">scan_sources</a></code></td>
               <td class="doc-function-details">
                 <div class="doc-md-description">
@@ -2852,184 +2821,6 @@
 
 
         <p>What <code>apply_source_scan</code> actually wrote/stamped.</p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-
-
-  </div>
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-class">
-
-
-
-<h3 id="wiki_toolkit.sources.Batch" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">Batch</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
-  </span>
-
-<a href="#wiki_toolkit.sources.Batch" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">Batch</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">files</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span> <span class="o">=</span> <span class="n"><span title="list">list</span></span><span class="p">(),</span> <span class="n">total_bytes</span><span class="p">:</span> <span class="n"><span title="int">int</span></span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-
-
-        <p>A single batch of files for parallel ingest dispatch.</p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-
-
-  </div>
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-class">
-
-
-
-<h3 id="wiki_toolkit.sources.BatchPlan" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">BatchPlan</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
-  </span>
-
-<a href="#wiki_toolkit.sources.BatchPlan" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">BatchPlan</span><span class="p">(</span><span class="n">batches</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Batch
-
-
-  
-      dataclass
-   (wiki_toolkit.sources.Batch)" href="#wiki_toolkit.sources.Batch">Batch</a></span><span class="p">],</span> <span class="n">stats</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            BatchStats
-
-
-  
-      dataclass
-   (wiki_toolkit.sources.BatchStats)" href="#wiki_toolkit.sources.BatchStats">BatchStats</a></span><span class="p">)</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-
-
-        <p>The full result of a <code>batch-plan</code> pass.</p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-
-
-  </div>
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-class">
-
-
-
-<h3 id="wiki_toolkit.sources.BatchStats" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">BatchStats</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
-  </span>
-
-<a href="#wiki_toolkit.sources.BatchStats" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">BatchStats</span><span class="p">(</span><span class="n">total_files</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">total_bytes</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">batch_count</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">)</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-
-
-        <p>Aggregate totals across a <code>batch-plan</code> run.</p>
 
 
 
@@ -4274,34 +4065,6 @@ as new) rather than erroring.</p>
         <p>Validate every file in <code>docs_dir/sources/</code>: required <code>source</code> field, <code>processed</code>/<code>duplicate</code> types.</p>
 <p>Also reports <code>processed</code> sources with no <code>covered_by</code> entry in <code>docs_dir/source-manifest.jsonl</code>
 as a backlog list, distinct from hard errors.</p>
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="wiki_toolkit.sources.plan_batches" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">plan_batches</span>
-
-
-<a href="#wiki_toolkit.sources.plan_batches" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">plan_batches</span><span class="p">(</span><span class="n">source_dir</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            BatchPlan
-
-
-  
-      dataclass
-   (wiki_toolkit.sources.BatchPlan)" href="#wiki_toolkit.sources.BatchPlan">BatchPlan</a></span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Split the files under <code>source_dir</code> into batches of at most <code>BATCH_BYTE_CAP</code> bytes or <code>BATCH_FILE_CAP</code> files.</p>
-<p>Files are visited in sorted order for determinism. A batch closes as soon as adding the next
-file would cross either cap; a single file larger than <code>BATCH_BYTE_CAP</code> still gets its own
-batch rather than being split. Reports zero files if <code>source_dir</code> doesn&rsquo;t exist.</p>
 
 
     </div>

@@ -9,28 +9,28 @@
       
       
       
-        <link rel="prev" href="../wiki/">
+        <link rel="prev" href="../0010-source-update-redefined-without-adapters/">
       
       
-        <link rel="next" href="../../../../tutorials/">
+        <link rel="next" href="../../agents/domain/">
       
       
         
       
       
-      <link rel="icon" href="../../../../assets/favicon.png">
+      <link rel="icon" href="../../assets/favicon.png">
       <meta name="generator" content="mkdocs-ProperDocs 1.6.7, mkdocs-material-9.7.7">
     
     
       
-        <title>write_gate - Wiki Toolkit</title>
+        <title>ADR-0011: Batch planning split into its own module - Wiki Toolkit</title>
       
     
     
-      <link rel="stylesheet" href="../../../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -49,17 +49,17 @@
       
     
     
-      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../../../assets/css/extra.css">
+      <link rel="stylesheet" href="../../assets/css/extra.css">
     
-      <link rel="stylesheet" href="../../../../assets/css/mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/css/mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../../../assets/css/cards.css">
+      <link rel="stylesheet" href="../../assets/css/cards.css">
     
-      <link rel="stylesheet" href="../../../../assets/css/field-list.css">
+      <link rel="stylesheet" href="../../assets/css/field-list.css">
     
-    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#wiki_toolkit.write_gate" class="md-skip">
+        <a href="#adr-0011-batch-planning-split-into-its-own-module" class="md-skip">
           Skip to content
         </a>
       
@@ -100,9 +100,9 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../../.." title="Wiki Toolkit" class="md-header__button md-logo" aria-label="Wiki Toolkit" data-md-component="logo">
+    <a href="../.." title="Wiki Toolkit" class="md-header__button md-logo" aria-label="Wiki Toolkit" data-md-component="logo">
       
-  <img src="../../../../assets/logo.png" alt="logo">
+  <img src="../../assets/logo.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -119,7 +119,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code> write_gate
+              ADR-0011: Batch planning split into its own module
             
           </span>
         </div>
@@ -237,9 +237,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../../.." title="Wiki Toolkit" class="md-nav__button md-logo" aria-label="Wiki Toolkit" data-md-component="logo">
+    <a href="../.." title="Wiki Toolkit" class="md-nav__button md-logo" aria-label="Wiki Toolkit" data-md-component="logo">
       
-  <img src="../../../../assets/logo.png" alt="logo">
+  <img src="../../assets/logo.png" alt="logo">
 
     </a>
     Wiki Toolkit
@@ -266,7 +266,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../.." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -293,7 +293,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../explanation/" class="md-nav__link">
+      <a href="../../explanation/" class="md-nav__link">
         
   
   
@@ -320,7 +320,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../installation/" class="md-nav__link">
+      <a href="../../installation/" class="md-nav__link">
         
   
   
@@ -347,7 +347,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../quickstart/" class="md-nav__link">
+      <a href="../../quickstart/" class="md-nav__link">
         
   
   
@@ -371,8 +371,10 @@
       
   
   
+    
   
   
+  
     
     
       
@@ -407,11 +409,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
           <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
@@ -432,7 +434,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -450,7 +452,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../adr/0001-source-identity-and-drop-zone-layout/" class="md-nav__link">
+      <a href="../0001-source-identity-and-drop-zone-layout/" class="md-nav__link">
         
   
   
@@ -478,7 +480,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../adr/0002-cli-framework-and-thin-cli-architecture/" class="md-nav__link">
+      <a href="../0002-cli-framework-and-thin-cli-architecture/" class="md-nav__link">
         
   
   
@@ -506,7 +508,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../adr/0003-v1-command-surface-consolidation/" class="md-nav__link">
+      <a href="../0003-v1-command-surface-consolidation/" class="md-nav__link">
         
   
   
@@ -534,7 +536,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../adr/0004-git-history-as-revision-store/" class="md-nav__link">
+      <a href="../0004-git-history-as-revision-store/" class="md-nav__link">
         
   
   
@@ -562,7 +564,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../adr/0005-two-layer-testing-strategy/" class="md-nav__link">
+      <a href="../0005-two-layer-testing-strategy/" class="md-nav__link">
         
   
   
@@ -590,7 +592,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../adr/0006-domain-module-split/" class="md-nav__link">
+      <a href="../0006-domain-module-split/" class="md-nav__link">
         
   
   
@@ -618,7 +620,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../adr/0007-settings-resolution-and-init/" class="md-nav__link">
+      <a href="../0007-settings-resolution-and-init/" class="md-nav__link">
         
   
   
@@ -646,7 +648,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../adr/0008-skills-packaged-as-claude-code-plugin/" class="md-nav__link">
+      <a href="../0008-skills-packaged-as-claude-code-plugin/" class="md-nav__link">
         
   
   
@@ -674,7 +676,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../adr/0009-local-skill-copy-versioned-sync/" class="md-nav__link">
+      <a href="../0009-local-skill-copy-versioned-sync/" class="md-nav__link">
         
   
   
@@ -702,7 +704,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../adr/0010-source-update-redefined-without-adapters/" class="md-nav__link">
+      <a href="../0010-source-update-redefined-without-adapters/" class="md-nav__link">
         
   
   
@@ -727,10 +729,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../../../adr/0011-batch-module-split/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0011: Batch planning split into its own module
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -746,6 +775,59 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consequences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consequences
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -825,7 +907,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../agents/domain/" class="md-nav__link">
+      <a href="../../agents/domain/" class="md-nav__link">
         
   
   
@@ -853,7 +935,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../agents/issue-tracker/" class="md-nav__link">
+      <a href="../../agents/issue-tracker/" class="md-nav__link">
         
   
   
@@ -881,7 +963,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../agents/triage-labels/" class="md-nav__link">
+      <a href="../../agents/triage-labels/" class="md-nav__link">
         
   
   
@@ -982,7 +1064,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../design/CONTEXT/" class="md-nav__link">
+      <a href="../../design/CONTEXT/" class="md-nav__link">
         
   
   
@@ -1010,7 +1092,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../design/idea/" class="md-nav__link">
+      <a href="../../design/idea/" class="md-nav__link">
         
   
   
@@ -1038,7 +1120,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../design/implementation-history/" class="md-nav__link">
+      <a href="../../design/implementation-history/" class="md-nav__link">
         
   
   
@@ -1066,7 +1148,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../design/job-stories/" class="md-nav__link">
+      <a href="../../design/job-stories/" class="md-nav__link">
         
   
   
@@ -1094,7 +1176,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../design/toolkit-spec/" class="md-nav__link">
+      <a href="../../design/toolkit-spec/" class="md-nav__link">
         
   
   
@@ -1175,7 +1257,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../design/Reference/llm-wiki/" class="md-nav__link">
+      <a href="../../design/Reference/llm-wiki/" class="md-nav__link">
         
   
   
@@ -1241,7 +1323,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../../howtos/" class="md-nav__link ">
+            <a href="../../howtos/" class="md-nav__link ">
               
   
   
@@ -1284,8 +1366,6 @@
       
   
   
-    
-  
   
   
     
@@ -1306,15 +1386,15 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../" class="md-nav__link ">
+            <a href="../../reference/" class="md-nav__link ">
               
   
   
@@ -1338,7 +1418,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_9">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1355,8 +1435,6 @@
                 
   
   
-    
-  
   
   
     
@@ -1370,11 +1448,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_2" >
         
           
           <label class="md-nav__link" for="__nav_9_2" id="__nav_9_2_label" tabindex="0">
@@ -1395,7 +1473,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_9_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1410,8 +1488,6 @@
                 
   
   
-    
-  
   
   
     
@@ -1447,15 +1523,15 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_2_1" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_2_1" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../../reference/api/wiki_toolkit/" class="md-nav__link ">
               
   
   
@@ -1479,7 +1555,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_2_1_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_2_1_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_9_2_1">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1499,7 +1575,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../batches/" class="md-nav__link">
+      <a href="../../reference/api/wiki_toolkit/batches/" class="md-nav__link">
         
   
   
@@ -1527,7 +1603,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cli/" class="md-nav__link">
+      <a href="../../reference/api/wiki_toolkit/cli/" class="md-nav__link">
         
   
   
@@ -1555,7 +1631,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../doctor/" class="md-nav__link">
+      <a href="../../reference/api/wiki_toolkit/doctor/" class="md-nav__link">
         
   
   
@@ -1583,7 +1659,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../frontmatter/" class="md-nav__link">
+      <a href="../../reference/api/wiki_toolkit/frontmatter/" class="md-nav__link">
         
   
   
@@ -1611,7 +1687,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../init/" class="md-nav__link">
+      <a href="../../reference/api/wiki_toolkit/init/" class="md-nav__link">
         
   
   
@@ -1639,7 +1715,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../log/" class="md-nav__link">
+      <a href="../../reference/api/wiki_toolkit/log/" class="md-nav__link">
         
   
   
@@ -1667,7 +1743,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../settings/" class="md-nav__link">
+      <a href="../../reference/api/wiki_toolkit/settings/" class="md-nav__link">
         
   
   
@@ -1695,7 +1771,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../sources/" class="md-nav__link">
+      <a href="../../reference/api/wiki_toolkit/sources/" class="md-nav__link">
         
   
   
@@ -1723,7 +1799,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../wiki/" class="md-nav__link">
+      <a href="../../reference/api/wiki_toolkit/wiki/" class="md-nav__link">
         
   
   
@@ -1748,35 +1824,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code> write_gate
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../reference/api/wiki_toolkit/write_gate/" class="md-nav__link">
         
   
   
@@ -1792,124 +1843,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#wiki_toolkit.write_gate" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;write_gate
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#wiki_toolkit.write_gate-classes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Classes
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Classes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#wiki_toolkit.write_gate.ProposePrResult" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ProposePrResult
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#wiki_toolkit.write_gate-functions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Functions:
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Functions:">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#wiki_toolkit.write_gate.commit_pages" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;commit_pages
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#wiki_toolkit.write_gate.propose_pr" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;propose_pr
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#wiki_toolkit.write_gate.stage_paths" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;stage_paths
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#wiki_toolkit.write_gate.start_wiki_branch" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;start_wiki_branch
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1968,7 +1901,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../../tutorials/" class="md-nav__link ">
+            <a href="../../tutorials/" class="md-nav__link ">
               
   
   
@@ -2032,7 +1965,7 @@
   
   
     <li class="md-path__item">
-      <a href="../../../.." class="md-path__link">
+      <a href="../.." class="md-path__link">
         
   <span class="md-ellipsis">
     Wiki Toolkit
@@ -2050,54 +1983,10 @@
     
     
       <li class="md-path__item">
-        <a href="../../../" class="md-path__link">
+        <a href="../0001-source-identity-and-drop-zone-layout/" class="md-path__link">
           
   <span class="md-ellipsis">
-    Reference
-  </span>
-
-        </a>
-      </li>
-    
-  
-
-      
-        
-  
-  
-    
-    
-      
-  
-  
-    
-    
-      <li class="md-path__item">
-        <a href="../" class="md-path__link">
-          
-  <span class="md-ellipsis">
-    Api
-  </span>
-
-        </a>
-      </li>
-    
-  
-
-    
-  
-
-      
-        
-  
-  
-    
-    
-      <li class="md-path__item">
-        <a href="../" class="md-path__link">
-          
-  <span class="md-ellipsis">
-    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code> wiki_toolkit
+    Adr
   </span>
 
         </a>
@@ -2116,7 +2005,7 @@
 
 
   
-    <a href="https://github.com/home/runner/work/wiki-toolkit/wiki-toolkit/wiki_toolkit/write_gate.py" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/callowayproject/wiki-toolkit/edit/main/docs/adr/0011-batch-module-split.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -2125,299 +2014,60 @@
     
       
     
-    <a href="https://github.com/home/runner/work/wiki-toolkit/wiki-toolkit/wiki_toolkit/write_gate.py" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/callowayproject/wiki-toolkit/raw/main/docs/adr/0011-batch-module-split.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
     </a>
   
 
 
-  <h1><code class="doc-symbol doc-symbol-nav doc-symbol-module"></code> write_gate</h1>
-
-<div class="doc doc-object doc-module">
-
-
-
-<a id="wiki_toolkit.write_gate"></a>
-    <div class="doc doc-contents first">
-
-        <p>The write-gate: every wiki mutation routes through here as a staged PR (see docs/design/idea.md).</p>
-
-
-
-
-
-
-
-
-
-
-<table>
-      <thead>
-        <tr>
-          <th><span class="doc-section-title">CLASS</span></th>
-          <th><span>DESCRIPTION</span></th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td><code><a class="autorefs autorefs-internal" title="            ProposePrResult
+<h1 id="adr-0011-batch-planning-split-into-its-own-module">ADR-0011: Batch planning split into its own module<a class="headerlink" href="#adr-0011-batch-planning-split-into-its-own-module" title="Permanent link">&para;</a></h1>
+<ul>
+<li><strong>Status:</strong> Accepted</li>
+<li><strong>Date:</strong> 2026-08-13</li>
+</ul>
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p><a href="../0006-domain-module-split/">ADR-0006</a> rejected splitting <code>sources.py</code> further by individual command, because every command in it (<code>scan_sources</code>, <code>apply_source_scan</code>, <code>lint_sources</code>, <code>source_coverage</code>, <code>compute_source_delta</code>, <code>suggest_dedupe</code>, <code>write_source_snapshot</code>) shares the source manifest and the canonical-source predicate — splitting by command would recreate that duplication one level up.</p>
+<p><code>plan_batches</code> (added later, issue #84, after ADR-0006) doesn&rsquo;t share that dependency. It never reads the manifest, never parses frontmatter, never calls <code>_iter_markdown</code> or <code>_is_canonical_source</code> — it walks raw files under a <code>source_dir</code> by byte/count caps, before any file has become a <code>source</code> in the domain sense. &ldquo;Batch&rdquo; wasn&rsquo;t in <code>CONTEXT.md</code>&rsquo;s glossary despite being used in the CLI (<code>batch-plan</code>) and write-gate workflow (&ldquo;batch coordinator session&rdquo;).</p>
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Batch</code>/<code>BatchStats</code>/<code>BatchPlan</code>/<code>plan_batches</code> move to a new <code>batches.py</code>, with their tests to <code>test_batches.py</code>.</li>
+<li><code>CONTEXT.md</code> gains a <code>Batch</code> glossary entry, distinguishing it from <code>source</code> and <code>Snapshot source</code>.</li>
+<li><code>sources.py</code> is otherwise unchanged — ADR-0006&rsquo;s reasoning still holds for the manifest-sharing commands it covers.</li>
+</ul>
+<h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
+<ul>
+<li>This narrows, not reverses, ADR-0006: the split criterion is &ldquo;does this command participate in the shared manifest/canonical-source state,&rdquo; not &ldquo;is this a different command.&rdquo;</li>
+<li>Any future addition to <code>sources.py</code> should be checked against that same criterion before being added there by default.</li>
+</ul>
 
 
+
+
+
+
+
+
+  <aside class="md-source-file">
+    
+    
+    
+      
   
-      dataclass
-   (wiki_toolkit.write_gate.ProposePrResult)" href="#wiki_toolkit.write_gate.ProposePrResult">ProposePrResult</a></code></td>
-            <td class="doc-class-details">
-              <div class="doc-md-description">
-                <p>Result of staging a wiki change as a local git branch + commit.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-
-
-<table>
-      <thead>
-        <tr>
-          <th><span class="doc-section-title">FUNCTION</span></th>
-          <th><span>DESCRIPTION</span></th>
-        </tr>
-      </thead>
-      <tbody>
-            <tr class="doc-section-item">
-              <td><code><a class="autorefs autorefs-internal" title="            commit_pages (wiki_toolkit.write_gate.commit_pages)" href="#wiki_toolkit.write_gate.commit_pages">commit_pages</a></code></td>
-              <td class="doc-function-details">
-                <div class="doc-md-description">
-                  <p>Add <code>pages</code> and commit exactly what&rsquo;s currently staged. Returns the commit sha.</p>
-                </div>
-              </td>
-            </tr>
-            <tr class="doc-section-item">
-              <td><code><a class="autorefs autorefs-internal" title="            propose_pr (wiki_toolkit.write_gate.propose_pr)" href="#wiki_toolkit.write_gate.propose_pr">propose_pr</a></code></td>
-              <td class="doc-function-details">
-                <div class="doc-md-description">
-                  <p>Stage <code>pages</code> as a git branch + commit, framed for review, and return that branch.</p>
-                </div>
-              </td>
-            </tr>
-            <tr class="doc-section-item">
-              <td><code><a class="autorefs autorefs-internal" title="            stage_paths (wiki_toolkit.write_gate.stage_paths)" href="#wiki_toolkit.write_gate.stage_paths">stage_paths</a></code></td>
-              <td class="doc-function-details">
-                <div class="doc-md-description">
-                  <p>Git-add <code>paths</code> into the index, for a producer command to self-stage its own output.</p>
-                </div>
-              </td>
-            </tr>
-            <tr class="doc-section-item">
-              <td><code><a class="autorefs autorefs-internal" title="            start_wiki_branch (wiki_toolkit.write_gate.start_wiki_branch)" href="#wiki_toolkit.write_gate.start_wiki_branch">start_wiki_branch</a></code></td>
-              <td class="doc-function-details">
-                <div class="doc-md-description">
-                  <p>Create and check out a new local branch for a wiki-update session, before any pages are committed.</p>
-                </div>
-              </td>
-            </tr>
-      </tbody>
-    </table>
-
-
-
-
-
-<div class="doc doc-children">
-
-
-
-
-
-
-
-<h2 id="wiki_toolkit.write_gate-classes">Classes<a href="#wiki_toolkit.write_gate-classes" class="headerlink" title="Permanent link">&para;</a></h2>
-
-<div class="doc doc-object doc-class">
-
-
-
-<h3 id="wiki_toolkit.write_gate.ProposePrResult" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">ProposePrResult</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Contributors">
+      
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4a4 4 0 0 1 4 4 4 4 0 0 1-4 4 4 4 0 0 1-4-4 4 4 0 0 1 4-4m0 10c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4"/></svg>
+      
+    </span>
+    <nav>
+      Corey Oordt
+    </nav>
   </span>
 
-<a href="#wiki_toolkit.write_gate.ProposePrResult" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">ProposePrResult</span><span class="p">(</span><span class="n">branch</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">commit_sha</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="n"><span title="wiki_toolkit.write_gate.Frame">Frame</span></span><span class="p">,</span> <span class="n">pages</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">])</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-
-
-        <p>Result of staging a wiki change as a local git branch + commit.</p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-
-
-  </div>
-
-    </div>
-
-</div>
-<h2 id="wiki_toolkit.write_gate-functions">Functions:<a href="#wiki_toolkit.write_gate-functions" class="headerlink" title="Permanent link">&para;</a></h2>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="wiki_toolkit.write_gate.commit_pages" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">commit_pages</span>
-
-
-<a href="#wiki_toolkit.write_gate.commit_pages" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">commit_pages</span><span class="p">(</span><span class="n">root</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n">pages</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">],</span> <span class="n">message</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="str">str</span></span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Add <code>pages</code> and commit exactly what&rsquo;s currently staged. Returns the commit sha.</p>
-<p><code>pages</code> is added to the index but is no longer a <code>git commit</code> pathspec filter — the
-commit picks up anything else already staged too (e.g. <code>catalog.jsonl</code>/<code>log.jsonl</code>/
-<code>source-manifest.jsonl</code> self-staged by <code>build</code>/<code>log</code>/<code>source-scan --update</code> earlier
-in the same session), so the state those commands regenerated rides along with the
-pages that triggered them.</p>
-<p>Used for a batch coordinator&rsquo;s streaming per-source commits — each one lands
-immediately on the branch opened by <code>start_wiki_branch</code>, without waiting for the
-rest of the session&rsquo;s batches to finish.</p>
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="wiki_toolkit.write_gate.propose_pr" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">propose_pr</span>
-
-
-<a href="#wiki_toolkit.write_gate.propose_pr" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">propose_pr</span><span class="p">(</span><span class="n">root</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n">pages</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">],</span> <span class="n">frame</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            ProposePrResult
-
-
-  
-      dataclass
-   (wiki_toolkit.write_gate.ProposePrResult)" href="#wiki_toolkit.write_gate.ProposePrResult">ProposePrResult</a></span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Stage <code>pages</code> as a git branch + commit, framed for review, and return that branch.</p>
-<p>This is the one write path every wiki mutation is meant to route through
-(see docs/design/idea.md&rsquo;s &ldquo;write gate&rdquo; decision). v1 stops at the local
-branch + commit: it never pushes to a remote or opens a real GitHub PR.</p>
-<p><code>pages</code> is added to the index but, like <code>commit_pages</code>, is no longer a <code>git commit</code>
-pathspec filter — the commit picks up exactly what&rsquo;s staged, <code>pages</code> included,
-which is how the session&rsquo;s self-staged <code>catalog.jsonl</code>/<code>log.jsonl</code>/
-<code>source-manifest.jsonl</code> writes ride along.</p>
-<p>If the current branch was already opened by <code>start_wiki_branch</code> (a batch
-coordinator&rsquo;s session branch), this reuses it instead of creating a new one, and
-tolerates <code>pages</code> having nothing left to commit — every page may already have
-landed via that session&rsquo;s streaming <code>commit_pages</code> calls, in which case this
-commits whatever else is still staged, if anything.</p>
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="wiki_toolkit.write_gate.stage_paths" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">stage_paths</span>
-
-
-<a href="#wiki_toolkit.write_gate.stage_paths" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">stage_paths</span><span class="p">(</span><span class="n">root</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n">paths</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Git-add <code>paths</code> into the index, for a producer command to self-stage its own output.</p>
-<p>Called by <code>build</code>, <code>log</code>, and <code>source-scan --update</code> right after each writes its
-output file(s), so the state files they regenerate ride along in the same commit as
-the pages that triggered them (see docs/design/toolkit-spec.md&rsquo;s &ldquo;Write gate&rdquo;).</p>
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="wiki_toolkit.write_gate.start_wiki_branch" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">start_wiki_branch</span>
-
-
-<a href="#wiki_toolkit.write_gate.start_wiki_branch" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">start_wiki_branch</span><span class="p">(</span><span class="n">root</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="str">str</span></span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Create and check out a new local branch for a wiki-update session, before any pages are committed.</p>
-<p>A batch coordinator calls this once, before dispatching any subagents, so every
-per-source <code>commit_pages</code> call and the session&rsquo;s closing <code>propose_pr</code> call land on
-the same branch (see docs/design/tickets — coordinator mechanism for batch dispatch).</p>
-
-
-    </div>
-
-</div>
-
-
-
-  </div>
-
-    </div>
-
-</div>
-
-
-
-
-
-
-
+    
+    
+  </aside>
 
 
 
@@ -2468,10 +2118,10 @@ the same branch (see docs/design/tickets — coordinator mechanism for batch dis
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.sections", "navigation.path", "navigation.indexes", "navigation.top", "content.action.edit", "content.action.view", "content.code.annotate", "content.tabs.link", "toc.integrate"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.path", "navigation.indexes", "navigation.top", "content.action.edit", "content.action.view", "content.code.annotate", "content.tabs.link", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
       

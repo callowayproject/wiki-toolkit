@@ -396,6 +396,8 @@
       
         
       
+        
+      
     
     
     
@@ -708,6 +710,34 @@
     
   
     ADR-0010: source-update skill redefined without adapters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0011-batch-module-split/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0011: Batch planning split into its own module
   
 
     
@@ -1463,6 +1493,8 @@
       
         
       
+        
+      
     
     
     
@@ -1512,6 +1544,34 @@
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/wiki_toolkit/batches/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code> batches
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
               
             
               
@@ -1945,6 +2005,9 @@
 <p><strong>source</strong>:
 The identity field on a Raw source file&rsquo;s frontmatter, and the general term for one unit of external input (a design doc, a ticket, a comment) tracked by the toolkit. In v1, this is the only identity concept — there is no separate adapter-level <code>stable_id</code> distinct from it, since v1 has no adapters.
 <em>Avoid</em>: source_id, stable_id (both are pre-v1/adapter-era terms; don&rsquo;t use once adapters exist without redefining the relationship to <code>source</code>)</p>
+<p><strong>Batch</strong>:
+A group of raw files under a <code>source_dir</code>, sized to a byte/file cap for parallel <code>wiki-ingest</code> dispatch (<code>batch-plan</code>). Not a <code>source</code>-domain concept: batching runs over plain files before any of them has frontmatter, an identity, or a manifest entry — it&rsquo;s an ingest-dispatch mechanic, not a source lifecycle state.
+<em>Avoid</em>: using &ldquo;batch&rdquo; to mean a group of sources once processed — a batch is pre-ingest file grouping only.</p>
 <p><strong>Snapshot source</strong>:
 A source type with no version history of its own (Jira, Slack, Confluence). Its content is copied into <code>sources/</code> as Markdown because the toolkit must create the history the source system doesn&rsquo;t provide.
 <em>Avoid</em>: &ldquo;snapshot&rdquo; alone when referring to the source type — pair it with &ldquo;source&rdquo; to distinguish from a last-known revision.</p>
