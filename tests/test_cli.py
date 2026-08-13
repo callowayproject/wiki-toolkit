@@ -210,6 +210,7 @@ def test_build_writes_catalog(tmp_path: Path, monkeypatch, make_docs_tree, make_
         "aliases": [],
         "links": [],
     }
+    assert "docs/catalog.jsonl" in _git(tmp_path, "diff", "--cached", "--name-only").stdout.split()
 
 
 def test_build_skips_malformed_note_without_crashing(
@@ -314,6 +315,7 @@ def test_source_scan_update_writes_manifest(tmp_path: Path, monkeypatch, make_do
     assert result.exit_code == 0
     manifest = (docs_dir / "source-manifest.jsonl").read_text(encoding="utf-8")
     assert "jira:ABC-1" in manifest
+    assert "docs/source-manifest.jsonl" in _git(tmp_path, "diff", "--cached", "--name-only").stdout.split()
 
 
 def test_source_scan_update_succeeds_outside_a_git_repo(
@@ -704,6 +706,7 @@ def test_log_appends_entry(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
     assert entry["message"] == "Ingested ticket"
     assert entry["details"] == "jira:ABC-1"
     assert entry["date"]
+    assert "docs/log.jsonl" in _git(tmp_path, "diff", "--cached", "--name-only").stdout.split()
 
 
 def test_log_succeeds_outside_a_git_repo(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
@@ -857,6 +860,24 @@ def test_source_snapshot_fields_resets_processed_and_exits_zero(
 
     assert result.exit_code == 0
     assert "Wrote fields snapshot for jira:ABC-1" in result.output
+
+
+def test_source_snapshot_stages_output_in_a_git_repo(tmp_path: Path, monkeypatch, make_docs_tree, make_source) -> None:
+    """source-snapshot stages the stamped source file and the manifest (previously unstaged entirely)."""
+    docs_dir = make_docs_tree()
+    make_source(docs_dir, "jira:ABC-1", filename="abc-1.md", processed=True, status="open")
+    (docs_dir / "source-manifest.jsonl").write_text(
+        orjson.dumps({"source": "jira:ABC-1", "path": "docs/sources/abc-1.md"}).decode() + "\n"
+    )
+    _init_git(tmp_path)
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["source-snapshot", "jira:ABC-1", "--units", "fields"])
+
+    assert result.exit_code == 0
+    staged = _git(tmp_path, "diff", "--cached", "--name-only").stdout.split()
+    assert "docs/sources/abc-1.md" in staged
+    assert "docs/source-manifest.jsonl" in staged
 
 
 def test_source_snapshot_rejects_invalid_units(tmp_path: Path, monkeypatch, make_docs_tree, make_source) -> None:

@@ -54,11 +54,12 @@ def _nothing_staged(git: str, root: Path) -> bool:
 
 
 def stage_paths(root: Path, paths: list[str]) -> None:
-    """Git-add `paths` into the index, for a producer command to self-stage its own output.
+    """Git-add `paths` into the index, for a writer to self-stage its own output.
 
-    Called by `build`, `log`, and `source-scan --update` right after each writes its
-    output file(s), so the state files they regenerate ride along in the same commit as
-    the pages that triggered them (see docs/design/toolkit-spec.md's "Write gate").
+    Called by `stage_best_effort` right after a writer (`write_jsonl`, `append_log_entry`,
+    `_stamp_frontmatter`, `SourceManifest.save`) writes its output file(s), so the state
+    files a producer command regenerates ride along in the same commit as the pages that
+    triggered them (see docs/design/toolkit-spec.md's "Write gate").
     """
     if not paths:
         return
@@ -67,6 +68,17 @@ def stage_paths(root: Path, paths: list[str]) -> None:
         _run(git, root, "add", "--", *paths)
     except subprocess.CalledProcessError as e:
         raise ValueError(f"git staging failed: {e.stderr.strip()}") from e
+
+
+def stage_best_effort(root: Path, paths: list[str]) -> None:
+    """Best-effort `stage_paths`: silently no-ops if `root` isn't a git repo (e.g. `init` run standalone).
+
+    Writers call this right after writing their own output, so state files ride along in
+    the next commit without a separate call that could fall out of sync (see docs/design/
+    toolkit-spec.md's "Write gate").
+    """
+    with contextlib.suppress(ValueError):
+        stage_paths(root, paths)
 
 
 def start_wiki_branch(root: Path, frame: str) -> str:
@@ -89,9 +101,9 @@ def commit_pages(root: Path, pages: list[str], message: str) -> str:
 
     `pages` is added to the index but is no longer a `git commit` pathspec filter — the
     commit picks up anything else already staged too (e.g. `catalog.jsonl`/`log.jsonl`/
-    `source-manifest.jsonl` self-staged by `build`/`log`/`source-scan --update` earlier
-    in the same session), so the state those commands regenerated rides along with the
-    pages that triggered them.
+    `source-manifest.jsonl`, self-staged by their writers earlier in the same session,
+    see `stage_best_effort`), so the state those commands regenerated rides along with
+    the pages that triggered them.
 
     Used for a batch coordinator's streaming per-source commits — each one lands
     immediately on the branch opened by `start_wiki_branch`, without waiting for the
