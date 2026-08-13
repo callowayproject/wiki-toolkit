@@ -717,10 +717,10 @@ def test_source_manifest_setitem_rejects_mismatched_source_field(tmp_path: Path)
 
     try:
         manifest["jira:ABC-1"] = {"source": "jira:OTHER-1"}
-    except AssertionError:
+    except ValueError:
         pass
     else:
-        raise AssertionError("expected AssertionError for mismatched source field")
+        raise AssertionError("expected ValueError for mismatched source field")
 
 
 def test_source_manifest_setitem_and_save_round_trips(tmp_path: Path) -> None:
