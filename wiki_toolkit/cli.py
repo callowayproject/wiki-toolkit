@@ -11,6 +11,7 @@ import click
 import orjson
 
 from wiki_toolkit._io import read_jsonl, write_jsonl
+from wiki_toolkit.batches import plan_batches
 from wiki_toolkit.doctor import run_doctor
 from wiki_toolkit.init import run_init
 from wiki_toolkit.log import ALLOWED_LOG_ACTIONS, append_log_entry, build_log_entry
@@ -21,7 +22,6 @@ from wiki_toolkit.sources import (
     apply_source_scan,
     compute_source_delta,
     lint_sources,
-    plan_batches,
     scan_sources,
     source_coverage,
     suggest_dedupe,
