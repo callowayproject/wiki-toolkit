@@ -11,13 +11,10 @@ import orjson
 import pytest
 
 from wiki_toolkit.sources import (
-    BATCH_BYTE_CAP,
-    BATCH_FILE_CAP,
     apply_source_scan,
     compute_source_delta,
     diff_content_fields,
     lint_sources,
-    plan_batches,
     scan_sources,
     source_coverage,
     suggest_dedupe,
@@ -671,64 +668,3 @@ def test_write_source_snapshot_invalid_units_raises(make_docs_tree: Callable[[],
         pass
     else:
         raise AssertionError("expected ValueError for invalid units")
-
-
-def test_plan_batches_folder_smaller_than_either_cap(tmp_path: Path) -> None:
-    """A folder well under both caps produces a single batch holding every file."""
-    source_dir = tmp_path / "source"
-    source_dir.mkdir()
-    (source_dir / "a.md").write_text("a" * 10)
-    (source_dir / "b.md").write_text("b" * 20)
-
-    plan = plan_batches(source_dir)
-
-    assert len(plan.batches) == 1
-    assert plan.batches[0].files == ["a.md", "b.md"]
-    assert plan.batches[0].total_bytes == 30
-    assert plan.stats.total_files == 2
-    assert plan.stats.total_bytes == 30
-    assert plan.stats.batch_count == 1
-
-
-def test_plan_batches_exactly_at_file_cap(tmp_path: Path) -> None:
-    """Exactly BATCH_FILE_CAP files fit in one batch; the next file starts a new one."""
-    source_dir = tmp_path / "source"
-    source_dir.mkdir()
-    for i in range(BATCH_FILE_CAP + 1):
-        (source_dir / f"f{i:02d}.md").write_text("x")
-
-    plan = plan_batches(source_dir)
-
-    assert plan.stats.total_files == BATCH_FILE_CAP + 1
-    assert plan.stats.batch_count == 2
-    assert len(plan.batches[0].files) == BATCH_FILE_CAP
-    assert len(plan.batches[1].files) == 1
-
-
-def test_plan_batches_exactly_at_byte_cap(tmp_path: Path) -> None:
-    """A file that lands exactly on BATCH_BYTE_CAP stays in the same batch; the next one starts a new batch."""
-    source_dir = tmp_path / "source"
-    source_dir.mkdir()
-    (source_dir / "a.md").write_text("a" * (BATCH_BYTE_CAP - 1))
-    (source_dir / "b.md").write_text("b")
-    (source_dir / "c.md").write_text("c")
-
-    plan = plan_batches(source_dir)
-
-    assert plan.stats.batch_count == 2
-    assert plan.batches[0].files == ["a.md", "b.md"]
-    assert plan.batches[0].total_bytes == BATCH_BYTE_CAP
-    assert plan.batches[1].files == ["c.md"]
-
-
-def test_plan_batches_empty_source_dir(tmp_path: Path) -> None:
-    """An empty (or missing) source directory reports zero files and zero batches."""
-    source_dir = tmp_path / "source"
-    source_dir.mkdir()
-
-    plan = plan_batches(source_dir)
-
-    assert plan.batches == []
-    assert plan.stats.total_files == 0
-    assert plan.stats.total_bytes == 0
-    assert plan.stats.batch_count == 0

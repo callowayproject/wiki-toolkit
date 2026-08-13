@@ -8,6 +8,10 @@ Domain glossary for the `wiki_toolkit` CLI — the deterministic tooling that in
 The identity field on a Raw source file's frontmatter, and the general term for one unit of external input (a design doc, a ticket, a comment) tracked by the toolkit. In v1, this is the only identity concept — there is no separate adapter-level `stable_id` distinct from it, since v1 has no adapters.
 _Avoid_: source_id, stable_id (both are pre-v1/adapter-era terms; don't use once adapters exist without redefining the relationship to `source`)
 
+**Batch**:
+A group of raw files under a `source_dir`, sized to a byte/file cap for parallel `wiki-ingest` dispatch (`batch-plan`). Not a `source`-domain concept: batching runs over plain files before any of them has frontmatter, an identity, or a manifest entry — it's an ingest-dispatch mechanic, not a source lifecycle state.
+_Avoid_: using "batch" to mean a group of sources once processed — a batch is pre-ingest file grouping only.
+
 **Snapshot source**:
 A source type with no version history of its own (Jira, Slack, Confluence). Its content is copied into `sources/` as Markdown because the toolkit must create the history the source system doesn't provide.
 _Avoid_: "snapshot" alone when referring to the source type — pair it with "source" to distinguish from a last-known revision.
