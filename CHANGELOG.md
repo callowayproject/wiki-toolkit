@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.26.0 (2026-08-13)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.25.1...0.26.0)
+
+### New
+
+- Add SourceManifest class to sources.py. [070aae8](https://github.com/callowayproject/wiki-toolkit/commit/070aae8a5a2f6958221f639d6738cb7487208406)
+
+  Adds a dict-like SourceManifest wrapper around source-manifest.jsonl
+  as a standalone, tested seam. Purely additive: \_read_manifest/
+  \_write_manifest and all six existing call sites are untouched here;
+  migrating them onto the new class is a follow-up (#140).
+
+  Refs #139, #138
+
+### Other
+
+- Migrate source-manifest call sites onto SourceManifest. [abaeb8e](https://github.com/callowayproject/wiki-toolkit/commit/abaeb8ecba61a659cb5014f40d20dbd780c06483)
+
+  Moves scan_sources, apply_source_scan, lint_sources, source_coverage,
+  compute_source_delta, and write_source_snapshot in sources.py off the
+  raw \_read_manifest/\_write_manifest functions and onto the SourceManifest
+  class, then deletes those functions. Deleting them also required
+  migrating wiki.py's build_catalog/lint_wiki/\_check_tags_and_sources,
+  which had the same \_read_manifest dependency but wasn't enumerated in
+  the original ticket.
+
+  Hardens SourceManifest.__setitem__'s key/entry-consistency check to a
+  ValueError (raised even under -O) instead of a bare assert, per code
+  review on the prior commit.
+
+  Refs #140, #138
+
+- Expand ruff file-ignore rules to include long lines in `grade.py`. [c870669](https://github.com/callowayproject/wiki-toolkit/commit/c87066976e379abf1b2c563f5de98940b23dc051)
+
 ## 0.25.1 (2026-08-13)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.25.0...0.25.1)
