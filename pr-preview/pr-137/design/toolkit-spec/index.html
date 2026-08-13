@@ -1,0 +1,2780 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../job-stories/">
+      
+      
+        <link rel="next" href="../Reference/llm-wiki/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/favicon.png">
+      <meta name="generator" content="mkdocs-ProperDocs 1.6.7, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>LLM Wiki Toolkit — Spec - Wiki Toolkit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../assets/css/extra.css">
+    
+      <link rel="stylesheet" href="../../assets/css/mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../assets/css/cards.css">
+    
+      <link rel="stylesheet" href="../../assets/css/field-list.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#llm-wiki-toolkit-spec" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Wiki Toolkit" class="md-header__button md-logo" aria-label="Wiki Toolkit" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Wiki Toolkit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              LLM Wiki Toolkit — Spec
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/callowayproject/wiki-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Wiki Toolkit" class="md-nav__button md-logo" aria-label="Wiki Toolkit" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="logo">
+
+    </a>
+    Wiki Toolkit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/callowayproject/wiki-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wiki Toolkit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../explanation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Explanations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adr
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Adr
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0001-source-identity-and-drop-zone-layout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0001: Source identity and drop-zone layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0002-cli-framework-and-thin-cli-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0002: CLI framework and thin-CLI architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0003-v1-command-surface-consolidation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0003: v1 command surface consolidation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0004-git-history-as-revision-store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0004: Git history as the last-known-revision store
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0005-two-layer-testing-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0005: Two-layer testing strategy, no golden files
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0006-domain-module-split/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0006: Domain-module split of core.py
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0007-settings-resolution-and-init/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0007: Settings resolution, init, and config show
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0008-skills-packaged-as-claude-code-plugin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0008: Skills packaged as a standalone Claude Code plugin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0009-local-skill-copy-versioned-sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0009: Local skill-copy versioned sync with doctor drift warning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0010-source-update-redefined-without-adapters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0010: source-update skill redefined without adapters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/0011-batch-module-split/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0011: Batch planning split into its own module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agents
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Agents
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Domain Docs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/issue-tracker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Issue tracker: GitHub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/triage-labels/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Triage Labels
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CONTEXT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    wiki-toolkit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../idea/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps Wiki
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../implementation-history/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation history
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../job-stories/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Job Stories
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM Wiki Toolkit — Spec
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM Wiki Toolkit — Spec
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#wiki-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wiki structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stack
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sources
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#source-lifecycle-frontmatter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source lifecycle (frontmatter)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deltas-and-revisions-source-delta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deltas and revisions (source-delta)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#source-manifest" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source manifest
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Source manifest">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#source-manifest-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source manifest schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#catalog" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Catalog
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Catalog">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#catalog-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Catalog schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#log" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Log
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Log">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#log-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Log schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#write-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Write gate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#command-surface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command surface
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#not-yet-built-adapters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Not yet built: adapters
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Not yet built: adapters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#planned-v1-adapters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Planned v1 adapters
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Planned v1 adapters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#github-adapter-payload-shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub adapter payload shape
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jira-adapter-payload-shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Jira adapter payload shape
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#not-yet-built-adapter-era-skills" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Not yet built: adapter-era skills
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing strategy
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_6" id="__nav_7_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Reference/llm-wiki/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Llm wiki
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../howtos/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Howtos
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Howtos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../reference/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_2" id="__nav_9_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Api
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Api
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_2_1" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../reference/api/wiki_toolkit/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code> wiki_toolkit
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9_2_1" id="__nav_9_2_1_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_2_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code> wiki_toolkit
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/wiki_toolkit/batches/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code> batches
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/wiki_toolkit/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code> cli
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/wiki_toolkit/doctor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code> doctor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/wiki_toolkit/frontmatter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code> frontmatter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/wiki_toolkit/init/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code> init
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/wiki_toolkit/log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code> log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/wiki_toolkit/settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code> settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/wiki_toolkit/sources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code> sources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/wiki_toolkit/wiki/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code> wiki
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/wiki_toolkit/write_gate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code> write_gate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../tutorials/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Wiki Toolkit
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../CONTEXT/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Design
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/callowayproject/wiki-toolkit/edit/main/docs/design/toolkit-spec.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/callowayproject/wiki-toolkit/raw/main/docs/design/toolkit-spec.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
+    </a>
+  
+
+
+<h1 id="llm-wiki-toolkit-spec">LLM Wiki Toolkit — Spec<a class="headerlink" href="#llm-wiki-toolkit-spec" title="Permanent link">&para;</a></h1>
+<p>Specifies <code>wiki_toolkit</code>, the AI skills and helper tools that implement <a href="../Reference/llm-wiki/">llm-wiki.md</a>
+as a general-purpose toolkit. An AI Agent harness operates this toolkit; the toolkit itself is
+domain-agnostic.</p>
+<p>This doc merges what shipped (v1 CLI + skills plugin, see <a href="../implementation-history/">implementation-history.md</a>)
+with the still-unbuilt full vision. Content is as-built by default; anything not yet built is called
+out explicitly under <strong>&ldquo;Not yet built&rdquo;</strong> headings. See <a href="../CONTEXT/">CONTEXT.md</a> for terminology.</p>
+<h2 id="wiki-structure">Wiki structure<a class="headerlink" href="#wiki-structure" title="Permanent link">&para;</a></h2>
+<p>The basic layout of the wiki:</p>
+<div class="highlight"><pre><span></span><code>repo-root/
+└── docs/
+    ├── .agents/
+    │   └── skills/             # Local copy of the AI Agent skills, scaffolded by `init`
+    ├── catalog.jsonl           # Catalog of everything in the wiki
+    ├── log.jsonl               # Chronological listing of wiki events
+    ├── schema.md               # Evolving description of the wiki
+    ├── source-manifest.jsonl   # Index of sources, where they are linked
+    ├── sources/                # Raw sources — drop zone AND processed store, no staging dir
+    └── wiki/                   # Compiled wiki notes
+</code></pre></div>
+<h2 id="stack">Stack<a class="headerlink" href="#stack" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>CLI</strong>: <code>click</code></li>
+<li><strong>Frontmatter parsing</strong>: <code>python-frontmatter</code></li>
+<li><strong>Kept from scaffold</strong>: <code>orjson</code>, <code>pydantic-settings</code></li>
+<li><strong>Stripped as template cruft</strong>: <code>fastapi[standard]</code>, all <code>opentelemetry-*</code> packages, <code>structlog</code></li>
+</ul>
+<p><strong>Architecture constraint</strong>: the CLI is a thin adapter (arg parsing, delegation, output formatting).
+All business logic lives in internal library functions the CLI calls — the CLI has no logic worth
+unit-testing beyond correct delegation.</p>
+<h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
+<p>Settings (currently just the <code>docs</code> root, default <code>docs/</code>) resolve via <code>pydantic-settings</code>, in
+precedence order:</p>
+<ol>
+<li>CLI flag (<code>--docs-dir</code>, per-command where relevant)</li>
+<li>Environment variable (<code>WIKI_TOOLKIT_DOCS_DIR</code>)</li>
+<li><code>[tool.wiki_toolkit]</code> table in the project&rsquo;s <code>pyproject.toml</code>, if present</li>
+<li>Built-in default</li>
+</ol>
+<p>No dedicated config file format — reusing <code>pyproject.toml</code> avoids introducing a new file the user
+has to know about.</p>
+<h2 id="sources">Sources<a class="headerlink" href="#sources" title="Permanent link">&para;</a></h2>
+<p>There are two kinds of sources:</p>
+<p><strong>Version-controlled</strong> (source code, PRs) — never copied into <code>sources/</code>; git already has an
+immutable history, so duplicating it would be pure redundancy. Cited by <code>{repo, path, commit_sha}</code>.
+An entry for each file is maintained in <code>catalog.jsonl</code>. Out of scope for scanning today —
+<code>source-scan</code> skips these, since there are no adapters yet to produce them (see &ldquo;Not yet built&rdquo;
+under Adapter interface, below).</p>
+<p><strong>Snapshot source</strong> (Jira, Slack, Confluence, external wiki pages) — anything without its own
+version history. Markdown versioned snapshots of the content are copied into <code>sources/</code>, because
+the toolkit has to create the history the source system doesn&rsquo;t provide.</p>
+<p>A source type must expose a stable external ID (e.g., a URI, Jira ticket key, Slack permalink, or
+Confluence page ID) to be eligible for snapshot handling. If a source type can&rsquo;t supply one, the
+toolkit refuses automatic ingestion and flags it for manual filing. Fuzzy content-matching is
+deliberately excluded as a dedup mechanism, since a false-positive merge in an unattended,
+write-capable agent is worse than a missed source.</p>
+<p>Within a snapshot source, two mutation types are handled differently:</p>
+<ul>
+<li><strong>Comments</strong>: each comment on a source is treated as its own source, with its own stable ID.
+  No diffing: the toolkit tracks the highest processed comment ID per parent source and treats
+  anything newer as new.</li>
+<li><strong>Field edits</strong>: changes to a source&rsquo;s fields (status, description, assignee, etc.) mutate in
+  place. The toolkit diffs the full field state against the last snapshot to produce a delta of
+  changed fields.</li>
+</ul>
+<h3 id="source-lifecycle-frontmatter">Source lifecycle (frontmatter)<a class="headerlink" href="#source-lifecycle-frontmatter" title="Permanent link">&para;</a></h3>
+<p>Files land directly in <code>docs/sources/</code> — no separate staging/inbox directory. State is tracked
+entirely via frontmatter:</p>
+<ul>
+<li><strong><code>source</code></strong> (required): unique identifier for this source. A URI is recommended. This is the
+  only identity field today — no <code>source_id</code>/<code>stable_id</code> split (that distinction is adapter-era,
+  not yet built).</li>
+<li><strong><code>processed</code></strong> (bool, default <code>false</code> / treated as <code>false</code> if missing): only the toolkit CLI
+  ever sets this <code>true</code>; upstream materializers never do. &ldquo;Brand-new&rdquo; vs. &ldquo;known source needing
+  reprocessing&rdquo; both read as <code>processed: false</code> — telling them apart is <code>source-scan</code>&rsquo;s job, via
+  manifest lookup.</li>
+<li><strong><code>duplicate</code></strong> (bool): set by <code>source-scan</code> when a <code>source</code> id appears under more than one
+  filename. The first-seen file stays canonical and keeps processing normally; later files with the
+  same <code>source</code> are stamped <code>duplicate: true</code> and excluded from <code>source-scan</code>/<code>build</code> until a human
+  resolves them via <code>source-dedupe</code>.</li>
+</ul>
+<p><strong>Updates</strong> overwrite the same file path (not a new filename); omitting/resetting <code>processed</code> on
+the overwrite signals &ldquo;needs reprocessing.&rdquo;</p>
+<p><strong>Processed vs. covered</strong> (distinct states, both legitimate independently):
+- <em>Processed</em> — toolkit has scanned it, not a duplicate/error.
+- <em>Covered</em> — at least one wiki note&rsquo;s <code>sources:</code> frontmatter references it (tracked as
+  <code>covered_by</code> in the manifest). Processed-but-not-covered is an expected transient state;
+  <code>source-lint</code> flags sources stuck there as a backlog signal, not an ingest-time error.
+  <code>source-lint</code> and <code>source-coverage</code> read <code>covered_by</code> straight from the manifest — coverage
+  is only as fresh as the last <code>build</code>, the same staleness tolerance <code>build_catalog</code> already
+  applies to a note&rsquo;s <code>resolved</code>/<code>proposed</code> status.</p>
+<h3 id="deltas-and-revisions-source-delta">Deltas and revisions (<code>source-delta</code>)<a class="headerlink" href="#deltas-and-revisions-source-delta" title="Permanent link">&para;</a></h3>
+<p>Git history is the storage mechanism for prior states — no separate snapshot store.</p>
+<ul>
+<li><strong>Current state</strong> = the working-tree file.</li>
+<li><strong>Last-known revision</strong> = the prior version of that path as of the last commit on <code>main</code> (not
+  current HEAD, not whatever branch is checked out) — so <code>source-delta</code> always answers &ldquo;has the
+  canonical (merged) state changed,&rdquo; matching the write gate&rsquo;s &ldquo;main is truth&rdquo; model.</li>
+<li><strong>Diff scope</strong>: only source-content fields (status, description, assignee, etc.) are compared.
+  CLI-owned bookkeeping fields (<code>processed</code>, <code>duplicate</code>, <code>source</code>) are excluded — they&rsquo;re toolkit
+  noise, not source changes.</li>
+<li><strong>First-time ingestion</strong> (no prior commit for that path on <code>main</code>): synthetic empty baseline —
+  every content field reports as new (<code>(None, current_value)</code>). <code>source-delta</code> always produces a
+  <code>Delta</code>, no special-case failure.</li>
+<li><strong>Mechanism</strong>: <code>git log -1 --format=%H main -- &lt;path&gt;</code> to find the last commit touching the path,
+  <code>git show &lt;sha&gt;:&lt;path&gt;</code> to read its content, diff only source-content fields.</li>
+<li><strong>Requires full git history</strong> (<code>fetch-depth: 0</code>); <code>doctor</code> detects and warns on a shallow clone,
+  since a shallow clone would make any but the most recent commit indistinguishable from
+  &ldquo;first-time ingestion.&rdquo;</li>
+</ul>
+<h2 id="source-manifest">Source manifest<a class="headerlink" href="#source-manifest" title="Permanent link">&para;</a></h2>
+<p>The source manifest (<code>source-manifest.jsonl</code>) is an index of all sources referenced in the wiki.
+The toolkit uses it to determine the potential scope of a change.</p>
+<h3 id="source-manifest-schema">Source manifest schema<a class="headerlink" href="#source-manifest-schema" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>source</code>: unique identifier for this document</li>
+<li><code>path</code>: relative path to the document from the repo root</li>
+<li><code>title</code>: document title, or the file name if necessary</li>
+<li><code>updated</code>: ISO-8601 date-time string when it was updated</li>
+<li><code>update_sha</code>: SHA of the Git commit last processed for this file, or the computed SHA of files
+  for mutable sources like Jira tickets</li>
+<li><code>status</code>: <code>proposed</code> or <code>resolved</code>. <code>proposed</code> means the source was ingested ahead of any code
+  change (a design doc, a ticket) and its wiki page is speculative; <code>resolved</code> means a PR has since
+  referenced this source, confirming it against an actual diff.</li>
+<li><code>covered_by</code>: relative paths of wiki notes that cite this source. Recomputed by <code>build</code> from
+  <code>docs/wiki/</code> notes&rsquo; <code>sources:</code> frontmatter (see Command surface below) — not hand-edited.</li>
+</ul>
+<h2 id="catalog">Catalog<a class="headerlink" href="#catalog" title="Permanent link">&para;</a></h2>
+<p>The catalog (<code>catalog.jsonl</code>) is an index of all the documents in the wiki (<code>wiki/</code>), with
+cross-references to the sources they reference.</p>
+<h3 id="catalog-schema">Catalog schema<a class="headerlink" href="#catalog-schema" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>path</code>: relative path to the document from the repo root</li>
+<li><code>title</code>: the document&rsquo;s title</li>
+<li><code>aliases</code>: list of alternate names for the document, from its frontmatter <code>aliases:</code> (empty list if absent)</li>
+<li><code>links</code>: list of the document&rsquo;s outbound <code>[[wikilink]]</code> targets, extracted from its body (empty list if none); feeds <code>cross-linker</code>&rsquo;s co-citation scoring signal</li>
+<li><code>sources</code>: list of <code>source</code> ids this document references</li>
+<li><code>updated</code>: ISO-8601 date-time string when it was updated</li>
+<li><code>status</code>: <code>resolved</code> when all referenced sources are <code>resolved</code>; <code>proposed</code> if any is <code>proposed</code></li>
+</ul>
+<h2 id="log">Log<a class="headerlink" href="#log" title="Permanent link">&para;</a></h2>
+<p>The log (<code>log.jsonl</code>) is an append-only chronological list of wiki events.</p>
+<h3 id="log-schema">Log schema<a class="headerlink" href="#log-schema" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>date</code>: ISO-8601 date-time string when the entry was created</li>
+<li><code>action</code>: one of <code>ingest</code>, <code>update</code>, <code>lint</code>, <code>create</code>, <code>archive</code>, <code>delete</code></li>
+<li><code>message</code>: a one-line summary of the action</li>
+<li><code>details</code>: details about the action</li>
+</ul>
+<h2 id="schema">Schema<a class="headerlink" href="#schema" title="Permanent link">&para;</a></h2>
+<p>The schema (<code>schema.md</code>) provides instructions to the AI agent on how to manage this wiki. The AI
+agent can modify it. <code>init</code> scaffolds it from this built-in template; the toolkit doesn&rsquo;t generate
+or validate its prose beyond keeping referenced fields (<code>catalog.jsonl</code>/<code>log.jsonl</code> entries) in
+sync.</p>
+<div class="highlight"><pre><span></span><code><span class="gh"># Wiki Schema</span>
+
+<span class="gu">## Domain</span>
+[What this wiki covers, e.g., &quot;Project XYZ&quot;]
+
+<span class="gu">## Conventions</span>
+<span class="k">-</span><span class="w"> </span>File names: lowercase, hyphens, no spaces (e.g., <span class="sb">`transformer-architecture.md`</span>)
+<span class="k">-</span><span class="w"> </span>Every wiki page starts with YAML frontmatter (see below)
+<span class="k">-</span><span class="w"> </span>Use <span class="sb">`[[wikilinks]]`</span> to link between pages (minimum 2 outbound links per page)
+<span class="k">-</span><span class="w"> </span>When updating a page, always bump the <span class="sb">`updated`</span> date
+<span class="k">-</span><span class="w"> </span>Every new page must be added to <span class="sb">`catalog.jsonl`</span>
+<span class="k">-</span><span class="w"> </span>Every action must be appended to <span class="sb">`log.jsonl`</span>
+<span class="k">-</span><span class="w"> </span>When updating a page with a source that has a <span class="sb">`proposed`</span> status, mark the page&#39;s status as <span class="sb">`proposed`</span>.
+<span class="k">-</span><span class="w"> </span>When all sources on a page are <span class="sb">`resolved`</span>, mark the page&#39;s status as <span class="sb">`resolved`</span>.
+<span class="k">-</span><span class="w"> </span>Mark any sections referencing a proposed source with &quot;Proposed change&quot; or &quot;Future implementation&quot; to indicate it is not yet done.
+<span class="k">-</span><span class="w"> </span>On pages that synthesize 3+ sources, append <span class="sb">`^[source_id]`</span> at the end of paragraphs whose claims come from a specific source. This lets a reader trace each claim back without re-reading the whole raw file. Optional on single-source pages where the <span class="sb">`sources:`</span> frontmatter is enough.
+<span class="k">-</span><span class="w"> </span>Mark claims with a confidence marker where relevant: no marker = extracted (a paraphrase of what a source actually says); <span class="sb">`^[inferred]`</span> suffix = an LLM-synthesized connection or implication the source doesn&#39;t state directly; <span class="sb">`^[ambiguous]`</span> suffix = sources disagree or are unclear. Default (no marker) means existing pages stay valid without changes. A claim needing both a confidence marker and a <span class="sb">`^[source_id]`</span> citation stacks them as independent suffixes, confidence marker first: <span class="sb">`^[inferred]^[design-doc-3]`</span>.
+<span class="k">-</span><span class="w"> </span>The optional <span class="sb">`confidence:`</span> frontmatter block rolls up the mix of markers on the page, one countable unit per bullet (or per paragraph on non-bulleted pages), rounded to 2 decimal places, round-half-up. <span class="sb">`ingest`</span> writes it best-effort; <span class="sb">`lint`</span> recomputes it from the page&#39;s actual markers and flags any drift — exact match after rounding, same as <span class="sb">`source_count`</span>, no tolerance band.
+<span class="k">-</span><span class="w"> </span>The optional <span class="sb">`relationships:`</span> frontmatter block adds typed, directional edges between pages, on top of plain <span class="sb">`[[wikilinks]]`</span> (which carry no semantic weight). Rules: omit the block entirely if no typed relationship is known — untagged wikilinks remain valid; if <span class="sb">`[[foo]]`</span> already appears as an inline wikilink, a <span class="sb">`relationships:`</span> entry just enriches it with a type, it is not a second link; the page declaring the entry is the <span class="ge">*source*</span>, <span class="sb">`target`</span> is the destination — only declare relationships from this page&#39;s own perspective; only add a typed entry when the source material makes the relationship&#39;s direction and type clear — when in doubt, use <span class="sb">`related_to`</span> or omit. <span class="sb">`type`</span> must be one of the fixed Relationship Types below; <span class="sb">`target`</span> must resolve to an existing page or <span class="sb">`lint`</span> flags it.
+<span class="k">-</span><span class="w"> </span>The optional <span class="sb">`aliases:`</span> frontmatter field lists alternate names a page is also known by (e.g. an acronym alongside a spelled-out title). It exists to widen <span class="sb">`cross-linker`</span>&#39;s literal-match pre-filter beyond the page&#39;s canonical <span class="sb">`title:`</span> — nothing else reads it. Omit when a page has no alternate names.
+
+<span class="gu">## Wiki Document Frontmatter</span>
+<span class="sb">  ```yaml</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">---</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">title</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Page Title</span>
+<span class="w">  </span><span class="nt">created</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">YYYY-MM-DD</span>
+<span class="w">  </span><span class="nt">updated</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">YYYY-MM-DD</span>
+<span class="w">  </span><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">from taxonomy below</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">sources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">source_id</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">source_count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">  </span><span class="c1"># must equal len(sources); checked by `lint`</span>
+<span class="w">  </span><span class="nt">status</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">resolved</span><span class="w">  </span><span class="c1"># or `proposed` for speculative pages ingested ahead of any code change</span>
+<span class="w">  </span><span class="nt">confidence</span><span class="p">:</span><span class="w">  </span><span class="c1"># optional; best-effort fractions written by `ingest`, recomputed and drift-checked by `lint` (see Conventions)</span>
+<span class="w">    </span><span class="nt">extracted</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.72</span>
+<span class="w">    </span><span class="nt">inferred</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.25</span>
+<span class="w">    </span><span class="nt">ambiguous</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.03</span>
+<span class="w">  </span><span class="nt">relationships</span><span class="p">:</span><span class="w">  </span><span class="c1"># optional; typed, directional edges to other pages</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;[[Transformer</span><span class="nv"> </span><span class="s">Architecture]]&quot;</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">extends</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;[[LSTM]]&quot;</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">contradicts</span>
+<span class="w">  </span><span class="nt">aliases</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">alt name</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">another alt name</span><span class="p p-Indicator">]</span><span class="w">  </span><span class="c1"># optional; alternate names this page is also known by</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">---</span>
+<span class="sb">  ```</span>
+
+<span class="gu">## Tag Taxonomy</span>
+
+Rule: every tag on a page must appear in this taxonomy. If a new tag is needed, add it here first, then use it. This prevents tag sprawl.
+
+<span class="k">-</span><span class="w"> </span>&lt;example tag&gt;
+<span class="k">-</span><span class="w"> </span>&lt;another tag&gt;
+
+<span class="gu">## Relationship Types</span>
+
+Fixed set — unlike Tag Taxonomy, this list is not per-wiki editable; the same 7 types apply everywhere so edges stay comparable across wikis.
+
+| Type           | Meaning                                                     | Example                                       |
+|----------------|--------------------------------------------------------------|------------------------------------------------|
+| <span class="sb">`extends`</span>      | This page builds on or generalises the target               | GPT extends Transformer Architecture          |
+| <span class="sb">`implements`</span>   | This page is a concrete realisation of the target concept   | BERT implements Masked Language Modelling     |
+| <span class="sb">`contradicts`</span>  | This page&#39;s claims conflict with or refute the target       | Evidence A contradicts Evidence B             |
+| <span class="sb">`derived_from`</span> | This page is based on or adapted from the target            | Fine-tuning is derived from Transfer Learning |
+| <span class="sb">`uses`</span>         | This page depends on or relies on the target                | RAG uses Vector Databases                     |
+| <span class="sb">`replaces`</span>     | This page supersedes or deprecates the target                | GPT-4 replaces GPT-3                          |
+| <span class="sb">`related_to`</span>   | Catch-all: related but no stronger directional type applies | Concept A is related to Concept B             |
+</code></pre></div>
+<h2 id="write-gate">Write gate<a class="headerlink" href="#write-gate" title="Permanent link">&para;</a></h2>
+<p>Every wiki write goes through a PR — no exceptions, no direct commits, for either LLM-authored
+content or deterministic tooling output (catalog, manifest, log). One rule, no second write path
+to audit. Today, <code>propose-pr</code> stops at a local branch + commit — no real GitHub PR yet (see &ldquo;Not
+yet built&rdquo; under Command surface).</p>
+<h2 id="command-surface">Command surface<a class="headerlink" href="#command-surface" title="Permanent link">&para;</a></h2>
+<p>All commands are keyed off <code>source</code> (frontmatter field, formerly called <code>source_id</code>/<code>stable_id</code> in
+earlier drafts — see <a href="../CONTEXT/">CONTEXT.md</a>). No adapter arguments yet.</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Contract</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>init</code></td>
+<td>Scaffold a new wiki: create <code>docs/{sources,wiki}/</code>, empty <code>catalog.jsonl</code>/<code>log.jsonl</code>/<code>source-manifest.jsonl</code>, <code>schema.md</code> from the built-in template, and a local <code>docs/.agents/skills/</code> copy of the skills plugin</td>
+</tr>
+<tr>
+<td><code>doctor</code></td>
+<td>Non-mutating health check: <code>docs/</code> folder structure, Python version, catalog/manifest sanity, note counts, shallow-clone warning, resolved configuration and its source, local skills-copy version drift</td>
+</tr>
+<tr>
+<td><code>build</code></td>
+<td>Generate <code>docs/catalog.jsonl</code> from <code>docs/wiki/</code> notes, including each page&rsquo;s <code>aliases:</code> frontmatter and outbound <code>[[wikilink]]</code> targets as <code>links</code> (both empty lists if absent/none) (no <code>index.md</code>/per-folder index generation). Also recomputes <code>covered_by</code> in <code>docs/source-manifest.jsonl</code> by inverting each note&rsquo;s <code>sources:</code> frontmatter into per-source citing-page lists, full overwrite each run (no incremental state). A <code>sources:</code> id absent from the manifest is skipped here — <code>lint</code> already flags it as an unresolved source reference</td>
+</tr>
+<tr>
+<td><code>lint</code></td>
+<td>Validate wiki note frontmatter, allowed tags, source links, <code>source_count</code>; flags a <code>relationships:</code> entry whose <code>target</code> doesn&rsquo;t resolve to an existing page, and drift between a page&rsquo;s <code>confidence:</code> block and its recomputed marker counts. Flagged, not rejected — the write gate&rsquo;s PR review is the enforcement point</td>
+</tr>
+<tr>
+<td><code>source-scan [--update] [--accept-covered] [--source &lt;id&gt;]</code></td>
+<td>Walk <code>docs/sources/</code>; classify each file <code>new</code> / <code>update</code> / <code>duplicate</code> (absorbs the old <code>source-match</code> and base-spec <code>source-delta</code> meaning — &ldquo;not in the manifest&rdquo; is just &ldquo;unprocessed&rdquo;). Classification is always full (cheap, read-only, needed for accurate <code>needs_attention</code>/backlog reporting). With <code>--update</code>, write/stamp results into <code>docs/source-manifest.jsonl</code> and stage the touched files (see Write gate); <code>--source &lt;id&gt;</code> narrows that write/stage step to a single classified source, leaving every other classified source unwritten until a later unscoped call (e.g. <code>maintain</code>&rsquo;s sweep) catches it up. Skips version-controlled source types (no Raw file to scan)</td>
+</tr>
+<tr>
+<td><code>source-lint</code></td>
+<td>Validate source frontmatter and coverage state (flags <code>processed</code> sources with no <code>covered_by</code> entries)</td>
+</tr>
+<tr>
+<td><code>source-delta &lt;source&gt;</code></td>
+<td>Diff a known source&rsquo;s current content against its last-known revision; print <code>Delta</code> (<code>new_comment_ids</code>, <code>changed_fields</code>)</td>
+</tr>
+<tr>
+<td><code>source-coverage</code></td>
+<td>Show which sources in <code>docs/sources/</code> are covered by wiki notes</td>
+</tr>
+<tr>
+<td><code>source-snapshot &lt;source&gt; --units comments\|fields</code></td>
+<td>Write the new Raw snapshot unit(s) for the given mutation type</td>
+</tr>
+<tr>
+<td><code>source-dedupe</code></td>
+<td>List <code>duplicate: true</code> files with rule-based (mtime/content-similarity) keep/discard suggestions; human confirms/executes — not auto-resolved</td>
+</tr>
+<tr>
+<td><code>search-catalog --query "text"</code></td>
+<td>Search compiled wiki notes through the catalog</td>
+</tr>
+<tr>
+<td><code>cross-link-candidates &lt;page-paths...&gt;</code></td>
+<td>Literal, case-insensitive title/alias match of <code>page-paths</code>&rsquo; bodies against every other <code>catalog.jsonl</code> entry (skipping code blocks, frontmatter, and mentions already wrapped in <code>[[...]]</code>); emits one JSONL candidate per line (<code>page</code>, <code>target</code>, <code>mention_text</code>, <code>match_type</code>). Zero LLM judgment — scoring and relationship-type inference are <code>cross-linker</code>&rsquo;s job</td>
+</tr>
+<tr>
+<td><code>log --title "..." --details "..."</code></td>
+<td>Append entry to <code>docs/log.jsonl</code></td>
+</tr>
+<tr>
+<td><code>batch-plan &lt;vault&gt; &lt;source-dir&gt;</code></td>
+<td>Split the files under <code>source-dir</code> into batches (100,000 bytes or 20 files per batch, whichever comes first) for parallel wiki-ingest subagent dispatch; prints <code>{batches: [{id, files, total_bytes}], stats: {total_files, total_bytes, batch_count}}</code></td>
+</tr>
+<tr>
+<td><code>start-branch --frame routine\|needs-review</code></td>
+<td>Open a session&rsquo;s local branch up front, before any pages are committed — used by a batch coordinator so streaming <code>commit-pages</code> calls and the closing <code>propose-pr</code> call land on the same branch</td>
+</tr>
+<tr>
+<td><code>commit-pages --pages &lt;list&gt; --message &lt;str&gt;</code></td>
+<td>Commit exactly what&rsquo;s currently staged onto the currently checked-out branch — <code>pages</code> is informational (goes into the commit message), not a git pathspec filter. Every command that mutates a <code>docs_dir</code> file (<code>build</code>, <code>cross-linker</code>, <code>log</code>, <code>source-scan --update</code>) stages its own output as it writes, so by the time <code>commit-pages</code> runs, the git index already holds <code>pages</code> plus whatever else that source&rsquo;s producer commands touched. A batch coordinator calls this once per source, as soon as that source&rsquo;s subagent reports back, rather than waiting for the whole batch to finish</td>
+</tr>
+<tr>
+<td><code>propose-pr --pages &lt;list&gt; --frame routine\|needs-review</code></td>
+<td>Branch + commit locally, framed per mutation type that triggered it (no real GitHub PR yet). Same self-staging contract as <code>commit-pages</code>: commits exactly what&rsquo;s staged, <code>pages</code> informational only. Because producer commands self-stage at write time rather than <code>propose-pr</code> scanning <code>docs_dir</code> for dirty files afterward, only what the session&rsquo;s own commands actually touched ever lands in the commit. If the current branch was already opened by <code>start-branch</code>, reuses it instead of creating a new one, and tolerates pages already committed via <code>commit-pages</code></td>
+</tr>
+<tr>
+<td><code>config show</code></td>
+<td>Read-only: print the resolved configuration and which source (default/env/<code>pyproject.toml</code>/flag) each value came from</td>
+</tr>
+</tbody>
+</table>
+<h2 id="not-yet-built-adapters">Not yet built: adapters<a class="headerlink" href="#not-yet-built-adapters" title="Permanent link">&para;</a></h2>
+<p>Each source type (GitHub, Jira, &hellip;) would implement:</p>
+<div class="highlight"><pre><span></span><code>kind(payload) -&gt; &quot;version_controlled&quot; | &quot;snapshot&quot;
+
+stable_id(payload) -&gt; str | None
+  # None means: reject, flag for manual filing. Never guess.
+
+locator(payload) -&gt; {repo, path, commit_sha}
+  # version_controlled only
+
+fetch(stable_id) -&gt; Snapshot
+  # snapshot only
+  # Snapshot = {
+  #   stable_id: str,
+  #   fields: {name: value, ...},
+  #   comments: [{comment_id, author, body, created}, ...],
+  # }
+
+diff(old_snapshot, new_snapshot) -&gt; Delta
+  # Delta = {
+  #   new_comment_ids: [comment_id, ...],
+  #   changed_fields: {name: (old_value, new_value), ...},
+  # }
+</code></pre></div>
+<h3 id="planned-v1-adapters">Planned v1 adapters<a class="headerlink" href="#planned-v1-adapters" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>GitHub</strong> — issues, PRs, Renovate PRs. Already the trigger mechanism per <code>idea.md</code>. Dependabot
+  PRs are out of scope for the pilot (see <code>idea.md</code> Solution section).</li>
+<li><strong>Jira</strong> — the concrete comment-chain case that motivated this spec.</li>
+<li><strong>Confluence</strong> — design docs. <code>stable_id</code> is the Confluence page ID. Ingesting a design doc ahead
+  of any PR produces a <code>status: proposed</code> wiki page (see &ldquo;Write gate&rdquo; and the source-manifest
+  schema above); a later PR that references the same page ID resolves it via the normal
+  source-linkage flow, flipping <code>status</code> to <code>resolved</code>.</li>
+</ul>
+<p>Everything else named in <code>idea.md</code>&rsquo;s &ldquo;Possible sources&rdquo; list (Slack, Teams, Azure DevOps, Linear)
+implements this interface later. No stub code is required now — the interface above is the
+contract a future adapter must satisfy.</p>
+<h4 id="github-adapter-payload-shape">GitHub adapter payload shape<a class="headerlink" href="#github-adapter-payload-shape" title="Permanent link">&para;</a></h4>
+<p>Files named by event; <code>pull_request</code> events materialize as:</p>
+<div class="highlight"><pre><span></span><code><span class="gh"># {title}</span>
+
+{body}
+</code></pre></div>
+<p>References: <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads#pull_request"><code>pull_request</code></a>, <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads#pull_request_review"><code>pull_request_review</code></a>, <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads#pull_request_review_comment"><code>pull_request_review_comment</code></a>, <a href="https://docs.github.com/en/webhooks/webhook-events-and-payloads#pull_request_review_thread"><code>pull_request_review_thread</code></a>.</p>
+<h4 id="jira-adapter-payload-shape">Jira adapter payload shape<a class="headerlink" href="#jira-adapter-payload-shape" title="Permanent link">&para;</a></h4>
+<p>An issue and its properties belong to a single snapshot; each comment is its own snapshot (<a href="https://developer.atlassian.com/cloud/jira/platform/webhooks/">webhook reference</a>).</p>
+<p><strong>Issues</strong> — file named <code>{issue-key}.md</code>. Webhooks: <code>jira:issue_created</code>, <code>jira:issue_updated</code>, <code>jira:issue_deleted</code>; issue-property webhooks <code>issue_property_set</code>, <code>issue_property_deleted</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="gh"># Main order flow broken</span>
+
+id: 10002
+key: ED-1
+url: https://your-domain.atlassian.net/rest/api/3/issue/10002
+assignee: Pat Smith
+created: 2026-07-10T08:00:00-05:00
+updated: 2026-07-20T16:00:00-05:00
+
+<span class="gu">## Description</span>
+Fix the order flow
+
+<span class="gu">## Acceptance criteria</span>
+...
+</code></pre></div>
+<p><strong>Issue comments</strong> — file named <code>{issue-key}-comment-{comment-id}.md</code>. Webhooks: <code>comment_created</code>, <code>comment_updated</code>, <code>comment_deleted</code>.</p>
+<div class="highlight"><pre><span></span><code>id: 10000
+url: https://your-domain.atlassian.net/rest/api/3/issue/10010/comment/10000
+author: Pat Smith
+created: 2026-07-20T16:00:00-05:00
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+</code></pre></div>
+<h2 id="not-yet-built-adapter-era-skills">Not yet built: adapter-era skills<a class="headerlink" href="#not-yet-built-adapter-era-skills" title="Permanent link">&para;</a></h2>
+<p>The shipped skills (<code>skills/</code> at the repo root, an installable Claude Code plugin: <code>ingest</code>,
+<code>query</code>, <code>lint</code>, <code>source-update</code>, <code>maintain</code>) target today&rsquo;s adapter-less, git-history-backed CLI —
+see <a href="../implementation-history/">implementation-history.md</a> and <a href="../adr/">ADR-0008 through ADR-0010</a>
+for what was built and why it diverges from <code>source-update</code>&rsquo;s design below, which assumes adapters
+exist:</p>
+<p><strong>source-update</strong> (adapter-era design, not what shipped) — separate from <code>ingest</code> because the
+judgment calls differ: matching identity, computing a delta, and deciding whether that delta is
+safe to fold in automatically. Triggered by a source-system event (Jira webhook, GitHub event) or
+manual invocation:</p>
+<ol>
+<li>Extract <code>stable_id</code> via the adapter. If <code>None</code>, stop — flag for manual filing, do not proceed.</li>
+<li>Look up the Raw source manifest for an existing entry with that <code>stable_id</code>.<ul>
+<li>Not found → hand off to <code>ingest</code> (this is a first-time source).</li>
+<li>Found → <code>fetch</code> current state, <code>diff</code> against last-known snapshot.</li>
+</ul>
+</li>
+<li>For <code>new_comment_ids</code> in the delta: write the new comment snapshot unit(s), invoke <code>ingest</code>
+   scoped to just the new material, open a PR the same way a routine ingest would (see &ldquo;Write
+   gate&rdquo;).</li>
+<li>For <code>changed_fields</code> in the delta: write the new field-state snapshot version, then open a PR
+   same as step 3 — but the PR description must explicitly flag which prior wiki claims may now be
+   stale (&ldquo;underlying ticket status changed from X to Y — verify affected pages still hold&rdquo;),
+   rather than presenting it as a routine update. The distinction between comments and field edits
+   is in how confidently the PR is framed, not whether a PR exists — see &ldquo;Write gate.&rdquo;</li>
+<li>Append an entry to <code>log.md</code> citing the source and summarizing the delta.</li>
+</ol>
+<p>This means the &ldquo;auto re-ingest vs. flag for review&rdquo; split (per mutation type) was never meant to be
+a split between &ldquo;PR&rdquo; and &ldquo;no PR&rdquo; — it&rsquo;s a split in how the resulting PR is framed:</p>
+<ul>
+<li>Comment-driven updates: PR reads like a normal ingest PR.</li>
+<li>Field-edit-driven updates: PR is explicitly labeled/described as needing extra scrutiny, since
+  the underlying source may have invalidated something already written, not just added to it.</li>
+</ul>
+<h2 id="testing-strategy">Testing strategy<a class="headerlink" href="#testing-strategy" title="Permanent link">&para;</a></h2>
+<p>Two required layers, following from the thin-CLI architectural constraint:</p>
+<ul>
+<li><strong>Unit tests</strong> on internal functions: source classification (new/update/duplicate), delta
+  computation, frontmatter diffing, etc. — where real coverage lives.</li>
+<li><strong>CLI-invocation tests</strong> via <code>click.testing.CliRunner</code>: assert each command parses args correctly,
+  calls the right internal function, and produces the right exit code/output. No re-testing of
+  business logic already unit-tested.</li>
+<li>No golden-file byte-diff comparisons against <code>catalog.jsonl</code>/<code>log.jsonl</code> — structured assertions
+  on parsed output instead.</li>
+</ul>
+<p><strong><code>source-delta</code> fixture uses real git</strong>: a pytest fixture inits a throwaway repo in <code>tmp_path</code>,
+commits an initial source-file version (&ldquo;last known&rdquo;), then mutates the file on disk uncommitted
+(&ldquo;current&rdquo;). Exercises real <code>git log</code>/<code>git show</code>, including the no-prior-commit and shallow-clone
+edge cases.</p>
+<p><strong>Fixture strategy</strong>: per-command isolated fixtures via a shared factory helper (e.g.
+<code>make_source(tmp_path, source, status=..., ...)</code>) — not one shared &ldquo;golden wiki&rdquo; repo.</p>
+<p><strong>Definition of Done</strong>:
+- Every command above has (a) unit test coverage for its internal logic, (b) a <code>CliRunner</code> adapter
+  test verifying delegation/exit codes/output.
+- <code>mypy</code>, <code>ruff</code>, and pre-commit all pass clean.
+- <code>doctor</code> run against a real fixture repo state passes.</p>
+
+
+
+
+
+
+
+
+  <aside class="md-source-file">
+    
+    
+    
+      
+  
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Contributors">
+      
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4a4 4 0 0 1 4 4 4 4 0 0 1-4 4 4 4 0 0 1-4-4 4 4 0 0 1 4-4m0 10c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4"/></svg>
+      
+    </span>
+    <nav>
+      Corey Oordt
+    </nav>
+  </span>
+
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.path", "navigation.indexes", "navigation.top", "content.action.edit", "content.action.view", "content.code.annotate", "content.tabs.link", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+    
+  </body>
+</html>
