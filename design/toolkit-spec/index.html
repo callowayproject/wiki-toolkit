@@ -2278,9 +2278,7 @@ out explicitly under <strong>&ldquo;Not yet built&rdquo;</strong> headings. See 
 <h2 id="stack">Stack<a class="headerlink" href="#stack" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>CLI</strong>: <code>click</code></li>
-<li><strong>Frontmatter parsing</strong>: <code>python-frontmatter</code></li>
-<li><strong>Kept from scaffold</strong>: <code>orjson</code>, <code>pydantic-settings</code></li>
-<li><strong>Stripped as template cruft</strong>: <code>fastapi[standard]</code>, all <code>opentelemetry-*</code> packages, <code>structlog</code></li>
+<li><strong>Other dependencies</strong>: <code>orjson</code>, <code>pydantic-settings</code>, <code>pyyaml</code></li>
 </ul>
 <p><strong>Architecture constraint</strong>: the CLI is a thin adapter (arg parsing, delegation, output formatting).
 All business logic lives in internal library functions the CLI calls — the CLI has no logic worth
