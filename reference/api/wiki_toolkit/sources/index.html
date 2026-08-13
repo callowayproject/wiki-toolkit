@@ -3860,12 +3860,13 @@
 
 
 <a href="#wiki_toolkit.sources.SourceManifest.save" class="headerlink" title="Permanent link">&para;</a></h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">save</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">save</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">stage_root</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Write current entries back to <code>source-manifest.jsonl</code>.</p>
+<p>If <code>stage_root</code> is given, best-effort git-stages the manifest right after writing it.</p>
 
 
     </div>
@@ -4141,7 +4142,8 @@
       dataclass
    (wiki_toolkit.sources.SourceScanResult)" href="#wiki_toolkit.sources.SourceScanResult">SourceScanResult</a></span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">source_ids</span><span class="p">:</span> <span class="n"><span title="set">set</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">source_ids</span><span class="p">:</span> <span class="n"><span title="set">set</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">stage_root</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            ApplySourceScanResult
 
 
@@ -4156,7 +4158,10 @@
 <p>Duplicate files are stamped <code>duplicate: true</code> and get no manifest entry.
 Unaccepted (covered, not <code>--accept-covered</code>) updates are left untouched.
 <code>source_ids</code>, if given, narrows the write/stamp step to only those source ids —
-every other classified entry is skipped, unwritten until a later unscoped call.</p>
+every other classified entry is skipped, unwritten until a later unscoped call.
+If <code>stage_root</code> is given, every file this writes is best-effort git-staged — one
+<code>git add</code> per touched file rather than a single batched call, trading a few extra
+subprocess spawns for staging that can&rsquo;t drift out of sync with the write.</p>
 
 
     </div>
@@ -4363,7 +4368,7 @@ is reported as a violation instead of raising.</p>
 
 <a href="#wiki_toolkit.sources.write_source_snapshot" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">write_source_snapshot</span><span class="p">(</span>
-    <span class="n">docs_dir</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="n"><span title="str">str</span></span>
+    <span class="n">docs_dir</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">stage_root</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            SnapshotResult
 
 

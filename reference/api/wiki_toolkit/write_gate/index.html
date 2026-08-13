@@ -1880,6 +1880,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#wiki_toolkit.write_gate.stage_best_effort" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;stage_best_effort
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#wiki_toolkit.write_gate.stage_paths" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2204,10 +2215,18 @@
               </td>
             </tr>
             <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            stage_best_effort (wiki_toolkit.write_gate.stage_best_effort)" href="#wiki_toolkit.write_gate.stage_best_effort">stage_best_effort</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Best-effort <code>stage_paths</code>: silently no-ops if <code>root</code> isn&rsquo;t a git repo (e.g. <code>init</code> run standalone).</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
               <td><code><a class="autorefs autorefs-internal" title="            stage_paths (wiki_toolkit.write_gate.stage_paths)" href="#wiki_toolkit.write_gate.stage_paths">stage_paths</a></code></td>
               <td class="doc-function-details">
                 <div class="doc-md-description">
-                  <p>Git-add <code>paths</code> into the index, for a producer command to self-stage its own output.</p>
+                  <p>Git-add <code>paths</code> into the index, for a writer to self-stage its own output.</p>
                 </div>
               </td>
             </tr>
@@ -2309,9 +2328,9 @@
         <p>Add <code>pages</code> and commit exactly what&rsquo;s currently staged. Returns the commit sha.</p>
 <p><code>pages</code> is added to the index but is no longer a <code>git commit</code> pathspec filter — the
 commit picks up anything else already staged too (e.g. <code>catalog.jsonl</code>/<code>log.jsonl</code>/
-<code>source-manifest.jsonl</code> self-staged by <code>build</code>/<code>log</code>/<code>source-scan --update</code> earlier
-in the same session), so the state those commands regenerated rides along with the
-pages that triggered them.</p>
+<code>source-manifest.jsonl</code>, self-staged by their writers earlier in the same session,
+see <code>stage_best_effort</code>), so the state those commands regenerated rides along with
+the pages that triggered them.</p>
 <p>Used for a batch coordinator&rsquo;s streaming per-source commits — each one lands
 immediately on the branch opened by <code>start_wiki_branch</code>, without waiting for the
 rest of the session&rsquo;s batches to finish.</p>
@@ -2361,6 +2380,29 @@ commits whatever else is still staged, if anything.</p>
 <div class="doc doc-object doc-function">
 
 
+<h3 id="wiki_toolkit.write_gate.stage_best_effort" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">stage_best_effort</span>
+
+
+<a href="#wiki_toolkit.write_gate.stage_best_effort" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">stage_best_effort</span><span class="p">(</span><span class="n">root</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n">paths</span><span class="p">:</span> <span class="n"><span title="list">list</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Best-effort <code>stage_paths</code>: silently no-ops if <code>root</code> isn&rsquo;t a git repo (e.g. <code>init</code> run standalone).</p>
+<p>Writers call this right after writing their own output, so state files ride along in
+the next commit without a separate call that could fall out of sync (see docs/design/
+toolkit-spec.md&rsquo;s &ldquo;Write gate&rdquo;).</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h3 id="wiki_toolkit.write_gate.stage_paths" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">stage_paths</span>
 
@@ -2371,10 +2413,11 @@ commits whatever else is still staged, if anything.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Git-add <code>paths</code> into the index, for a producer command to self-stage its own output.</p>
-<p>Called by <code>build</code>, <code>log</code>, and <code>source-scan --update</code> right after each writes its
-output file(s), so the state files they regenerate ride along in the same commit as
-the pages that triggered them (see docs/design/toolkit-spec.md&rsquo;s &ldquo;Write gate&rdquo;).</p>
+        <p>Git-add <code>paths</code> into the index, for a writer to self-stage its own output.</p>
+<p>Called by <code>stage_best_effort</code> right after a writer (<code>write_jsonl</code>, <code>append_log_entry</code>,
+<code>_stamp_frontmatter</code>, <code>SourceManifest.save</code>) writes its output file(s), so the state
+files a producer command regenerates ride along in the same commit as the pages that
+triggered them (see docs/design/toolkit-spec.md&rsquo;s &ldquo;Write gate&rdquo;).</p>
 
 
     </div>
