@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.26.1 (2026-08-13)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.26.0...0.26.1)
+
+### Other
+
+- Fuse write-and-stage into the writers themselves. [9d818f3](https://github.com/callowayproject/wiki-toolkit/commit/9d818f38ec32176284728a2d37e5118fd2c13222)
+
+  Producer commands (build, source-scan, log, source-snapshot) each wrote
+  output then separately called a staging helper by hand — a convention, not
+  an interface, and source-snapshot had already been added without it,
+  silently reintroducing the bug the write gate exists to prevent. Push
+  staging into write_jsonl, append_log_entry, and \_stamp_frontmatter so a
+  write can't ship unstaged again.
+
 ## 0.26.0 (2026-08-13)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.25.1...0.26.0)
