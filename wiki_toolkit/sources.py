@@ -128,6 +128,41 @@ def _write_manifest(manifest_path: Path, manifest: dict[str, dict]) -> None:
     write_jsonl(manifest_path, [manifest[key] for key in manifest])
 
 
+class SourceManifest:
+    """A `source`-keyed view over `source-manifest.jsonl`, loaded once and saved explicitly."""
+
+    def __init__(self, path: Path) -> None:
+        self._path = path
+        self._entries: dict[str, dict] = {}
+        if path.is_file():
+            for line in path.read_text(encoding="utf-8").splitlines():
+                if not line.strip():
+                    continue
+                entry = orjson.loads(line)
+                self._entries[entry["source"]] = entry
+
+    def __getitem__(self, source: str) -> dict:
+        return self._entries[source]
+
+    def __setitem__(self, source: str, entry: dict) -> None:
+        assert entry.get("source") == source, f"entry['source'] {entry.get('source')!r} must match key {source!r}"
+        self._entries[source] = entry
+
+    def __contains__(self, source: str) -> bool:
+        return source in self._entries
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._entries)
+
+    def get(self, source: str, default: dict | None = None) -> dict | None:
+        """Return the entry for `source`, or `default` if it's not in the manifest."""
+        return self._entries.get(source, default)
+
+    def save(self) -> None:
+        """Write current entries back to `source-manifest.jsonl`."""
+        write_jsonl(self._path, [self._entries[key] for key in self._entries])
+
+
 def _resolve_source_entry(manifest: dict[str, dict], source: str) -> dict:
     """Return `manifest[source]`, or raise `ValueError` if the source is unknown."""
     entry = manifest.get(source)
