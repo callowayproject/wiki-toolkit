@@ -1,10 +1,15 @@
 """Mechanically grade the 6 ingest-skill eval runs against evals.json expectations."""
 
 import json
+import re
 import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 # ruff: file-ignore[start-process-with-partial-path, subprocess-without-shell-equals-true, line-too-long]
 
@@ -12,29 +17,39 @@ ROOT = Path(__file__).parent
 EVALS_PATH = ROOT.joinpath("evals.json")
 EVALS = json.loads(EVALS_PATH.read_text(encoding="utf-8"))
 
+# {eval_name: {key: text}}, built once from evals.json — the single source of
+# truth for what each check means. Graders never retype expectation wording.
+_EXPECTATION_TEXT = {eval_["name"]: {e["key"]: e["text"] for e in eval_["expectations"]} for eval_ in EVALS["evals"]}
+
+
+def expect(eval_name: str, key: str) -> str:
+    """Look up an expectation's label text from evals.json by (eval_name, key)."""
+    return _EXPECTATION_TEXT[eval_name][key]
+
 
 @dataclass
 class Result:
-    """
-    Represents the result of an evaluation.
-
-    This class is a data structure for storing the outcome of a specific evaluation.
-    It includes the evaluation's name, the variant being tested, whether the evaluation
-    was successful, and any supporting evidence. It can be used to log, track, or process
-    evaluation results within a larger application.
-
-    Attributes:
-        eval_name: The name of the evaluation.
-        variant: The specific variant or configuration of the evaluation.
-        passed: Indicates whether the evaluation was successful (True) or not (False).
-        evidence: Supporting data or reasoning that explains or justifies the
-            evaluation result.
-    """
+    """One graded expectation."""
 
     eval_name: str
-    variant: str
+    key: str
+    text: str
     passed: bool
     evidence: str
+
+
+@dataclass
+class FixtureState:
+    """Everything a grader might read from a graded fixture, loaded once."""
+
+    path: Path
+    manifest: dict
+    catalog: list
+    log: list
+    wiki_files: dict
+    lint_ok: bool
+    lint_out: str
+    commits: int
 
 
 def read_jsonl(path: Path) -> list[dict]:
@@ -70,40 +85,60 @@ def lint_clean(fixture_path: Path) -> tuple[bool, str]:
 
 def count_wikilinks(text: str) -> int:
     """Count the number of wikilinks in the text."""
-    import re
-
     return len(re.findall(r"\[\[[^\]]+\]\]", text))
+
+
+def load_fixture_state(fixture_path: Path) -> FixtureState:
+    """Load everything a grader needs from a graded fixture, in one pass."""
+    lint_ok, lint_out = lint_clean(fixture_path)
+    return FixtureState(
+        path=fixture_path,
+        manifest={e["source"]: e for e in read_jsonl(fixture_path / "docs" / "source-manifest.jsonl")},
+        catalog=read_jsonl(fixture_path / "docs" / "catalog.jsonl"),
+        log=read_jsonl(fixture_path / "docs" / "log.jsonl"),
+        wiki_files={p.name: p.read_text() for p in (fixture_path / "docs" / "wiki").glob("*.md")},
+        lint_ok=lint_ok,
+        lint_out=lint_out,
+        commits=commit_count(fixture_path),
+    )
+
+
+def check_lint_clean(state: FixtureState, eval_name: str) -> Result:
+    """Shared check: `wiki-toolkit lint` reports no violations."""
+    return Result(eval_name, "lint-clean", expect(eval_name, "lint-clean"), state.lint_ok, state.lint_out[:300])
+
+
+def check_single_commit(state: FixtureState, eval_name: str, key: str = "single-commit") -> Result:
+    """Shared check: exactly one git commit was created for the session."""
+    return Result(eval_name, key, expect(eval_name, key), state.commits == 1, f"{state.commits} commits on branch")
 
 
 def grade_single_new_source(fixture_path: Path) -> list[Result]:
     """Grade a single new source directory."""
-    manifest = {e["source"]: e for e in read_jsonl(fixture_path / "docs" / "source-manifest.jsonl")}
-    catalog = read_jsonl(fixture_path / "docs" / "catalog.jsonl")
-    log = read_jsonl(fixture_path / "docs" / "log.jsonl")
-    wiki_files = {p.name: p.read_text() for p in (fixture_path / "docs" / "wiki").glob("*.md")}
-    lint_ok, lint_out = lint_clean(fixture_path)
-    commits = commit_count(fixture_path)
-
+    state = load_fixture_state(fixture_path)
+    eval_name = "single-new-source"
     results = []
 
     results.append(
         Result(
-            "single-new-source",
-            "docs/source-manifest.jsonl contains an entry for jira:INFRA-142",
-            "jira:INFRA-142" in manifest,
-            str(manifest.get("jira:INFRA-142", "")),
+            eval_name,
+            "manifest-entry",
+            expect(eval_name, "manifest-entry"),
+            "jira:INFRA-142" in state.manifest,
+            str(state.manifest.get("jira:INFRA-142", "")),
         )
     )
 
     page_with_source = None
-    for name, content in wiki_files.items():
+    for name, content in state.wiki_files.items():
         if "jira:INFRA-142" in content:
             page_with_source = (name, content)
             break
     results.append(
         Result(
-            "single-new-source",
-            "A wiki page's `sources:` frontmatter lists jira:INFRA-142",
+            eval_name,
+            "page-cites-source",
+            expect(eval_name, "page-cites-source"),
             page_with_source is not None,
             page_with_source[0] if page_with_source else "not found",
         )
@@ -113,83 +148,71 @@ def grade_single_new_source(fixture_path: Path) -> list[Result]:
         n_links = count_wikilinks(page_with_source[1])
         results.append(
             Result(
-                "single-new-source",
-                "That page has at least 2 outbound [[wikilinks]]",
+                eval_name,
+                "wikilink-count",
+                expect(eval_name, "wikilink-count"),
                 n_links >= 2,
                 f"{n_links} links found",
             )
         )
     else:
         results.append(
-            Result("single-new-source", "That page has at least 2 outbound [[wikilinks]]", False, "no page found")
+            Result(eval_name, "wikilink-count", expect(eval_name, "wikilink-count"), False, "no page found")
         )
 
-    cat_has_it = any("INFRA-142" in json.dumps(c) or "redis" in c.get("path", "") for c in catalog)
+    cat_has_it = any("INFRA-142" in json.dumps(c) or "redis" in c.get("path", "") for c in state.catalog)
     results.append(
         Result(
-            "single-new-source",
-            "docs/catalog.jsonl reflects the new/updated page",
+            eval_name,
+            "catalog-updated",
+            expect(eval_name, "catalog-updated"),
             cat_has_it,
-            f"catalog entries: {len(catalog)}",
+            f"catalog entries: {len(state.catalog)}",
         )
     )
 
-    log_has_it = any("INFRA-142" in json.dumps(entry) and entry.get("action") == "ingest" for entry in log)
+    log_has_it = any("INFRA-142" in json.dumps(entry) and entry.get("action") == "ingest" for entry in state.log)
     results.append(
         Result(
-            "single-new-source",
-            "docs/log.jsonl has an `ingest` action entry mentioning INFRA-142",
+            eval_name,
+            "log-entry",
+            expect(eval_name, "log-entry"),
             log_has_it,
-            f"log entries: {len(log)}",
+            f"log entries: {len(state.log)}",
         )
     )
 
-    results.append(
-        Result(
-            "single-new-source",
-            "Exactly one git commit was created for the session",
-            commits == 1,
-            f"{commits} commits on branch",
-        )
-    )
-    results.append(
-        Result(
-            "single-new-source",
-            "`wiki-toolkit lint` reports no violations on the final state",
-            lint_ok,
-            lint_out[:300],
-        )
-    )
+    results.append(check_single_commit(state, eval_name))
+    results.append(check_lint_clean(state, eval_name))
 
     untouched = True
     unt_ev = []
-
-    # Check the 3 unrelated sources' manifest rows are unchanged (updated timestamp still 2026-06-01)
     for src in ["jira:INFRA-100", "jira:AUTH-200", "design:infra-overview-v1"]:
-        e = manifest.get(src, {})
+        e = state.manifest.get(src, {})
         stamp_unchanged = e.get("updated", "").startswith("2026-06-01")
         unt_ev.append(f"{src}: updated={e.get('updated', '')}")
         if not stamp_unchanged:
             untouched = False
     results.append(
         Result(
-            "single-new-source",
-            "The three unrelated already-covered sources (INFRA-100, AUTH-200, infra-overview-v1) were left untouched",
+            eval_name,
+            "unrelated-untouched",
+            expect(eval_name, "unrelated-untouched"),
             untouched,
             "; ".join(unt_ev),
         )
     )
 
-    # SKILL.md only requires inline ^[source_id] citations once a page synthesizes 3+ sources;
-    # this fixture's redis-cache page only ever has 2 (INFRA-100 + INFRA-142), so the assertion
-    # as worded can never pass here. Not counted as a skill failure -- see eval_feedback.
+    # This fixture's redis-cache page only ever has 2 sources (INFRA-100 +
+    # INFRA-142), below SKILL.md's 3+-source inline-citation threshold, so
+    # the check is vacuously satisfied — see the expectation text itself.
     results.append(
         Result(
-            "single-new-source",
-            "At least one claim sourced from jira:INFRA-142 is cited inline with `^[jira:INFRA-142]`",
+            eval_name,
+            "inline-citation",
+            expect(eval_name, "inline-citation"),
             True,
-            "N/A: page has only 2 sources, SKILL.md's 3+ threshold for inline citation doesn't apply "
-            "(assertion needs rewording)",
+            "N/A: page has only 2 sources, below the 3+ threshold",
         )
     )
 
@@ -198,83 +221,71 @@ def grade_single_new_source(fixture_path: Path) -> list[Result]:
 
 def grade_multi_source(fixture_path: Path) -> list[Result]:
     """Check that all three sources are present in the final source-manifest.jsonl."""
-    manifest = {e["source"]: e for e in read_jsonl(fixture_path / "docs" / "source-manifest.jsonl")}
-    log = read_jsonl(fixture_path / "docs" / "log.jsonl")
-    wiki_files = {p.name: p.read_text() for p in (fixture_path / "docs" / "wiki").glob("*.md")}
-    lint_ok, lint_out = lint_clean(fixture_path)
-    commits = commit_count(fixture_path)
-
+    state = load_fixture_state(fixture_path)
+    eval_name = "multi-source-one-session"
     results = []
-    all_three = all(s in manifest for s in ["confluence:RATE-001", "jira:RATE-002", "slack:rate-limit-launch"])
+
+    all_three = all(s in state.manifest for s in ["confluence:RATE-001", "jira:RATE-002", "slack:rate-limit-launch"])
     results.append(
         Result(
-            "multi-source-one-session",
-            "confluence:RATE-001, jira:RATE-002, and slack:rate-limit-launch all appear in the final source-manifest.jsonl",
+            eval_name,
+            "all-sources-in-manifest",
+            expect(eval_name, "all-sources-in-manifest"),
             all_three,
-            str(list(manifest.keys())),
+            str(list(state.manifest.keys())),
         )
     )
 
-    combined_wiki_text = "\n".join(wiki_files.values())
+    combined_wiki_text = "\n".join(state.wiki_files.values())
     all_cited = all(
         s in combined_wiki_text for s in ["confluence:RATE-001", "jira:RATE-002", "slack:rate-limit-launch"]
     )
     results.append(
         Result(
-            "multi-source-one-session",
-            "Every one of the three sources is cited by at least one wiki page's `sources:` frontmatter (none dropped)",
+            eval_name,
+            "all-sources-cited",
+            expect(eval_name, "all-sources-cited"),
             all_cited,
             "checked substring presence across all wiki pages",
         )
     )
 
-    results.append(
-        Result(
-            "multi-source-one-session",
-            "Exactly one git commit/branch was created for the whole session, not one per source",
-            commits == 1,
-            f"{commits} commits on branch",
-        )
-    )
+    results.append(check_single_commit(state, eval_name))
 
     new_page = None
-    for name, content in wiki_files.items():
+    for name, content in state.wiki_files.items():
         if "rate" in name.lower() or "RATE-001" in content:
             new_page = (name, content)
     links_ok = new_page and count_wikilinks(new_page[1]) >= 2
     results.append(
         Result(
-            "multi-source-one-session",
-            "Every new or touched page has at least 2 outbound [[wikilinks]]",
+            eval_name,
+            "wikilink-count",
+            expect(eval_name, "wikilink-count"),
             bool(links_ok),
             f"{count_wikilinks(new_page[1]) if new_page else 'n/a'} links on {new_page[0] if new_page else 'no page found'}",
         )
     )
 
-    ingest_entries = [entry for entry in log if entry.get("action") == "ingest"]
+    ingest_entries = [entry for entry in state.log if entry.get("action") == "ingest"]
     results.append(
         Result(
-            "multi-source-one-session",
-            "docs/log.jsonl has one `ingest` action entry per source (3 entries total for this session)",
+            eval_name,
+            "log-entry-per-source",
+            expect(eval_name, "log-entry-per-source"),
             len(ingest_entries) >= 3,
             f"{len(ingest_entries)} total ingest-action entries: {[e.get('message') for e in ingest_entries]}",
         )
     )
 
-    results.append(
-        Result(
-            "multi-source-one-session",
-            "`wiki-toolkit lint` reports no violations on the final state",
-            lint_ok,
-            lint_out[:300],
-        )
-    )
+    results.append(check_lint_clean(state, eval_name))
 
     rel_present = new_page and "relationships:" in new_page[1]
     results.append(
         Result(
-            "multi-source-one-session",
-            "At least one page has a `relationships:` entry enriching an existing [[wikilink]] in its body",
+            eval_name,
+            "relationships-entry",
+            expect(eval_name, "relationships-entry"),
             bool(rel_present),
             "found relationships: block" if rel_present else "not found",
         )
@@ -285,12 +296,10 @@ def grade_multi_source(fixture_path: Path) -> list[Result]:
 
 def grade_update_covered(fixture_path: Path) -> list[Result]:
     """Check that the update-to-covered-source fixture has a page with a relationships block."""
-    manifest = {e["source"]: e for e in read_jsonl(fixture_path / "docs" / "source-manifest.jsonl")}
-    log = read_jsonl(fixture_path / "docs" / "log.jsonl")
+    state = load_fixture_state(fixture_path)
+    eval_name = "update-to-covered-source"
     auth_page = fixture_path / "docs" / "wiki" / "auth-service.md"
     auth_text = auth_page.read_text() if auth_page.exists() else ""
-    lint_ok, lint_out = lint_clean(fixture_path)
-    commits = commit_count(fixture_path)
 
     body = auth_text.split("---", 2)[-1] if auth_text.count("---") >= 2 else auth_text
     body_flat = " ".join(body.split())
@@ -299,19 +308,21 @@ def grade_update_covered(fixture_path: Path) -> list[Result]:
     # stale-only would mean 24h appears without any 1h/new-value mention at all.
     results = [
         Result(
-            "update-to-covered-source",
-            "The Auth Service wiki page's body reflects the 1h expiry, not only the stale 24h claim",
+            eval_name,
+            "content-reflects-update",
+            expect(eval_name, "content-reflects-update"),
             has_1h,
             f"body: {body_flat[:300]}",
         )
     ]
 
-    accepted = manifest.get("jira:AUTH-200", {})
+    accepted = state.manifest.get("jira:AUTH-200", {})
     was_reprocessed = not accepted.get("updated", "").startswith("2026-06-01")
     results.append(
         Result(
-            "update-to-covered-source",
-            "jira:AUTH-200 was accepted via --accept-covered (manifest/log shows it was reprocessed)",
+            eval_name,
+            "accept-covered-used",
+            expect(eval_name, "accept-covered-used"),
             was_reprocessed,
             f"AUTH-200 updated={accepted.get('updated', '')}",
         )
@@ -320,47 +331,34 @@ def grade_update_covered(fixture_path: Path) -> list[Result]:
     unrelated_untouched = True
     unt_ev = []
     for src in ["jira:INFRA-100", "design:infra-overview-v1"]:
-        e = manifest.get(src, {})
+        e = state.manifest.get(src, {})
         stamp_unchanged = e.get("updated", "").startswith("2026-06-01")
         unt_ev.append(f"{src}: updated={e.get('updated', '')}")
         if not stamp_unchanged:
             unrelated_untouched = False
-    # also check wiki pages content untouched
     results.append(
         Result(
-            "update-to-covered-source",
-            "The two unrelated flagged sources (INFRA-100, infra-overview-v1) were NOT accepted or modified",
+            eval_name,
+            "unrelated-untouched",
+            expect(eval_name, "unrelated-untouched"),
             unrelated_untouched,
             "; ".join(unt_ev),
         )
     )
 
-    log_has_it = any("AUTH-200" in json.dumps(entry) for entry in log)
+    log_has_it = any("AUTH-200" in json.dumps(entry) for entry in state.log)
     results.append(
         Result(
-            "update-to-covered-source",
-            "`docs/log.jsonl` records an update/ingest entry mentioning AUTH-200",
+            eval_name,
+            "log-entry",
+            expect(eval_name, "log-entry"),
             log_has_it,
-            f"{len(log)} log entries",
+            f"{len(state.log)} log entries",
         )
     )
 
-    results.append(
-        Result(
-            "update-to-covered-source",
-            "`wiki-toolkit lint` reports no violations on the final state",
-            lint_ok,
-            lint_out[:300],
-        )
-    )
-    results.append(
-        Result(
-            "update-to-covered-source",
-            "Exactly one git commit was created for the session",
-            commits == 1,
-            f"{commits} commits on branch",
-        )
-    )
+    results.append(check_lint_clean(state, eval_name))
+    results.append(check_single_commit(state, eval_name))
 
     return results
 
@@ -372,30 +370,45 @@ GRADERS = {
 }
 
 
+def _grade_variant(
+    iteration_root: Path, eval_name: str, grader: "Callable[[Path], list[Result]]", variant: str
+) -> None:
+    """Grade one (eval, variant) run, if its fixture exists, and write grading.json."""
+    fixture = iteration_root / f"eval-{eval_name}" / variant / "run-1" / "fixture"
+    if not fixture.exists():
+        return
+
+    results = grader(fixture)
+    expected_count = len(_EXPECTATION_TEXT[eval_name])
+    assert len(results) == expected_count, (
+        f"{eval_name}/{variant}: grader emitted {len(results)} results but "
+        f"evals.json defines {expected_count} expectations — grader and evals.json have drifted"
+    )
+
+    expectations = [
+        {"key": result.key, "text": result.text, "passed": result.passed, "evidence": result.evidence}
+        for result in results
+    ]
+    passed = sum(1 for e in expectations if e["passed"])
+    grading = {
+        "expectations": expectations,
+        "summary": {
+            "passed": passed,
+            "failed": len(expectations) - passed,
+            "total": len(expectations),
+            "pass_rate": round(passed / len(expectations), 2) if expectations else 0,
+        },
+    }
+    out_path = iteration_root / f"eval-{eval_name}" / variant / "run-1" / "grading.json"
+    out_path.write_text(json.dumps(grading, indent=2))
+    print(f"{eval_name}/{variant}: {passed}/{len(expectations)}")
+
+
 def main(iteration_root: Path) -> None:
     """Grade the fixtures."""
     for eval_name, grader in GRADERS.items():
         for variant in ["with_skill", "old_skill"]:
-            fixture = iteration_root / f"eval-{eval_name}" / variant / "run-1" / "fixture"
-            if not fixture.exists():
-                continue
-            results = grader(fixture)
-            expectations = [
-                {"text": result.variant, "passed": result.passed, "evidence": result.evidence} for result in results
-            ]
-            passed = sum(1 for e in expectations if e["passed"])
-            grading = {
-                "expectations": expectations,
-                "summary": {
-                    "passed": passed,
-                    "failed": len(expectations) - passed,
-                    "total": len(expectations),
-                    "pass_rate": round(passed / len(expectations), 2) if expectations else 0,
-                },
-            }
-            out_path = iteration_root / f"eval-{eval_name}" / variant / "run-1" / "grading.json"
-            out_path.write_text(json.dumps(grading, indent=2))
-            print(f"{eval_name}/{variant}: {passed}/{len(expectations)}")
+            _grade_variant(iteration_root, eval_name, grader, variant)
 
 
 if __name__ == "__main__":
