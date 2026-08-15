@@ -2025,27 +2025,50 @@
 <ul>
 <li><strong>Status:</strong> Accepted</li>
 <li><strong>Date:</strong> 2026-08-08</li>
-<li><strong>Source tickets:</strong> <a href="https://github.com/callowayproject/wiki-toolkit/issues/66">#66</a>, <a href="https://github.com/callowayproject/wiki-toolkit/issues/67">#67</a> (implemented in <a href="https://github.com/callowayproject/wiki-toolkit/issues/68">#68</a>–<a href="https://github.com/callowayproject/wiki-toolkit/issues/73">#73</a>)</li>
+<li><strong>Source tickets:</strong> <a href="https://github.com/callowayproject/wiki-toolkit/issues/66">#66</a>,
+    <a href="https://github.com/callowayproject/wiki-toolkit/issues/67">#67</a> (implemented in
+    <a href="https://github.com/callowayproject/wiki-toolkit/issues/68">#68</a>–<a href="https://github.com/callowayproject/wiki-toolkit/issues/73">#73</a>)</li>
 </ul>
 <h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
-<p>toolkit-spec.md&rsquo;s <code>source-update</code> skill was written against a live adapter interface (<code>fetch</code>/<code>diff</code> against a source system, triggered by a webhook, branching on comment-vs-field-edit mutation type). v1 has no adapters, but already has <code>source-delta</code>/<code>source-snapshot</code> CLI commands that diff a Raw file&rsquo;s current state against its last-known git revision (<a href="../0004-git-history-as-revision-store/">ADR-0004</a>). Separately, <code>toolkit-spec.md</code> marks <code>ingest</code>/<code>query</code>/<code>lint</code>/<code>maintain</code> as &ldquo;unchanged from <code>llm-breakdown.md</code>&rdquo; — that claim needed checking against v1&rsquo;s actual command names and identity model (<a href="../0001-source-identity-and-drop-zone-layout/">ADR-0001</a>, <a href="../0003-v1-command-surface-consolidation/">ADR-0003</a>).</p>
+<p>toolkit-spec.md&rsquo;s <code>source-update</code> skill was written against a live adapter interface
+(<code>fetch</code>/<code>diff</code> against a source system, triggered by a webhook, branching on comment-vs-field-edit mutation type).
+v1 has no adapters, but already has <code>source-delta</code>/<code>source-snapshot</code> CLI commands
+that diff a Raw file&rsquo;s current state against its last-known git revision
+(<a href="../0004-git-history-as-revision-store/">ADR-0004</a>).
+Separately, <code>toolkit-spec.md</code> marks <code>ingest</code>/<code>query</code>/<code>lint</code>/<code>maintain</code> as &ldquo;unchanged from <code>llm-breakdown.md</code>&rdquo; —
+that claim needed checking against v1&rsquo;s actual command names and identity model
+(<a href="../0001-source-identity-and-drop-zone-layout/">ADR-0001</a>, <a href="../0003-v1-command-surface-consolidation/">ADR-0003</a>).</p>
 <h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>source-update</code> triggers via direct invocation on a known source, or via <code>maintain</code>&rsquo;s periodic sweep (<code>source-scan</code> classifying a file <code>update</code>) — never a webhook.</li>
-<li>New comments are out of scope for <code>source-update</code> entirely: in v1 they materialize as brand-new Raw source files (a new <code>source</code> id), classified <code>new</code> by <code>source-scan</code>, and route through <code>ingest</code> instead. The original comment-vs-field-edit branch is dropped.</li>
-<li>Because only field edits reach <code>source-update</code> by construction, its resulting PR is always framed <code>needs-review</code> — never <code>routine</code> — with <code>changed_fields</code> from <code>source-delta</code> called out explicitly so a reviewer knows what to re-verify.</li>
-<li>The dead <code>Delta.new_comment_ids</code> field (never populated once the comment branch was dropped) is removed from the <code>Delta</code> dataclass.</li>
-<li>None of <code>ingest</code>/<code>query</code>/<code>lint</code>/<code>maintain</code> port from <code>llm-breakdown.md</code> as-is; each is adapted to v1&rsquo;s actual surface:<ul>
-<li><code>ingest</code>: <code>source-scan --update</code> → write/update page(s) → <code>build</code> → <code>lint</code> → <code>log --action ingest</code> → <code>propose-pr --frame routine</code>.</li>
-<li><code>query</code>: <code>search-catalog</code> replaces the (nonexistent-in-v1) <code>index.md</code> read step; a filed-back synthesis follows the same write gate as <code>ingest</code>. Answering alone is never a write.</li>
-<li><code>lint</code>: deterministic CLI checks first (<code>lint</code>, <code>source-lint</code>, <code>source-coverage</code>), then an agent semantic pass for contradictions/staleness/orphans/missing cross-refs — things the CLI can&rsquo;t check structurally. Mechanical fixes route through the write gate; contradictions/staleness are surfaced, not resolved unilaterally.</li>
-<li><code>maintain</code>: orchestrates <code>lint</code> and <code>source-update</code>&rsquo;s sweep trigger rather than duplicating their logic; agent-surfaced suggestions are logged individually via <code>log --action lint</code>.</li>
-</ul>
-</li>
+<li><code>source-update</code> triggers via direct invocation on a known source, or via <code>maintain</code>&rsquo;s periodic sweep
+    (<code>source-scan</code> classifying a file <code>update</code>) — never a webhook.</li>
+<li>New comments are out of scope for <code>source-update</code> entirely: in v1 they materialize as brand-new Raw source files
+    (a new <code>source</code> id), classified <code>new</code> by <code>source-scan</code>, and route through <code>ingest</code> instead.
+    The original comment-vs-field-edit branch is dropped.</li>
+<li>Because only field edits reach <code>source-update</code> by construction, its resulting PR is always framed <code>needs-review</code> —
+    never <code>routine</code> — with <code>changed_fields</code> from <code>source-delta</code> called out explicitly
+    so a reviewer knows what to re-verify.</li>
+<li>The dead <code>Delta.new_comment_ids</code> field
+    (never populated once the comment branch was dropped) is removed from the <code>Delta</code> dataclass.</li>
+<li>None of <code>ingest</code>/<code>query</code>/<code>lint</code>/<code>maintain</code> port from <code>llm-breakdown.md</code> as-is; each is adapted to v1&rsquo;s actual surface:
+    - <code>ingest</code>: <code>source-scan --update</code> → write/update page(s) → <code>build</code> → <code>lint</code> → <code>log --action ingest</code> →
+      <code>propose-pr --frame routine</code>.
+    - <code>query</code>: <code>search-catalog</code> replaces the (nonexistent-in-v1) <code>index.md</code> read step;
+      a filed-back synthesis follows the same write gate as <code>ingest</code>.
+      Answering alone is never a write.
+    - <code>lint</code>: deterministic CLI checks first
+      (<code>lint</code>, <code>source-lint</code>, <code>source-coverage</code>),
+      then an agent semantic pass for contradictions/staleness/orphans/missing cross-refs —
+      things the CLI can&rsquo;t check structurally.
+      Mechanical fixes route through the write gate; contradictions/staleness are surfaced, not resolved unilaterally.
+    - <code>maintain</code>: orchestrates <code>lint</code> and <code>source-update</code>&rsquo;s sweep trigger rather than duplicating their logic;
+      agent-surfaced suggestions are logged individually via <code>log --action lint</code>.</li>
 </ul>
 <h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
 <ul>
-<li>All five <code>SKILL.md</code> files are keyed to v1&rsquo;s actual command names and the <code>source</code>/<code>processed</code>/<code>duplicate</code> vocabulary in <code>CONTEXT.md</code>, not the adapter-era language in <code>toolkit-spec.md</code>&rsquo;s Skills section.</li>
+<li>All five <code>SKILL.md</code> files are keyed to v1&rsquo;s actual command names
+    and the <code>source</code>/<code>processed</code>/<code>duplicate</code> vocabulary in <code>CONTEXT.md</code>,
+    not the adapter-era language in <code>toolkit-spec.md</code>&rsquo;s Skills section.</li>
 </ul>
 
 

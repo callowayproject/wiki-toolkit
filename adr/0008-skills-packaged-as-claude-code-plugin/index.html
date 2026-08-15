@@ -2025,20 +2025,32 @@
 <ul>
 <li><strong>Status:</strong> Accepted</li>
 <li><strong>Date:</strong> 2026-08-08</li>
-<li><strong>Source tickets:</strong> <a href="https://github.com/callowayproject/wiki-toolkit/issues/63">#63</a>, <a href="https://github.com/callowayproject/wiki-toolkit/issues/64">#64</a></li>
+<li><strong>Source tickets:</strong> <a href="https://github.com/callowayproject/wiki-toolkit/issues/63">#63</a>,
+    <a href="https://github.com/callowayproject/wiki-toolkit/issues/64">#64</a></li>
 </ul>
 <h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
-<p>The five agent-facing <code>SKILL.md</code> files (<code>ingest</code>, <code>query</code>, <code>lint</code>, <code>source-update</code>, <code>maintain</code>) needed a distributable format so a repo other than <code>wiki-toolkit</code> itself could install them, rather than each consumer vendoring the files by hand.</p>
+<p>The five agent-facing <code>SKILL.md</code> files
+(<code>ingest</code>, <code>query</code>, <code>lint</code>, <code>source-update</code>, <code>maintain</code>)
+needed a distributable format so a repo other than <code>wiki-toolkit</code> itself could install them,
+rather than each consumer vendoring the files by hand.</p>
 <h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Packaging format: a Claude Code plugin — <code>.claude-plugin/plugin.json</code> plus <code>skills/&lt;name&gt;/SKILL.md</code> × 5, one plugin bundling all five skills.</li>
-<li>Location: this repo&rsquo;s root, sibling to <code>wiki_toolkit/</code> — distinct from <code>docs/.agents/skills/</code>, the <code>init</code>-scaffolded per-wiki local copy (see <a href="../0009-local-skill-copy-versioned-sync/">ADR-0009</a>).</li>
-<li>A self-referencing <code>.claude-plugin/marketplace.json</code> (<code>source: "./"</code>) lives alongside <code>plugin.json</code>, so <code>/plugin marketplace add</code> + <code>/plugin install</code> work directly against this repo without a separate marketplace repo.</li>
-<li><code>skills.sh</code> (which just copies raw <code>SKILL.md</code> files, no manifest of its own) is treated as a secondary distribution channel only — not built or tested as part of this decision.</li>
+<li>Packaging format: a Claude Code plugin — <code>.claude-plugin/plugin.json</code> plus <code>skills/&lt;name&gt;/SKILL.md</code> × 5,
+    one plugin bundling all five skills.</li>
+<li>Location: this repo&rsquo;s root, sibling to <code>wiki_toolkit/</code> — distinct from <code>docs/.agents/skills/</code>,
+    the <code>init</code>-scaffolded per-wiki local copy (see <a href="../0009-local-skill-copy-versioned-sync/">ADR-0009</a>).</li>
+<li>A self-referencing <code>.claude-plugin/marketplace.json</code>
+    (<code>source: "./"</code>)
+    lives alongside <code>plugin.json</code>, so <code>/plugin marketplace add</code> + <code>/plugin install</code> work directly against this repo
+    without a separate marketplace repo.</li>
+<li><code>skills.sh</code> (which just copies raw <code>SKILL.md</code> files, no manifest of its own) is treated
+    as a secondary distribution channel only — not built or tested as part of this decision.</li>
 </ul>
 <h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
 <ul>
-<li>The plugin and the <code>wiki_toolkit</code> Python package release together as one version number — load-bearing for <a href="../0009-local-skill-copy-versioned-sync/">ADR-0009</a>&rsquo;s drift check, which compares a scaffolded wiki&rsquo;s local skill-copy version against the installed package version.</li>
+<li>The plugin and the <code>wiki_toolkit</code> Python package release together as one version number —
+    load-bearing for <a href="../0009-local-skill-copy-versioned-sync/">ADR-0009</a>&rsquo;s drift check,
+    which compares a scaffolded wiki&rsquo;s local skill-copy version against the installed package version.</li>
 </ul>
 
 

@@ -2025,21 +2025,39 @@
 <ul>
 <li><strong>Status:</strong> Accepted</li>
 <li><strong>Date:</strong> 2026-08-05</li>
-<li><strong>Source tickets:</strong> <a href="https://github.com/callowayproject/wiki-toolkit/issues/37">#37</a> (and children <a href="https://github.com/callowayproject/wiki-toolkit/issues/38">#38</a>–<a href="https://github.com/callowayproject/wiki-toolkit/issues/44">#44</a>, <a href="https://github.com/callowayproject/wiki-toolkit/issues/48">#48</a>)</li>
+<li><strong>Source tickets:</strong> <a href="https://github.com/callowayproject/wiki-toolkit/issues/37">#37</a> (and children
+    <a href="https://github.com/callowayproject/wiki-toolkit/issues/38">#38</a>–<a href="https://github.com/callowayproject/wiki-toolkit/issues/44">#44</a>,
+    <a href="https://github.com/callowayproject/wiki-toolkit/issues/48">#48</a>)</li>
 </ul>
 <h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
-<p><code>wiki_toolkit/core.py</code> grew to 810 lines mixing six unrelated domain concepts (source lifecycle, wiki catalog, the write gate, the audit log, doctor). The same &ldquo;walk a directory of frontmatter files&rdquo; pattern was reimplemented six times (<code>scan_sources</code>, <code>build_catalog</code>, <code>lint_wiki</code>, <code>lint_sources</code>, <code>source_coverage</code>, <code>suggest_dedupe</code>); four of those six crashed on malformed frontmatter instead of reporting a lint violation, and only one had test coverage for that failure mode. The &ldquo;a source file is canonical&rdquo; rule (first-seen <code>source</code> id, excluding <code>duplicate: true</code>) was copy-pasted verbatim between <code>scan_sources</code> and <code>source_coverage</code>.</p>
+<p><code>wiki_toolkit/core.py</code> grew to 810 lines mixing six unrelated domain concepts
+(source lifecycle, wiki catalog, the write gate, the audit log, doctor).
+The same &ldquo;walk a directory of frontmatter files&rdquo; pattern was reimplemented six times
+(<code>scan_sources</code>, <code>build_catalog</code>, <code>lint_wiki</code>, <code>lint_sources</code>, <code>source_coverage</code>, <code>suggest_dedupe</code>);
+four of those six crashed on malformed frontmatter instead of reporting a lint violation,
+and only one had test coverage for that failure mode.
+The &ldquo;a source file is canonical&rdquo; rule
+(first-seen <code>source</code> id, excluding <code>duplicate: true</code>)
+was copy-pasted verbatim between <code>scan_sources</code> and <code>source_coverage</code>.</p>
 <h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Split <code>core.py</code> into modules named after <code>CONTEXT.md</code>&rsquo;s domain vocabulary: <code>sources.py</code> (the largest — owns the one domain concept, <code>source</code>, and all its state transitions), <code>wiki.py</code>, <code>write_gate.py</code>, <code>log.py</code>, <code>doctor.py</code>, plus a shared internal <code>_io.py</code> (JSONL read/write).</li>
-<li>One shared private directory-walk helper (<code>_iter_markdown</code>) and one shared canonical-source predicate (<code>_is_canonical_source</code>) replace all six/two duplicated implementations.</li>
-<li><code>cli.py</code>&rsquo;s command surface (names, options, output strings, exit codes) is completely unchanged — only its imports move.</li>
-<li>Malformed-frontmatter handling becomes uniform across all six former call sites as a side effect of the walk unification — a bug fix bundled into the refactor, not new scope.</li>
-<li>Tests move with the code they cover, split along the same module boundaries (<code>test_sources.py</code>, <code>test_wiki.py</code>, <code>test_write_gate.py</code>, <code>test_log.py</code>, <code>test_doctor.py</code>, <code>test_io.py</code>).</li>
+<li>Split <code>core.py</code> into modules named after <code>CONTEXT.md</code>&rsquo;s domain vocabulary: <code>sources.py</code>
+    (the largest — owns the one domain concept, <code>source</code>, and all its state transitions),
+    <code>wiki.py</code>, <code>write_gate.py</code>, <code>log.py</code>, <code>doctor.py</code>, plus a shared internal <code>_io.py</code> (JSONL read/write).</li>
+<li>One shared private directory-walk helper (<code>_iter_markdown</code>)
+    and one shared canonical-source predicate (<code>_is_canonical_source</code>) replace all six/two duplicated implementations.</li>
+<li><code>cli.py</code>&rsquo;s command surface (names, options, output strings, exit codes) is completely unchanged —
+    only its imports move.</li>
+<li>Malformed-frontmatter handling becomes uniform across all six former call sites
+    as a side effect of the walk unification — a bug fix bundled into the refactor, not new scope.</li>
+<li>Tests move with the code they cover, split along the same module boundaries
+    (<code>test_sources.py</code>, <code>test_wiki.py</code>, <code>test_write_gate.py</code>, <code>test_log.py</code>, <code>test_doctor.py</code>, <code>test_io.py</code>).</li>
 </ul>
 <h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Splitting <code>sources.py</code> further by individual command (<code>source_scan.py</code>/<code>source_coverage.py</code>/…) was explicitly rejected — it would recreate the original duplication one level up, since all of these share the manifest and the canonical-source rule.</li>
+<li>Splitting <code>sources.py</code> further by individual command (<code>source_scan.py</code>/<code>source_coverage.py</code>/…) was explicitly
+    rejected — it would recreate the original duplication one level up, since all of these share the manifest and the
+    canonical-source rule.</li>
 <li><code>core.py</code> is deleted once every symbol has a new home; nothing imports from <code>wiki_toolkit.core</code> afterward.</li>
 </ul>
 

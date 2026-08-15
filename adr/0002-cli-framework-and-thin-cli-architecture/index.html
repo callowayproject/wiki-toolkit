@@ -2025,22 +2025,31 @@
 <ul>
 <li><strong>Status:</strong> Accepted</li>
 <li><strong>Date:</strong> 2026-08-04</li>
-<li><strong>Source tickets:</strong> <a href="https://github.com/callowayproject/wiki-toolkit/issues/4">#4</a>, <a href="https://github.com/callowayproject/wiki-toolkit/issues/9">#9</a></li>
+<li><strong>Source tickets:</strong> <a href="https://github.com/callowayproject/wiki-toolkit/issues/4">#4</a>,
+    <a href="https://github.com/callowayproject/wiki-toolkit/issues/9">#9</a></li>
 </ul>
 <h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
-<p>The vendored <code>llm-breakdown.md</code> guide specifies <code>wiki_tool.py</code> using only the Python standard library (argparse, manual YAML-ish parsing). This repo&rsquo;s scaffolded <code>pyproject.toml</code> already carried <code>fastapi[standard]</code>, <code>opentelemetry-*</code>, <code>pydantic-settings</code>, and <code>structlog</code> — none obviously relevant to a local CLI — plus a commented-out <code>[project.scripts]</code> entry point.</p>
+<p>The vendored <code>llm-breakdown.md</code> guide specifies <code>wiki_tool.py</code> using only the Python standard library
+(argparse, manual YAML-ish parsing).
+This repo&rsquo;s scaffolded <code>pyproject.toml</code> already carried <code>fastapi[standard]</code>, <code>opentelemetry-*</code>, <code>pydantic-settings</code>,
+and <code>structlog</code> — none obviously relevant to a local CLI — plus a commented-out <code>[project.scripts]</code> entry point.</p>
 <h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
 <ul>
-<li>CLI framework: <code>click</code>. Frontmatter parsing: <code>python-frontmatter</code>.</li>
+<li>CLI framework: <code>click</code>.
+    Frontmatter parsing: <code>python-frontmatter</code>.</li>
 <li>Kept from the scaffold: <code>orjson</code>, <code>pydantic-settings</code>.</li>
 <li>Stripped as template cruft: <code>fastapi[standard]</code>, all <code>opentelemetry-*</code> packages, <code>structlog</code>.</li>
 <li><code>[project.scripts]</code> (<code>wiki-toolkit = wiki_toolkit.cli:cli</code>) activated.</li>
-<li><strong>Architecture constraint</strong>: <code>cli.py</code> is a thin adapter — argument parsing, delegation, output formatting only. All business logic lives in internal library functions independent of Click, unit-tested directly. <code>cli.py</code> itself has no logic worth unit-testing beyond correct delegation.</li>
+<li><strong>Architecture constraint</strong>: <code>cli.py</code> is a thin adapter — argument parsing, delegation, output formatting only.
+    All business logic lives in internal library functions independent of Click, unit-tested directly.
+    <code>cli.py</code> itself has no logic worth unit-testing beyond correct delegation.</li>
 </ul>
 <h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Every command ticket had to split &ldquo;internal pure function&rdquo; (real test coverage) from &ldquo;<code>cli.py</code> wrapper&rdquo; (<code>CliRunner</code> adapter test only) — see <a href="../0005-two-layer-testing-strategy/">ADR-0005</a>.</li>
-<li>This split is what later made the domain-module split (<a href="../0006-domain-module-split/">ADR-0006</a>) a pure code-motion refactor: <code>cli.py</code>&rsquo;s command surface never had to change, only its imports.</li>
+<li>Every command ticket had to split &ldquo;internal pure function&rdquo; (real test coverage) from &ldquo;<code>cli.py</code> wrapper&rdquo;
+    (<code>CliRunner</code> adapter test only) — see <a href="../0005-two-layer-testing-strategy/">ADR-0005</a>.</li>
+<li>This split is what later made the domain-module split (<a href="../0006-domain-module-split/">ADR-0006</a>) a pure code-motion
+    refactor: <code>cli.py</code>&rsquo;s command surface never had to change, only its imports.</li>
 </ul>
 
 

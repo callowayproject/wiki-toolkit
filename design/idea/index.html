@@ -2065,7 +2065,9 @@
 <li>Multiple people with different skill levels are reviewing and updating the code</li>
 <li>Sources or reasons for changes are typically external to the repository</li>
 <li>Need to marry the source or reason (external) for the change with the actual change (internal)</li>
-<li>People are lazy. If friction is forced in the change request, people will try to avoid it or work around it. If we need a source of a change, it should be easy to make.</li>
+<li>People are lazy.
+    If friction is forced in the change request, people will try to avoid it or work around it.
+    If we need a source of a change, it should be easy to make.</li>
 </ul>
 <h2 id="possible-sources-for-changes">Possible sources for changes<a class="headerlink" href="#possible-sources-for-changes" title="Permanent link">&para;</a></h2>
 <ul>
@@ -2083,34 +2085,84 @@
 </ul>
 <h2 id="solution-skill-workflow-first-automatic-triggering-second">Solution: skill workflow first, automatic triggering second<a class="headerlink" href="#solution-skill-workflow-first-automatic-triggering-second" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>What&rsquo;s built and real:</strong> six agent-facing skills (<code>ingest</code>, <code>source-update</code>, <code>lint</code>, <code>cross-linker</code>, <code>maintain</code>, <code>query</code>) implement the <a href="../Reference/llm-wiki/">LLM-Wiki</a> pattern end to end. <code>ingest</code> and <code>source-update</code> bring new/changed sources into the wiki; <code>cross-linker</code> weaves each ingest session&rsquo;s pages into the existing knowledge graph; <code>lint</code> catches structural and semantic problems; <code>maintain</code> orchestrates <code>lint</code> → <code>source-update</code> → <code>ingest</code> as a periodic sweep; <code>query</code> answers questions from the compiled catalog. Each skill wraps a handful of deterministic <code>wiki-toolkit</code> CLI commands (<code>source-scan</code>, <code>build</code>, <code>lint</code>, <code>search-catalog</code>, <code>propose-pr</code>, …) and supplies the judgment — relevance scoring, contradiction-spotting, page drafting — a CLI alone can&rsquo;t. This skill workflow, not the CLI, is the toolkit&rsquo;s primary interface: an operator or agent invokes skills, and the CLI is the deterministic plumbing underneath them. See <a href="../toolkit-spec/">toolkit-spec.md</a> for the full skill/command breakdown.</li>
-<li><strong>What&rsquo;s still aspirational:</strong> the loop above currently runs however an operator triggers it — manually, or from an agent harness like Claude Code, against a local wiki checkout. GitHub webhooks (<code>pull_request: opened/synchronize</code>, not merge) and a hosted agent receiver would run the same skills automatically on every PR, landing the doc diff in the same PR the reviewer is already looking at, before it merges. Piloting this mainly requires wiring webhooks to a receiver, not building new skills.</li>
-<li>Review model: no new process either way. The agent (skill-driven or webhook-triggered) pushes the doc update as a commit onto the same PR branch (not a separate PR); the same reviewer approves both diffs.<ul>
-<li>Bot-authored PRs: Renovate PRs get the same treatment. Agent and developers already have push access to Renovate branches (needed to test/adapt the updated modules), so nothing changes there. Dependabot PRs are out of scope for the pilot: GitHub blocks non-Dependabot pushes to <code>dependabot[bot]</code>-authored branches by default, and many orgs auto-merge them without human review, so there&rsquo;s no reviewer to approve a doc diff riding alongside.</li>
-</ul>
-</li>
-<li>Source-linkage mechanism (resolves the &ldquo;marrying&rdquo; gap below): correlation happens at PR/commit time, not at ticket-creation time. A ticket doesn&rsquo;t say which files it touches until someone writes the PR. When a PR/commit references a ticket (trailer, description, branch name), the receiver fetches that source and feeds it, along with the diff, to the LLM agent, which writes the doc update and cites the source in <code>log.md</code>.</li>
-<li>External-trigger ingestion (design docs, Jira tickets, before any PR exists): a non-GitHub trigger (Jira webhook, or manual invocation for a Confluence design doc) lets Agent ingest the source immediately and write a <em>speculative</em> wiki page (<code>status: proposed</code> on both the source-manifest entry and the page frontmatter), synthesizing what infrastructure the source implies, ahead of any code change. This still goes through the same write gate as any other wiki write: Agent opens a docs-only PR, no direct commits, no exception for speculative content. When a later PR references the same source (same stable ID), the normal source-linkage mechanism above resolves it: Agent flips <code>status</code> to <code>resolved</code> on the manifest entry and the page as part of that PR&rsquo;s doc update.</li>
-<li>Retiring docs for removed infrastructure: no separate mechanism needed. Whole-file/module removal is determined by the source-manifest&rsquo;s existing <code>covered_by</code> list (look up the removed path and archive the wiki pages that reference it); partial removal within a file that still exists is handled by the normal ingest-on-PR flow, which reads that file&rsquo;s diff.</li>
+<li><strong>What&rsquo;s built and real:</strong> six agent-facing skills
+    (<code>ingest</code>, <code>source-update</code>, <code>lint</code>, <code>cross-linker</code>, <code>maintain</code>, <code>query</code>)
+    implement the <a href="../Reference/llm-wiki/">LLM-Wiki</a> pattern end to end.
+    <code>ingest</code> and <code>source-update</code> bring new/changed sources into the wiki;
+    <code>cross-linker</code> weaves each ingest session&rsquo;s pages into the existing knowledge graph;
+    <code>lint</code> catches structural and semantic problems;
+    <code>maintain</code> orchestrates <code>lint</code> → <code>source-update</code> → <code>ingest</code> as a periodic sweep;
+    <code>query</code> answers questions from the compiled catalog.
+    Each skill wraps a handful of deterministic <code>wiki-toolkit</code> CLI commands
+    (<code>source-scan</code>, <code>build</code>, <code>lint</code>, <code>search-catalog</code>, <code>propose-pr</code>, …)
+    and supplies the judgment — relevance scoring, contradiction-spotting, page drafting — a CLI alone can&rsquo;t.
+    This skill workflow, not the CLI, is the toolkit&rsquo;s primary interface: an operator or agent invokes skills,
+    and the CLI is the deterministic plumbing underneath them.
+    See <a href="../toolkit-spec/">toolkit-spec.md</a> for the full skill/command breakdown.</li>
+<li><strong>What&rsquo;s still aspirational:</strong> the loop above currently runs however an operator triggers it — manually,
+    or from an agent harness like Claude Code, against a local wiki checkout.
+    GitHub webhooks (<code>pull_request: opened/synchronize</code>, not merge)
+    and a hosted agent receiver would run the same skills automatically on every PR,
+    landing the doc diff in the same PR the reviewer is already looking at, before it merges.
+    Piloting this mainly requires wiring webhooks to a receiver, not building new skills.</li>
+<li>Review model: no new process either way.
+    The agent (skill-driven or webhook-triggered) pushes the doc update as a commit onto the same PR branch
+    (not a separate PR); the same reviewer approves both diffs.
+    - Bot-authored PRs: Renovate PRs get the same treatment.
+      Agent and developers already have push access to Renovate branches
+      (needed to test/adapt the updated modules), so nothing changes there.
+      Dependabot PRs are out of scope for the pilot:
+      GitHub blocks non-Dependabot pushes to <code>dependabot[bot]</code>-authored branches by default,
+      and many orgs auto-merge them without human review, so there&rsquo;s no reviewer to approve a doc diff riding alongside.</li>
+<li>Source-linkage mechanism (resolves the &ldquo;marrying&rdquo; gap below): correlation happens at PR/commit time,
+    not at ticket-creation time.
+    A ticket doesn&rsquo;t say which files it touches until someone writes the PR.
+    When a PR/commit references a ticket
+    (trailer, description, branch name),
+    the receiver fetches that source and feeds it, along with the diff, to the LLM agent,
+    which writes the doc update and cites the source in <code>log.md</code>.</li>
+<li>External-trigger ingestion (design docs, Jira tickets, before any PR exists): a non-GitHub trigger
+    (Jira webhook, or manual invocation for a Confluence design doc)
+    lets Agent ingest the source immediately and write a <em>speculative</em> wiki page
+    (<code>status: proposed</code> on both the source-manifest entry and the page frontmatter),
+    synthesizing what infrastructure the source implies, ahead of any code change.
+    This still goes through the same write gate as any other wiki write: Agent opens a docs-only PR, no direct commits,
+    no exception for speculative content.
+    When a later PR references the same source
+    (same stable ID),
+    the normal source-linkage mechanism above resolves it:
+    Agent flips <code>status</code> to <code>resolved</code> on the manifest entry and the page as part of that PR&rsquo;s doc update.</li>
+<li>Retiring docs for removed infrastructure: no separate mechanism needed.
+    Whole-file/module removal is determined by the source-manifest&rsquo;s existing <code>covered_by</code> list
+    (look up the removed path and archive the wiki pages that reference it);
+    partial removal within a file that still exists is handled by the normal ingest-on-PR flow,
+    which reads that file&rsquo;s diff.</li>
 </ul>
 <h2 id="gaps-still-open">Gaps (still open)<a class="headerlink" href="#gaps-still-open" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Security boundary for the receiver ingesting untrusted external content (ticket bodies, PR descriptions) into a write-capable agent.</li>
+<li>Security boundary for the receiver ingesting untrusted external content
+    (ticket bodies, PR descriptions) into a write-capable agent.</li>
 <li>Whether PR-review friction will suppress automated updates in practice.</li>
 <li>Whether the LLM wiki should live in the same repo as the code or a separate one.</li>
-<li>Page structure guidance: <code>toolkit-spec.md</code>&rsquo;s schema section has no template for how a wiki page&rsquo;s body should be organized beyond frontmatter shape.</li>
+<li>Page structure guidance: <code>toolkit-spec.md</code>&rsquo;s schema section has no template
+    for how a wiki page&rsquo;s body should be organized beyond frontmatter shape.</li>
 </ul>
 <h2 id="structure">Structure<a class="headerlink" href="#structure" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../toolkit-spec/">toolkit-spec.md</a>: specification for the AI skills and helper tools (Agent operates these) that implement the llm-wiki pattern, including how mutable sources (Jira comment chains, changing source code) are detected, versioned, and folded into the wiki.</li>
+<li><a href="../toolkit-spec/">toolkit-spec.md</a>: specification for the AI skills and helper tools
+    (Agent operates these)
+    that implement the llm-wiki pattern, including how mutable sources
+    (Jira comment chains, changing source code) are detected, versioned, and folded into the wiki.</li>
 </ul>
-<p>References:
-- https://github.com/langchain-ai/openwiki
-- https://github.com/AlmanacCode/codealmanac/
-- https://github.com/NousResearch/hermes-agent/blob/main/skills/research/llm-wiki/SKILL.md
-- https://github.com/lucasastorian/llmwiki/tree/master
-- https://github.com/Astro-Han/karpathy-llm-wiki
-- https://github.com/Ar9av/obsidian-wiki</p>
+<p>References:</p>
+<ul>
+<li><a href="https://github.com/langchain-ai/openwiki">https://github.com/langchain-ai/openwiki</a></li>
+<li><a href="https://github.com/AlmanacCode/codealmanac/">https://github.com/AlmanacCode/codealmanac/</a></li>
+<li><a href="https://github.com/NousResearch/hermes-agent/blob/main/skills/research/llm-wiki/SKILL.md">https://github.com/NousResearch/hermes-agent/blob/main/skills/research/llm-wiki/SKILL.md</a></li>
+<li><a href="https://github.com/lucasastorian/llmwiki/tree/master">https://github.com/lucasastorian/llmwiki/tree/master</a></li>
+<li><a href="https://github.com/Astro-Han/karpathy-llm-wiki">https://github.com/Astro-Han/karpathy-llm-wiki</a></li>
+<li><a href="https://github.com/Ar9av/obsidian-wiki">https://github.com/Ar9av/obsidian-wiki</a></li>
+</ul>
 
 
 

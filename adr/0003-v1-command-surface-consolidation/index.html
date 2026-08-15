@@ -2028,17 +2028,32 @@
 <li><strong>Source tickets:</strong> <a href="https://github.com/callowayproject/wiki-toolkit/issues/5">#5</a></li>
 </ul>
 <h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
-<p>Two overlapping command lists needed merging: <code>llm-breakdown.md</code>&rsquo;s base <code>wiki_tool.py</code> set (<code>doctor</code>, <code>build</code>, <code>lint</code>, <code>source-scan</code>, <code>source-lint</code>, <code>source-delta</code>, <code>source-coverage</code>, <code>search-catalog</code>, <code>log</code>) and toolkit-spec.md&rsquo;s adapter-era extensions (<code>source-match</code>, <code>source-delta</code>, <code>source-snapshot</code>, <code>source-scan</code>, <code>propose-pr</code>). Two conflicts blocked a single authoritative list: <code>source-delta</code> was defined twice with different meanings (base spec: &ldquo;show Raw sources missing from the manifest&rdquo;; toolkit-spec.md: &ldquo;diff current state against last-known snapshot&rdquo;), and toolkit-spec.md&rsquo;s commands took <code>&lt;adapter&gt; &lt;payload&gt;</code>/<code>&lt;adapter&gt; &lt;stable_id&gt;</code> arguments that don&rsquo;t apply once all adapters are deferred (see <a href="../0001-source-identity-and-drop-zone-layout/">ADR-0001</a>).</p>
+<p>Two overlapping command lists needed merging: <code>llm-breakdown.md</code>&rsquo;s base <code>wiki_tool.py</code> set
+(<code>doctor</code>, <code>build</code>, <code>lint</code>, <code>source-scan</code>, <code>source-lint</code>, <code>source-delta</code>, <code>source-coverage</code>, <code>search-catalog</code>, <code>log</code>)
+and toolkit-spec.md&rsquo;s adapter-era extensions
+(<code>source-match</code>, <code>source-delta</code>, <code>source-snapshot</code>, <code>source-scan</code>, <code>propose-pr</code>).
+Two conflicts blocked a single authoritative list: <code>source-delta</code> was defined twice with different meanings
+(base spec: &ldquo;show Raw sources missing from the manifest&rdquo;; toolkit-spec.md:
+&ldquo;diff current state against last-known snapshot&rdquo;),
+and toolkit-spec.md&rsquo;s commands took <code>&lt;adapter&gt; &lt;payload&gt;</code>/<code>&lt;adapter&gt; &lt;stable_id&gt;</code> arguments that don&rsquo;t apply
+once all adapters are deferred (see <a href="../0001-source-identity-and-drop-zone-layout/">ADR-0001</a>).</p>
 <h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>source-scan</code> absorbs <code>source-match</code>&rsquo;s job (classify new/update/duplicate) — &ldquo;not in the manifest&rdquo; is just &ldquo;unprocessed.&rdquo;</li>
-<li><code>source-delta</code>&rsquo;s only surviving meaning is toolkit-spec.md&rsquo;s: diff a known source&rsquo;s current content against its last-known revision (see <a href="../0004-git-history-as-revision-store/">ADR-0004</a>).</li>
+<li><code>source-scan</code> absorbs <code>source-match</code>&rsquo;s job
+    (classify new/update/duplicate) — &ldquo;not in the manifest&rdquo; is just &ldquo;unprocessed.&rdquo;</li>
+<li><code>source-delta</code>&rsquo;s only surviving meaning is toolkit-spec.md&rsquo;s:
+    diff a known source&rsquo;s current content against its last-known revision
+    (see <a href="../0004-git-history-as-revision-store/">ADR-0004</a>).</li>
 <li>Every command keys off the <code>source</code> frontmatter field; no adapter arguments anywhere in v1.</li>
-<li>Final v1 command list: <code>doctor</code>, <code>build</code>, <code>lint</code>, <code>source-scan [--update] [--accept-covered]</code>, <code>source-lint</code>, <code>source-delta &lt;source&gt;</code>, <code>source-coverage</code>, <code>source-snapshot &lt;source&gt; --units comments|fields</code>, <code>source-dedupe</code>, <code>search-catalog --query</code>, <code>log</code>, <code>propose-pr --pages &lt;list&gt; --frame routine|needs-review</code>.</li>
+<li>Final v1 command list: <code>doctor</code>, <code>build</code>, <code>lint</code>, <code>source-scan [--update] [--accept-covered]</code>, <code>source-lint</code>,
+    <code>source-delta &lt;source&gt;</code>, <code>source-coverage</code>, <code>source-snapshot &lt;source&gt; --units comments|fields</code>, <code>source-dedupe</code>,
+    <code>search-catalog --query</code>, <code>log</code>, <code>propose-pr --pages &lt;list&gt; --frame routine|needs-review</code>.</li>
 </ul>
 <h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
 <ul>
-<li>This table is what <code>v1-spec.md</code>&rsquo;s &ldquo;Command surface&rdquo; section encodes. Later additions (<code>init</code>, <code>config show</code> — <a href="../0007-settings-resolution-and-init/">ADR-0007</a>) extended it without reopening any of these decisions.</li>
+<li>This table is what <code>v1-spec.md</code>&rsquo;s &ldquo;Command surface&rdquo; section encodes.
+    Later additions (<code>init</code>, <code>config show</code> — <a href="../0007-settings-resolution-and-init/">ADR-0007</a>) extended it without
+    reopening any of these decisions.</li>
 </ul>
 
 

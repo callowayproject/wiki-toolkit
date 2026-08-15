@@ -2028,18 +2028,30 @@
 <li><strong>Source tickets:</strong> <a href="https://github.com/callowayproject/wiki-toolkit/issues/7">#7</a></li>
 </ul>
 <h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
-<p>The thin-CLI architecture (<a href="../0002-cli-framework-and-thin-cli-architecture/">ADR-0002</a>) and the git-backed delta mechanism (<a href="../0004-git-history-as-revision-store/">ADR-0004</a>) both needed a settled testing approach before command implementation could start.</p>
+<p>The thin-CLI architecture (<a href="../0002-cli-framework-and-thin-cli-architecture/">ADR-0002</a>)
+and the git-backed delta mechanism (<a href="../0004-git-history-as-revision-store/">ADR-0004</a>) both needed a settled testing
+approach before command implementation could start.</p>
 <h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Unit tests</strong> on internal business-logic functions carry the real coverage: source classification, delta computation, frontmatter diffing, coverage computation, etc.</li>
-<li><strong><code>CliRunner</code> adapter tests</strong> (one per command) assert only argument parsing, correct delegation, exit code, and output — no re-verification of business logic already covered at the unit layer.</li>
-<li><strong>No golden-file byte-diff comparisons</strong> against <code>catalog.jsonl</code>/<code>log.jsonl</code> — structured assertions on parsed JSONL instead, since field-order/whitespace churn would make golden files brittle for no benefit.</li>
-<li><strong><code>source-delta</code>&rsquo;s git mechanics are tested against a real throwaway repo</strong> in <code>tmp_path</code> (init repo, commit &ldquo;last known,&rdquo; mutate uncommitted as &ldquo;current&rdquo;) — not mocked <code>git</code> calls — covering the normal, no-prior-commit, and shallow-clone cases.</li>
-<li><strong>Fixture strategy</strong>: per-command isolated fixtures built from a shared factory helper (e.g. <code>make_source(tmp_path, source, status=...)</code>), not one shared &ldquo;golden wiki&rdquo; repo — keeps each test&rsquo;s setup minimal and prevents cross-test ripple effects.</li>
+<li><strong>Unit tests</strong> on internal business-logic functions carry the real coverage: source classification,
+    delta computation, frontmatter diffing, coverage computation, etc.</li>
+<li><strong><code>CliRunner</code> adapter tests</strong> (one per command) assert only argument parsing, correct delegation, exit code,
+    and output — no re-verification of business logic already covered at the unit layer.</li>
+<li><strong>No golden-file byte-diff comparisons</strong> against <code>catalog.jsonl</code>/<code>log.jsonl</code> —
+    structured assertions on parsed JSONL instead,
+    since field-order/whitespace churn would make golden files brittle for no benefit.</li>
+<li><strong><code>source-delta</code>&rsquo;s git mechanics are tested against a real throwaway repo</strong> in <code>tmp_path</code>
+    (init repo, commit &ldquo;last known,&rdquo; mutate uncommitted as &ldquo;current&rdquo;)
+    — not mocked <code>git</code> calls — covering the normal, no-prior-commit, and shallow-clone cases.</li>
+<li><strong>Fixture strategy</strong>: per-command isolated fixtures built from a shared factory helper
+    (e.g. <code>make_source(tmp_path, source, status=...)</code>),
+    not one shared &ldquo;golden wiki&rdquo; repo — keeps each test&rsquo;s setup minimal and prevents cross-test ripple effects.</li>
 </ul>
 <h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Definition of Done for every v1 command = one unit test + one <code>CliRunner</code> test, <code>mypy</code>/<code>ruff</code>/pre-commit clean, and <code>doctor</code> passing against a real fixture repo (settled and swept in <a href="https://github.com/callowayproject/wiki-toolkit/issues/22">#22</a>).</li>
+<li>Definition of Done for every v1 command = one unit test + one <code>CliRunner</code> test, <code>mypy</code>/<code>ruff</code>/pre-commit clean,
+    and <code>doctor</code> passing against a real fixture repo
+    (settled and swept in <a href="https://github.com/callowayproject/wiki-toolkit/issues/22">#22</a>).</li>
 </ul>
 
 

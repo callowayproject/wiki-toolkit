@@ -2000,32 +2000,56 @@
 
 
 <h1 id="wiki-toolkit">wiki-toolkit<a class="headerlink" href="#wiki-toolkit" title="Permanent link">&para;</a></h1>
-<p>Domain glossary for the <code>wiki_toolkit</code> CLI — the deterministic tooling that ingests pre-materialized Markdown sources into an LLM-Wiki and keeps it in sync.</p>
+<p>Domain glossary for the <code>wiki_toolkit</code> CLI —
+the deterministic tooling that ingests pre-materialized Markdown sources into an LLM-Wiki and keeps it in sync.</p>
 <h2 id="language">Language<a class="headerlink" href="#language" title="Permanent link">&para;</a></h2>
-<p><strong>source</strong>:
-The identity field on a Raw source file&rsquo;s frontmatter, and the general term for one unit of external input (a design doc, a ticket, a comment) tracked by the toolkit. In v1, this is the only identity concept — there is no separate adapter-level <code>stable_id</code> distinct from it, since v1 has no adapters.
-<em>Avoid</em>: source_id, stable_id (both are pre-v1/adapter-era terms; don&rsquo;t use once adapters exist without redefining the relationship to <code>source</code>)</p>
-<p><strong>Batch</strong>:
-A group of raw files under a <code>source_dir</code>, sized to a byte/file cap for parallel <code>wiki-ingest</code> dispatch (<code>batch-plan</code>). Not a <code>source</code>-domain concept: batching runs over plain files before any of them has frontmatter, an identity, or a manifest entry — it&rsquo;s an ingest-dispatch mechanic, not a source lifecycle state.
+<p><strong>source</strong>: The identity field on a Raw source file&rsquo;s frontmatter, and the general term for one unit of external input
+(a design doc, a ticket, a comment) tracked by the toolkit.
+In v1, this is the only identity concept — there is no separate adapter-level <code>stable_id</code> distinct from it,
+since v1 has no adapters.
+<em>Avoid</em>: source_id, stable_id (both are pre-v1/adapter-era terms;
+don&rsquo;t use once adapters exist without redefining the relationship to <code>source</code>)</p>
+<p><strong>Batch</strong>: A group of raw files under a <code>source_dir</code>, sized to a byte/file cap
+for parallel <code>wiki-ingest</code> dispatch (<code>batch-plan</code>).
+Not a <code>source</code>-domain concept: batching runs over plain files before any of them has frontmatter, an identity,
+or a manifest entry — it&rsquo;s an ingest-dispatch mechanic, not a source lifecycle state.
 <em>Avoid</em>: using &ldquo;batch&rdquo; to mean a group of sources once processed — a batch is pre-ingest file grouping only.</p>
-<p><strong>Snapshot source</strong>:
-A source type with no version history of its own (Jira, Slack, Confluence). Its content is copied into <code>sources/</code> as Markdown because the toolkit must create the history the source system doesn&rsquo;t provide.
-<em>Avoid</em>: &ldquo;snapshot&rdquo; alone when referring to the source type — pair it with &ldquo;source&rdquo; to distinguish from a last-known revision.</p>
-<p><strong>Last-known revision</strong>:
-The prior commit on <code>main</code> for a given Raw source file&rsquo;s path — the baseline <code>source-delta</code> diffs the current fetched state against. Git history is the storage mechanism; there is no separate revision store. First-time ingestion diffs against a synthetic empty baseline.
-<em>Avoid</em>: snapshot (reserved for the source-type sense above), commit (that&rsquo;s git&rsquo;s term for the mechanism, not our domain concept for the baseline)</p>
-<p><strong>Processed</strong> (source state):
-A source file the toolkit has scanned via <code>source-scan</code> and found to be neither a duplicate nor an error. Set only by the CLI, never by upstream materializers. Independent of whether any wiki note yet cites it.</p>
-<p><strong>Covered</strong> (source state):
-A source that at least one Wiki note&rsquo;s <code>sources:</code> frontmatter references (tracked as <code>covered_by</code> in the source manifest). A source can be <code>processed</code> but not yet <code>covered</code> — that&rsquo;s an expected transient state, not an error; <code>source-lint</code> flags sources stuck in it as a backlog signal, not enforced at scan time.</p>
-<p><strong>Local skill copy</strong>:
-The versioned copy of the five agent-facing <code>SKILL.md</code> files that <code>init</code> scaffolds into a consumer wiki&rsquo;s <code>docs/.agents/skills/</code>, distinct from the installable Claude Code plugin (<code>skills/</code> at this repo&rsquo;s root) it was copied from. Exists so a wiki is self-contained without a live runtime dependency on the plugin.
+<p><strong>Snapshot source</strong>: A source type with no version history of its own (Jira, Slack, Confluence).
+Its content is copied into <code>sources/</code> as Markdown
+because the toolkit must create the history the source system doesn&rsquo;t provide.
+<em>Avoid</em>: &ldquo;snapshot&rdquo; alone when referring to the source type —
+pair it with &ldquo;source&rdquo; to distinguish from a last-known revision.</p>
+<p><strong>Last-known revision</strong>: The prior commit on <code>main</code> for a given Raw source file&rsquo;s path —
+the baseline <code>source-delta</code> diffs the current fetched state against.
+Git history is the storage mechanism; there is no separate revision store.
+First-time ingestion diffs against a synthetic empty baseline.
+<em>Avoid</em>: snapshot (reserved for the source-type sense above), commit
+(that&rsquo;s git&rsquo;s term for the mechanism, not our domain concept for the baseline)</p>
+<p><strong>Processed</strong> (source state): A source file the toolkit has scanned via <code>source-scan</code>
+and found to be neither a duplicate nor an error.
+Set only by the CLI, never by upstream materializers.
+Independent of whether any wiki note yet cites it.</p>
+<p><strong>Covered</strong> (source state): A source that at least one Wiki note&rsquo;s <code>sources:</code> frontmatter references
+(tracked as <code>covered_by</code> in the source manifest).
+A source can be <code>processed</code> but not yet <code>covered</code> — that&rsquo;s an expected transient state, not an error;
+<code>source-lint</code> flags sources stuck in it as a backlog signal, not enforced at scan time.</p>
+<p><strong>Local skill copy</strong>: The versioned copy of the five agent-facing <code>SKILL.md</code> files
+that <code>init</code> scaffolds into a consumer wiki&rsquo;s <code>docs/.agents/skills/</code>, distinct from the installable Claude Code plugin
+(<code>skills/</code> at this repo&rsquo;s root) it was copied from.
+Exists so a wiki is self-contained without a live runtime dependency on the plugin.
 <em>Avoid</em>: &ldquo;the skills&rdquo; alone when the distinction between the plugin and this copy matters (e.g. discussing drift).</p>
-<p><strong>Provenance marker</strong>:
-<code>docs/.agents/skills/.provenance</code> — records the <code>wiki_toolkit</code> package version a local skill copy was scaffolded from. <code>doctor</code> compares it to the installed package version to detect drift; only <code>init</code> writes it.
+<p><strong>Provenance marker</strong>: <code>docs/.agents/skills/.provenance</code> —
+records the <code>wiki_toolkit</code> package version a local skill copy was scaffolded from.
+<code>doctor</code> compares it to the installed package version to detect drift; only <code>init</code> writes it.
 <em>Avoid</em>: confidence marker (different concept — see Confidence marker entry)</p>
-<p><strong>Confidence marker</strong>:
-A per-claim epistemic tag on wiki page content: <strong>extracted</strong> (default, no marker — a paraphrase of what a source actually says), <strong>inferred</strong> (<code>^[inferred]</code> suffix — an LLM-synthesized connection or implication the source doesn&rsquo;t state directly), or <strong>ambiguous</strong> (<code>^[ambiguous]</code> suffix — sources disagree or are unclear). Optionally rolled up at the page level as a <code>confidence:</code> frontmatter block (best-effort fractions written by <code>ingest</code>, recomputed and drift-checked by <code>lint</code>). Exact inline suffix syntax — including interaction with the existing <code>^[source_id]</code> footnote convention — is pinned down separately.
+<p><strong>Confidence marker</strong>: A per-claim epistemic tag on wiki page content: <strong>extracted</strong>
+(default, no marker — a paraphrase of what a source actually says),
+<strong>inferred</strong> (<code>^[inferred]</code> suffix — an LLM-synthesized connection or implication the source doesn&rsquo;t state directly),
+or <strong>ambiguous</strong> (<code>^[ambiguous]</code> suffix — sources disagree or are unclear).
+Optionally rolled up at the page level as a <code>confidence:</code> frontmatter block
+(best-effort fractions written by <code>ingest</code>, recomputed and drift-checked by <code>lint</code>).
+Exact inline suffix syntax — including interaction with the existing <code>^[source_id]</code> footnote convention —
+is pinned down separately.
 <em>Avoid</em>: provenance marker (different concept — see Provenance marker entry)</p>
 
 

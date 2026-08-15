@@ -2028,19 +2028,28 @@
 <li><strong>Source tickets:</strong> <a href="https://github.com/callowayproject/wiki-toolkit/issues/6">#6</a></li>
 </ul>
 <h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
-<p><code>source-update</code>&rsquo;s delta computation needs a &ldquo;last known&rdquo; state to diff a source&rsquo;s current field content against. <code>docs/sources/</code> is itself a git-versioned directory inside this repo, raising the question of whether the toolkit needs its own separate snapshot store or can lean entirely on git.</p>
+<p><code>source-update</code>&rsquo;s delta computation needs a &ldquo;last known&rdquo; state to diff a source&rsquo;s current field content against.
+<code>docs/sources/</code> is itself a git-versioned directory inside this repo,
+raising the question of whether the toolkit needs its own separate snapshot store or can lean entirely on git.</p>
 <h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
 <ul>
-<li>No separate snapshot database. Git history <em>is</em> the storage mechanism for prior state.</li>
+<li>No separate snapshot database.
+    Git history <em>is</em> the storage mechanism for prior state.</li>
 <li><strong>Current state</strong> = the working-tree file.</li>
-<li><strong>Last-known revision</strong> = the file&rsquo;s content as of the last commit touching that path on <code>main</code> — via <code>git log -1 --format=%H main -- &lt;path&gt;</code> then <code>git show &lt;sha&gt;:&lt;path&gt;</code> — not <code>HEAD</code>, not whatever branch is checked out, so <code>source-delta</code> always answers &ldquo;has the canonical (merged) state changed.&rdquo;</li>
-<li>Diff scope excludes CLI bookkeeping fields (<code>processed</code>, <code>duplicate</code>, <code>source</code>); only source-content fields are compared.</li>
-<li>First-time ingestion (no prior commit on <code>main</code> for that path) diffs against a synthetic empty baseline — every field reports as new — rather than erroring.</li>
-<li>Requires full git history (<code>fetch-depth: 0</code>); <code>doctor</code> detects and warns on a shallow clone, since a depth-1 checkout makes any prior state indistinguishable from &ldquo;first-time ingestion.&rdquo;</li>
+<li><strong>Last-known revision</strong> = the file&rsquo;s content as of the last commit touching that path on <code>main</code> —
+    via <code>git log -1 --format=%H main -- &lt;path&gt;</code> then <code>git show &lt;sha&gt;:&lt;path&gt;</code> — not <code>HEAD</code>,
+    not whatever branch is checked out, so <code>source-delta</code> always answers &ldquo;has the canonical (merged) state changed.&rdquo;</li>
+<li>Diff scope excludes CLI bookkeeping fields
+    (<code>processed</code>, <code>duplicate</code>, <code>source</code>); only source-content fields are compared.</li>
+<li>First-time ingestion (no prior commit on <code>main</code> for that path) diffs against a synthetic empty baseline —
+    every field reports as new — rather than erroring.</li>
+<li>Requires full git history (<code>fetch-depth: 0</code>); <code>doctor</code> detects and warns on a shallow clone,
+    since a depth-1 checkout makes any prior state indistinguishable from &ldquo;first-time ingestion.&rdquo;</li>
 </ul>
 <h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>source-delta</code>&rsquo;s tests must exercise a real throwaway git repo, not mocked <code>git</code> calls — see <a href="../0005-two-layer-testing-strategy/">ADR-0005</a>.</li>
+<li><code>source-delta</code>&rsquo;s tests must exercise a real throwaway git repo, not mocked <code>git</code> calls —
+    see <a href="../0005-two-layer-testing-strategy/">ADR-0005</a>.</li>
 <li><code>doctor</code>&rsquo;s shallow-clone check exists solely to protect this mechanism from silently misreporting deltas.</li>
 </ul>
 

@@ -2025,22 +2025,39 @@
 <ul>
 <li><strong>Status:</strong> Accepted</li>
 <li><strong>Date:</strong> 2026-08-07</li>
-<li><strong>Source tickets:</strong> <a href="https://github.com/callowayproject/wiki-toolkit/issues/54">#54</a> (and <a href="https://github.com/callowayproject/wiki-toolkit/issues/55">#55</a>–<a href="https://github.com/callowayproject/wiki-toolkit/issues/57">#57</a>)</li>
+<li><strong>Source tickets:</strong> <a href="https://github.com/callowayproject/wiki-toolkit/issues/54">#54</a> (and
+    <a href="https://github.com/callowayproject/wiki-toolkit/issues/55">#55</a>–<a href="https://github.com/callowayproject/wiki-toolkit/issues/57">#57</a>)</li>
 </ul>
 <h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
-<p><code>v1-spec.md</code> already specified a <code>docs_dir</code> configuration precedence chain and an <code>init</code> command, but no code implemented either: every command hardcoded <code>docs_dir = Path.cwd() / "docs"</code>, so there was no way to point the toolkit at a non-default docs root, and no bootstrap path for a brand-new wiki other than hand-creating the structure <code>doctor</code> would otherwise just report as missing.</p>
+<p><code>v1-spec.md</code> already specified a <code>docs_dir</code> configuration precedence chain and an <code>init</code> command,
+but no code implemented either: every command hardcoded <code>docs_dir = Path.cwd() / "docs"</code>,
+so there was no way to point the toolkit at a non-default docs root,
+and no bootstrap path for a brand-new wiki other than hand-creating the structure <code>doctor</code> would otherwise just report
+as missing.</p>
 <h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>wiki_toolkit/settings.py</code> resolves <code>docs_dir</code> in precedence order: CLI flag → <code>WIKI_TOOLKIT_DOCS_DIR</code> env var → <code>[tool.wiki_toolkit]</code> table in <code>pyproject.toml</code> (located upward from cwd, matching how <code>ruff</code>/<code>mypy</code> locate project config) → built-in default (<code>docs/</code>). Resolution returns the value <em>and</em> which source produced it (<code>flag</code>/<code>env</code>/<code>pyproject</code>/<code>default</code>) as a small result type, not a bare path.</li>
+<li><code>wiki_toolkit/settings.py</code> resolves <code>docs_dir</code> in precedence order:
+    CLI flag → <code>WIKI_TOOLKIT_DOCS_DIR</code> env var → <code>[tool.wiki_toolkit]</code> table in <code>pyproject.toml</code>
+    (located upward from cwd, matching how <code>ruff</code>/<code>mypy</code> locate project config) → built-in default (<code>docs/</code>).
+    Resolution returns the value <em>and</em> which source produced it (<code>flag</code>/<code>env</code>/<code>pyproject</code>/<code>default</code>)
+    as a small result type, not a bare path.</li>
 <li>New <code>config show</code> command prints the resolved value and its source, read-only.</li>
-<li>New <code>init</code> command scaffolds <code>docs/{sources,wiki}/</code>, empty <code>catalog.jsonl</code>/<code>log.jsonl</code>/<code>source-manifest.jsonl</code>, and <code>schema.md</code> from a built-in template verbatim (unchanged from toolkit-spec.md&rsquo;s Schema section). It refuses to overwrite anything already present, reporting each already-present item instead of erroring the whole run — so a partial <code>init</code> can be completed by re-running.</li>
-<li><code>doctor</code> gains the &ldquo;resolved configuration and its source&rdquo; line already promised by <code>v1-spec.md</code>&rsquo;s contract but not yet implemented.</li>
-<li>All 9 pre-existing commands (plus <code>doctor</code>) are retrofitted with a <code>--docs-dir</code> option, replacing their hardcoded default.</li>
+<li>New <code>init</code> command scaffolds <code>docs/{sources,wiki}/</code>, empty <code>catalog.jsonl</code>/<code>log.jsonl</code>/<code>source-manifest.jsonl</code>,
+    and <code>schema.md</code> from a built-in template verbatim (unchanged from toolkit-spec.md&rsquo;s Schema section).
+    It refuses to overwrite anything already present,
+    reporting each already-present item instead of erroring the whole run —
+    so a partial <code>init</code> can be completed by re-running.</li>
+<li><code>doctor</code> gains the &ldquo;resolved configuration and its source&rdquo; line already promised by <code>v1-spec.md</code>&rsquo;s contract but not
+    yet implemented.</li>
+<li>All 9 pre-existing commands (plus <code>doctor</code>) are retrofitted with a <code>--docs-dir</code> option,
+    replacing their hardcoded default.</li>
 </ul>
 <h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
 <ul>
-<li>No business-logic module&rsquo;s function signature changes — they already took <code>docs_dir: Path</code> as a plain parameter; only <code>cli.py</code>&rsquo;s option wiring and each command&rsquo;s default-resolution line change.</li>
-<li><code>init</code> later gained a sixth scaffolded item (the local skills copy) without reopening this ADR — see <a href="../0009-local-skill-copy-versioned-sync/">ADR-0009</a>.</li>
+<li>No business-logic module&rsquo;s function signature changes — they already took <code>docs_dir: Path</code> as a plain parameter;
+    only <code>cli.py</code>&rsquo;s option wiring and each command&rsquo;s default-resolution line change.</li>
+<li><code>init</code> later gained a sixth scaffolded item
+    (the local skills copy) without reopening this ADR — see <a href="../0009-local-skill-copy-versioned-sync/">ADR-0009</a>.</li>
 </ul>
 
 

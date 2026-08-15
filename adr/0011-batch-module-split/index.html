@@ -2027,8 +2027,15 @@
 <li><strong>Date:</strong> 2026-08-13</li>
 </ul>
 <h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
-<p><a href="../0006-domain-module-split/">ADR-0006</a> rejected splitting <code>sources.py</code> further by individual command, because every command in it (<code>scan_sources</code>, <code>apply_source_scan</code>, <code>lint_sources</code>, <code>source_coverage</code>, <code>compute_source_delta</code>, <code>suggest_dedupe</code>, <code>write_source_snapshot</code>) shares the source manifest and the canonical-source predicate — splitting by command would recreate that duplication one level up.</p>
-<p><code>plan_batches</code> (added later, issue #84, after ADR-0006) doesn&rsquo;t share that dependency. It never reads the manifest, never parses frontmatter, never calls <code>_iter_markdown</code> or <code>_is_canonical_source</code> — it walks raw files under a <code>source_dir</code> by byte/count caps, before any file has become a <code>source</code> in the domain sense. &ldquo;Batch&rdquo; wasn&rsquo;t in <code>CONTEXT.md</code>&rsquo;s glossary despite being used in the CLI (<code>batch-plan</code>) and write-gate workflow (&ldquo;batch coordinator session&rdquo;).</p>
+<p><a href="../0006-domain-module-split/">ADR-0006</a> rejected splitting <code>sources.py</code> further by individual command,
+because every command in it (<code>scan_sources</code>, <code>apply_source_scan</code>, <code>lint_sources</code>, <code>source_coverage</code>,
+<code>compute_source_delta</code>, <code>suggest_dedupe</code>, <code>write_source_snapshot</code>) shares the source manifest
+and the canonical-source predicate — splitting by command would recreate that duplication one level up.</p>
+<p><code>plan_batches</code> (added later, issue #84, after ADR-0006) doesn&rsquo;t share that dependency.
+It never reads the manifest, never parses frontmatter, never calls <code>_iter_markdown</code> or <code>_is_canonical_source</code> —
+it walks raw files under a <code>source_dir</code> by byte/count caps, before any file has become a <code>source</code> in the domain sense.
+&ldquo;Batch&rdquo; wasn&rsquo;t in <code>CONTEXT.md</code>&rsquo;s glossary despite being used in the CLI (<code>batch-plan</code>) and write-gate workflow
+(&ldquo;batch coordinator session&rdquo;).</p>
 <h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>Batch</code>/<code>BatchStats</code>/<code>BatchPlan</code>/<code>plan_batches</code> move to a new <code>batches.py</code>, with their tests to <code>test_batches.py</code>.</li>
@@ -2037,7 +2044,9 @@
 </ul>
 <h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
 <ul>
-<li>This narrows, not reverses, ADR-0006: the split criterion is &ldquo;does this command participate in the shared manifest/canonical-source state,&rdquo; not &ldquo;is this a different command.&rdquo;</li>
+<li>This narrows, not reverses, ADR-0006:
+    the split criterion is &ldquo;does this command participate in the shared manifest/canonical-source state,&rdquo; not &ldquo;is this a
+    different command.&rdquo;</li>
 <li>Any future addition to <code>sources.py</code> should be checked against that same criterion before being added there by default.</li>
 </ul>
 

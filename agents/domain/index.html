@@ -2037,10 +2037,15 @@
 <h2 id="before-exploring-read-these">Before exploring, read these<a class="headerlink" href="#before-exploring-read-these" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong><code>CONTEXT.md</code></strong> at the repo root, or</li>
-<li><strong><code>CONTEXT-MAP.md</code></strong> at the repo root if it exists — it points at one <code>CONTEXT.md</code> per context. Read each one relevant to the topic.</li>
-<li><strong><code>docs/adr/</code></strong> — read ADRs that touch the area you&rsquo;re about to work in. In multi-context repos, also check <code>src/&lt;context&gt;/docs/adr/</code> for context-scoped decisions.</li>
+<li><strong><code>CONTEXT-MAP.md</code></strong> at the repo root if it exists — it points at one <code>CONTEXT.md</code> per context.
+    Read each one relevant to the topic.</li>
+<li><strong><code>docs/adr/</code></strong> — read ADRs that touch the area you&rsquo;re about to work in.
+    In multi-context repos, also check <code>src/&lt;context&gt;/docs/adr/</code> for context-scoped decisions.</li>
 </ul>
-<p>If any of these files don&rsquo;t exist, <strong>proceed silently</strong>. Don&rsquo;t flag their absence; don&rsquo;t suggest creating them upfront. The <code>/domain-modeling</code> skill (reached via <code>/grill-with-docs</code> and <code>/improve-codebase-architecture</code>) creates them lazily when terms or decisions actually get resolved.</p>
+<p>If any of these files don&rsquo;t exist, <strong>proceed silently</strong>.
+Don&rsquo;t flag their absence; don&rsquo;t suggest creating them upfront.
+The <code>/domain-modeling</code> skill (reached via <code>/grill-with-docs</code> and <code>/improve-codebase-architecture</code>) creates them lazily
+when terms or decisions actually get resolved.</p>
 <h2 id="file-structure">File structure<a class="headerlink" href="#file-structure" title="Permanent link">&para;</a></h2>
 <p>Single-context repo (most repos):</p>
 <div class="highlight"><pre><span></span><code>/
@@ -2063,8 +2068,12 @@
         └── docs/adr/
 </code></pre></div>
 <h2 id="use-the-glossarys-vocabulary">Use the glossary&rsquo;s vocabulary<a class="headerlink" href="#use-the-glossarys-vocabulary" title="Permanent link">&para;</a></h2>
-<p>When your output names a domain concept (in an issue title, a refactor proposal, a hypothesis, a test name), use the term as defined in <code>CONTEXT.md</code>. Don&rsquo;t drift to synonyms the glossary explicitly avoids.</p>
-<p>If the concept you need isn&rsquo;t in the glossary yet, that&rsquo;s a signal — either you&rsquo;re inventing language the project doesn&rsquo;t use (reconsider) or there&rsquo;s a real gap (note it for <code>/domain-modeling</code>).</p>
+<p>When your output names a domain concept
+(in an issue title, a refactor proposal, a hypothesis, a test name), use the term as defined in <code>CONTEXT.md</code>.
+Don&rsquo;t drift to synonyms the glossary explicitly avoids.</p>
+<p>If the concept you need isn&rsquo;t in the glossary yet, that&rsquo;s a signal —
+either you&rsquo;re inventing language the project doesn&rsquo;t use (reconsider) or there&rsquo;s a real gap
+(note it for <code>/domain-modeling</code>).</p>
 <h2 id="flag-adr-conflicts">Flag ADR conflicts<a class="headerlink" href="#flag-adr-conflicts" title="Permanent link">&para;</a></h2>
 <p>If your output contradicts an existing ADR, surface it explicitly rather than silently overriding:</p>
 <blockquote>

@@ -1122,6 +1122,18 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#6975-implemented-it-the-plugin-scaffold-plus-ingestquery-70-lint-71-source-update-72" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        69–#75 implemented it: the plugin scaffold plus ingest/query (#70), lint (#71), source-update (#72)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="69–#75 implemented it: the plugin scaffold plus ingest/query (#70), lint (#71), source-update (#72)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#phase-3-cross-linker-skill-map-94-closed-2026-08-10" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1131,8 +1143,25 @@
   </a>
   
 </li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
+  <a href="#117120-implemented-it-aliaseslinks-catalog-fields-117" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        117–#120 implemented it: aliases/links catalog fields (#117)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="117–#120 implemented it: aliases/links catalog fields (#117)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#whats-still-open" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1142,8 +1171,8 @@
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#where-to-look" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1151,6 +1180,11 @@
       
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -2044,9 +2078,14 @@
 
 
 <h1 id="implementation-history">Implementation history<a class="headerlink" href="#implementation-history" title="Permanent link">&para;</a></h1>
-<p>How <code>wiki_toolkit</code> (<a href="../idea/">idea.md</a> → <a href="../toolkit-spec/">toolkit-spec.md</a>) actually got built, across closed Wayfinder maps and their follow-on tickets. This is the connective narrative; the individual resolved decisions live in <a href="../adr/"><code>docs/adr/</code></a> — link there for the &ldquo;why,&rdquo; not here.</p>
+<p>How <code>wiki_toolkit</code> (<a href="../idea/">idea.md</a> → <a href="../toolkit-spec/">toolkit-spec.md</a>) actually got built,
+across closed Wayfinder maps and their follow-on tickets.
+This is the connective narrative; the individual resolved decisions live in <a href="../adr/"><code>docs/adr/</code></a> —
+link there for the &ldquo;why,&rdquo; not here.</p>
 <h2 id="phase-1-v1-cli-map-2-closed-2026-08-05">Phase 1 — v1 CLI (<a href="https://github.com/callowayproject/wiki-toolkit/issues/2">map #2</a>, closed 2026-08-05)<a class="headerlink" href="#phase-1-v1-cli-map-2-closed-2026-08-05" title="Permanent link">&para;</a></h2>
-<p>Scope: a CLI (<code>wiki_toolkit</code>) that consumes pre-materialized Markdown dropped into <code>docs/sources/</code> — no source adapters, no real GitHub PR creation, no agent-facing <code>SKILL.md</code> files yet. Five design questions had to resolve before any command ticket could start:</p>
+<p>Scope: a CLI (<code>wiki_toolkit</code>) that consumes pre-materialized Markdown dropped into <code>docs/sources/</code> — no source adapters,
+no real GitHub PR creation, no agent-facing <code>SKILL.md</code> files yet.
+Five design questions had to resolve before any command ticket could start:</p>
 <table>
 <thead>
 <tr>
@@ -2083,14 +2122,28 @@
 </tr>
 </tbody>
 </table>
-<p>Twelve build tickets (#9–#22) then implemented <code>doctor</code>, <code>build</code>, <code>lint</code>, <code>source-scan</code>, <code>source-lint</code>, <code>source-coverage</code>, <code>source-delta</code>, <code>source-snapshot</code>, <code>source-dedupe</code>, <code>search-catalog</code>, <code>log</code>, and <code>propose-pr</code> against those five decisions, closing out the map.</p>
+<p>Twelve build tickets (#9–#22) then implemented <code>doctor</code>, <code>build</code>, <code>lint</code>, <code>source-scan</code>, <code>source-lint</code>,
+<code>source-coverage</code>, <code>source-delta</code>, <code>source-snapshot</code>, <code>source-dedupe</code>, <code>search-catalog</code>, <code>log</code>,
+and <code>propose-pr</code> against those five decisions, closing out the map.</p>
 <p><strong>Follow-on work</strong>, not part of the original map but building directly on its output:</p>
 <ul>
-<li><strong><a href="https://github.com/callowayproject/wiki-toolkit/issues/37">#37</a> — domain-module split</strong> (closed 2026-08-05): <code>core.py</code> had grown to 810 lines of six tangled domain concepts with the same directory-walk logic reimplemented six times. Split into <code>sources.py</code>/<code>wiki.py</code>/<code>write_gate.py</code>/<code>log.py</code>/<code>doctor.py</code>/<code>_io.py</code> with zero change to <code>cli.py</code>&rsquo;s observable behavior. → <a href="../../adr/0006-domain-module-split/">ADR-0006</a></li>
-<li><strong><a href="https://github.com/callowayproject/wiki-toolkit/issues/54">#54</a> — settings, init, config show</strong> (closed 2026-08-07): filled the gap between what the spec already specified (a <code>docs_dir</code> precedence chain, an <code>init</code> command) and what existed in code (neither). → <a href="../../adr/0007-settings-resolution-and-init/">ADR-0007</a></li>
+<li><strong><a href="https://github.com/callowayproject/wiki-toolkit/issues/37">#37</a> — domain-module split</strong>
+    (closed 2026-08-05):
+    <code>core.py</code> had grown to 810 lines of six tangled domain concepts with the same directory-walk logic reimplemented six
+    times.
+    Split into <code>sources.py</code>/<code>wiki.py</code>/<code>write_gate.py</code>/<code>log.py</code>/<code>doctor.py</code>/<code>_io.py</code> with zero change to <code>cli.py</code>&rsquo;s
+    observable behavior. → <a href="../../adr/0006-domain-module-split/">ADR-0006</a></li>
+<li><strong><a href="https://github.com/callowayproject/wiki-toolkit/issues/54">#54</a> — settings, init, config show</strong>
+    (closed 2026-08-07):
+    filled the gap between what the spec already specified
+    (a <code>docs_dir</code> precedence chain, an <code>init</code> command)
+    and what existed in code (neither). → <a href="../../adr/0007-settings-resolution-and-init/">ADR-0007</a></li>
 </ul>
 <h2 id="phase-2-skills-package-map-62-closed-2026-08-08">Phase 2 — Skills package (<a href="https://github.com/callowayproject/wiki-toolkit/issues/62">map #62</a>, closed 2026-08-08)<a class="headerlink" href="#phase-2-skills-package-map-62-closed-2026-08-08" title="Permanent link">&para;</a></h2>
-<p>Scope: package the five agent-facing <code>SKILL.md</code> files (<code>ingest</code>, <code>query</code>, <code>lint</code>, <code>source-update</code>, <code>maintain</code>) as a standalone, installable Claude Code plugin, and make <code>init</code>/<code>doctor</code> keep a per-wiki local copy in sync with it. Four design questions:</p>
+<p>Scope: package the five agent-facing <code>SKILL.md</code> files
+(<code>ingest</code>, <code>query</code>, <code>lint</code>, <code>source-update</code>, <code>maintain</code>)
+as a standalone, installable Claude Code plugin, and make <code>init</code>/<code>doctor</code> keep a per-wiki local copy in sync with it.
+Four design questions:</p>
 <table>
 <thead>
 <tr>
@@ -2122,9 +2175,16 @@
 </tr>
 </tbody>
 </table>
-<p><a href="https://github.com/callowayproject/wiki-toolkit/issues/68">#68</a> turned those four decisions into a build spec; #69–#75 implemented it: the plugin scaffold plus <code>ingest</code>/<code>query</code> (#70), <code>lint</code> (#71), <code>source-update</code> (#72), <code>maintain</code> (#73), <code>init</code>&rsquo;s skills-copy scaffolding (#74), and <code>doctor</code>&rsquo;s drift check (#75) — shipped as <code>wiki-toolkit</code> 0.18.0–0.18.2.</p>
-<h2 id="phase-3-cross-linker-skill-map-94-closed-2026-08-10">Phase 3 — Cross-linker skill (<a href="https://github.com/callowayproject/wiki-toolkit/issues/94">map #94</a>, closed 2026-08-10)<a class="headerlink" href="#phase-3-cross-linker-skill-map-94-closed-2026-08-10" title="Permanent link">&para;</a></h2>
-<p>Scope: weave newly-ingested pages into the rest of the wiki&rsquo;s knowledge graph automatically, instead of relying on whatever <code>[[wikilink]]</code>s the agent happens to add while drafting. No ADRs for this map — its design questions were resolved directly into <code>toolkit-spec.md</code>&rsquo;s schema/CLI surface and the <code>cross-linker</code> skill file itself, via <a href="https://github.com/callowayproject/wiki-toolkit/issues/116">#116</a> (the map&rsquo;s implementation-spec handoff ticket):</p>
+<p><a href="https://github.com/callowayproject/wiki-toolkit/issues/68">#68</a> turned those four decisions into a build spec;</p>
+<h2 id="6975-implemented-it-the-plugin-scaffold-plus-ingestquery-70-lint-71-source-update-72">69–#75 implemented it: the plugin scaffold plus <code>ingest</code>/<code>query</code> (#70), <code>lint</code> (#71), <code>source-update</code> (#72)<a class="headerlink" href="#6975-implemented-it-the-plugin-scaffold-plus-ingestquery-70-lint-71-source-update-72" title="Permanent link">&para;</a></h2>
+<p><code>maintain</code> (#73), <code>init</code>&rsquo;s skills-copy scaffolding (#74), and <code>doctor</code>&rsquo;s drift check (#75) —
+shipped as <code>wiki-toolkit</code> 0.18.0–0.18.2.</p>
+<h3 id="phase-3-cross-linker-skill-map-94-closed-2026-08-10">Phase 3 — Cross-linker skill (<a href="https://github.com/callowayproject/wiki-toolkit/issues/94">map #94</a>, closed 2026-08-10)<a class="headerlink" href="#phase-3-cross-linker-skill-map-94-closed-2026-08-10" title="Permanent link">&para;</a></h3>
+<p>Scope: weave newly-ingested pages into the rest of the wiki&rsquo;s knowledge graph automatically,
+instead of relying on whatever <code>[[wikilink]]</code>s the agent happens to add while drafting.
+No ADRs for this map — its design questions were resolved directly into <code>toolkit-spec.md</code>&rsquo;s schema/CLI surface
+and the <code>cross-linker</code> skill file itself, via <a href="https://github.com/callowayproject/wiki-toolkit/issues/116">#116</a>
+(the map&rsquo;s implementation-spec handoff ticket):</p>
 <table>
 <thead>
 <tr>
@@ -2151,14 +2211,31 @@
 </tr>
 </tbody>
 </table>
-<p><a href="https://github.com/callowayproject/wiki-toolkit/issues/116">#116</a> turned those decisions into a build spec; #117–#120 implemented it: <code>aliases</code>/<code>links</code> catalog fields (#117), the deterministic <code>cross-link-candidates</code> CLI subcommand (#118), narrowing <code>lint</code>&rsquo;s semantic pass to report-only for cross-references (#119), and the <code>cross-linker</code> skill wired into <code>ingest</code> between <code>build</code> and <code>lint</code> (#120).</p>
-<p><code>docs/design/cross-linker-spec.md</code> and <code>cross-linker-scale-research.md</code> were the map&rsquo;s working design docs (spec draft + prior-art research feeding into it) and are deleted now that it&rsquo;s closed — the as-built behavior lives in <code>skills/cross-linker/SKILL.md</code>, and the schema/CLI surface in <a href="../toolkit-spec/">toolkit-spec.md</a>. Two ideas from the spec draft were considered and explicitly dropped rather than carried forward: a git-snapshot/<code>reset --hard</code> undo mechanism (the existing <code>--frame needs-review</code> PR is the undo path) and misc-page affinity/promotion scoring (this toolkit has no <code>misc/</code>/<code>projects/</code> folder concept).</p>
-<h2 id="whats-still-open">What&rsquo;s still open<a class="headerlink" href="#whats-still-open" title="Permanent link">&para;</a></h2>
-<p>Neither phase touched idea.md&rsquo;s <a href="../idea/">Gaps section</a> — the receiver&rsquo;s security boundary for untrusted external content, whether PR-review friction suppresses automated updates in practice, or whether the wiki should live in the code repo or a separate one. Those remain unresolved and are not implicitly closed by anything built here; source adapters (GitHub/Jira/Confluence), webhook wiring, the hosted-agent receiver, and real GitHub PR creation are all still future work.</p>
-<h2 id="where-to-look">Where to look<a class="headerlink" href="#where-to-look" title="Permanent link">&para;</a></h2>
+<p><a href="https://github.com/callowayproject/wiki-toolkit/issues/116">#116</a> turned those decisions into a build spec;</p>
+<h2 id="117120-implemented-it-aliaseslinks-catalog-fields-117">117–#120 implemented it: <code>aliases</code>/<code>links</code> catalog fields (#117)<a class="headerlink" href="#117120-implemented-it-aliaseslinks-catalog-fields-117" title="Permanent link">&para;</a></h2>
+<p>the deterministic <code>cross-link-candidates</code> CLI subcommand (#118),
+narrowing <code>lint</code>&rsquo;s semantic pass to report-only for cross-references (#119),
+and the <code>cross-linker</code> skill wired into <code>ingest</code> between <code>build</code> and <code>lint</code> (#120).</p>
+<p><code>docs/design/cross-linker-spec.md</code> and <code>cross-linker-scale-research.md</code> were the map&rsquo;s working design docs
+(spec draft + prior-art research feeding into it)
+and are deleted now that it&rsquo;s closed — the as-built behavior lives in <code>skills/cross-linker/SKILL.md</code>,
+and the schema/CLI surface in <a href="../toolkit-spec/">toolkit-spec.md</a>.
+Two ideas from the spec draft were considered and explicitly dropped rather than carried forward:
+a git-snapshot/<code>reset --hard</code> undo mechanism
+(the existing <code>--frame needs-review</code> PR is the undo path)
+and misc-page affinity/promotion scoring (this toolkit has no <code>misc/</code>/<code>projects/</code> folder concept).</p>
+<h3 id="whats-still-open">What&rsquo;s still open<a class="headerlink" href="#whats-still-open" title="Permanent link">&para;</a></h3>
+<p>Neither phase touched idea.md&rsquo;s <a href="../idea/">Gaps section</a> —
+the receiver&rsquo;s security boundary for untrusted external content,
+whether PR-review friction suppresses automated updates in practice,
+or whether the wiki should live in the code repo or a separate one.
+Those remain unresolved and are not implicitly closed by anything built here; source adapters (GitHub/Jira/Confluence),
+webhook wiring, the hosted-agent receiver, and real GitHub PR creation are all still future work.</p>
+<h3 id="where-to-look">Where to look<a class="headerlink" href="#where-to-look" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Resolved decisions, with context and consequences</strong>: <a href="../adr/"><code>docs/adr/</code></a></li>
-<li><strong>CLI reference, as built, plus the still-unbuilt full vision (adapters, webhooks) under &ldquo;Not yet built&rdquo; headings</strong>: <a href="../toolkit-spec/">toolkit-spec.md</a></li>
+<li><strong>CLI reference, as built, plus the still-unbuilt full vision (adapters, webhooks) under &ldquo;Not yet built&rdquo; headings</strong>:
+    <a href="../toolkit-spec/">toolkit-spec.md</a></li>
 <li><strong>Domain vocabulary</strong>: <a href="../CONTEXT/">CONTEXT.md</a></li>
 </ul>
 

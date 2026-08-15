@@ -1594,6 +1594,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#wiki_toolkit.cli-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Classes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#wiki_toolkit.cli-functions" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1621,6 +1632,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;build
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wiki_toolkit.cli.calculate_scan_scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;calculate_scan_scope
       
     </span>
   </a>
@@ -2328,6 +2350,14 @@
               </td>
             </tr>
             <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            calculate_scan_scope (wiki_toolkit.cli.calculate_scan_scope)" href="#wiki_toolkit.cli.calculate_scan_scope">calculate_scan_scope</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Return the scope of sources to update and the set of unmatched source IDs.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
               <td><code><a class="autorefs autorefs-internal" title="            cli (wiki_toolkit.cli.cli)" href="#wiki_toolkit.cli.cli">cli</a></code></td>
               <td class="doc-function-details">
                 <div class="doc-md-description">
@@ -2486,7 +2516,7 @@
 
 
 
-
+<h2 id="wiki_toolkit.cli-classes">Classes<a href="#wiki_toolkit.cli-classes" class="headerlink" title="Permanent link">&para;</a></h2>
 <h2 id="wiki_toolkit.cli-functions">Functions:<a href="#wiki_toolkit.cli-functions" class="headerlink" title="Permanent link">&para;</a></h2>
 
 <div class="doc doc-object doc-function">
@@ -2523,6 +2553,33 @@
     <div class="doc doc-contents ">
 
         <p>Regenerate docs/catalog.jsonl from the current docs/wiki/ notes.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wiki_toolkit.cli.calculate_scan_scope" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">calculate_scan_scope</span>
+
+
+<a href="#wiki_toolkit.cli.calculate_scan_scope" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">calculate_scan_scope</span><span class="p">(</span>
+    <span class="n">result</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            SourceScanResult
+
+
+  
+      dataclass
+   (wiki_toolkit.sources.SourceScanResult)" href="../sources/#wiki_toolkit.sources.SourceScanResult">SourceScanResult</a></span><span class="p">,</span> <span class="n">source_ids</span><span class="p">:</span> <span class="n"><span title="tuple">tuple</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="tuple">tuple</span></span><span class="p">[</span><span class="n"><span title="set">set</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n"><span title="set">set</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the scope of sources to update and the set of unmatched source IDs.</p>
 
 
     </div>
