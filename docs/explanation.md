@@ -10,7 +10,8 @@ This page explains why Wiki Toolkit is the way it is.
 
    Explanation has not been implemented yet!
 
-Explanation is **discussion** that clarifies and illuminates a particular topic. Explanation is **understanding-oriented.**
+Explanation is **discussion** that clarifies and illuminates a particular topic.
+Explanation is **understanding-oriented.**
 
 - Give context and background on your library
 - Explain why you created it
