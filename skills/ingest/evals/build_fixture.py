@@ -214,6 +214,27 @@ No refresh-token flow yet — a user simply has to log in again after 1h.
 """
 
 
+def _commit(dest: Path, message: str) -> None:
+    """Stage everything and commit under the fixed fixture identity."""
+    subprocess.run(["git", "-C", str(dest), "add", "-A"], check=True)
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(dest),
+            "-c",
+            "user.email=fixture@example.com",
+            "-c",
+            "user.name=Fixture",
+            "commit",
+            "-q",
+            "-m",
+            message,
+        ],
+        check=True,
+    )
+
+
 def _write(path: Path, content: str) -> None:
     """
     Writes the given content to the specified file path, creating any necessary parent directories beforehand.
@@ -292,45 +313,13 @@ def build_fixture(dest: Path) -> None:
     _write(docs / "sources" / "ratelimit-slack-thread.md", NEW_SOURCE_RATELIMIT_SLACK)
 
     subprocess.run(["git", "init", "-q", "-b", "main", str(dest)], check=True)
-    subprocess.run(["git", "-C", str(dest), "add", "-A"], check=True)
-    subprocess.run(
-        [
-            "git",
-            "-C",
-            str(dest),
-            "-c",
-            "user.email=fixture@example.com",
-            "-c",
-            "user.name=Fixture",
-            "commit",
-            "-q",
-            "-m",
-            "Initial fixture wiki",
-        ],
-        check=True,
-    )
+    _commit(dest, "Initial fixture wiki")
 
     # Apply the "update to an already-covered source" mutation as a second
     # commit, so `source-delta` has a real prior revision on `main` to diff
     # against (eval 3 needs this — it's specifically testing the update path).
     _write(docs / "sources" / "jira-auth-200.md", UPDATED_SOURCE_AUTH_200)
-    subprocess.run(["git", "-C", str(dest), "add", "-A"], check=True)
-    subprocess.run(
-        [
-            "git",
-            "-C",
-            str(dest),
-            "-c",
-            "user.email=fixture@example.com",
-            "-c",
-            "user.name=Fixture",
-            "commit",
-            "-q",
-            "-m",
-            "AUTH-200: JWT expiry changed to 1h",
-        ],
-        check=True,
-    )
+    _commit(dest, "AUTH-200: JWT expiry changed to 1h")
 
 
 if __name__ == "__main__":
