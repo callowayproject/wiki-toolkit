@@ -37,14 +37,44 @@ the CLI has no logic worth unit-testing beyond correct delegation.
 
 ## Configuration
 
-Settings (currently just the `docs` root, default `docs/`) resolve via `pydantic-settings`, in precedence order:
+Settings resolve via `pydantic-settings` into a single `Context` model, in precedence order:
 
-1. CLI flag (`--docs-dir`, per-command where relevant)
-2. Environment variable (`WIKI_TOOLKIT_DOCS_DIR`)
-3. `[tool.wiki_toolkit]` table in the project's `pyproject.toml`, if present
-4. Built-in default
+1. CLI flag (group-level `--docs-dir`/`--repo-root`, where a field has one)
+2. Environment variable (`WIKI_TOOLKIT_<UPPER_SNAKE>`, uniform across every field)
+3. Dedicated fallback file (`.wiki-toolkit.toml` at repo root), if present.
+    Wins over the `pyproject.toml` table below even when both exist,
+    so a non-Python host repo has a config file that doesn't have to compete with one
+4. `[tool.wiki_toolkit]` table in the project's `pyproject.toml`, if present
+5. Built-in default
 
-No dedicated config file format — reusing `pyproject.toml` avoids introducing a new file the user has to know about.
+Resolution never raises: a malformed dedicated file, a malformed `pyproject.toml` table,
+or an invalid value for a field falls through to the next tier rather than failing the command.
+`build_context()` is the single entry point performing this resolution for every field at once,
+returning the `Context` alongside per-field source tracking (`flag`/`env`/`dedicated_file`/`pyproject`/`default`)
+so `config show` and `doctor` can report exactly where each value came from.
+The CLI group callback calls `build_context()` once per invocation and assigns the result to `ctx.obj`;
+every subcommand reads settings off that shared object via `@click.pass_obj` instead of re-declaring `--docs-dir`
+and re-resolving it.
+
+Settings:
+
+| Setting | Key (env var suffix / pyproject / dedicated-file field) | Default |
+| --- | --- | --- |
+| Docs root | `docs_dir` | `docs/` |
+| Repo root | `repo_root` | Nearest `.git` walking up from `cwd` |
+| Branch prefix | `branch_prefix` | `wiki-update/` |
+| Batch byte cap | `batch_byte_cap` | `100_000` |
+| Batch file cap | `batch_file_cap` | `20` |
+
+Wiki layout paths (`docs/wiki/`, `catalog.jsonl`, `log.jsonl`, `source-manifest.jsonl`) are fixed conventions derived
+from `docs_dir`, not independently settable.
+The branch-name timestamp format and PR framing labels (`write_gate.py`) stay internal constants;
+no override use case has come up for either.
+
+wiki-toolkit requires the wiki to live in the same repo as the code it documents:
+source-linkage timing depends on citing code by `{repo, path, commit_sha}` pointers,
+which only resolves within one repo.
+A wiki that doesn't track a codebase is a different tool than wiki-toolkit.
 
 ## Sources
 
@@ -264,7 +294,7 @@ No adapter arguments yet.
 | Command | Contract |
 | --- | --- |
 | `init` | Scaffold a new wiki: create `docs/{sources,wiki}/`, empty `catalog.jsonl`/`log.jsonl`/`source-manifest.jsonl`, `schema.md` from the built-in template, and a local `docs/.agents/skills/` copy of the skills plugin |
-| `doctor` | Non-mutating health check: `docs/` folder structure, Python version, catalog/manifest sanity, note counts, shallow-clone warning, resolved configuration and its source, local skills-copy version drift |
+| `doctor` | Non-mutating health check: `docs/` folder structure, Python version, catalog/manifest sanity, note counts, shallow-clone warning, resolved configuration and its source for every setting, local skills-copy version drift. Also warns on: `.wiki-toolkit.toml` and the `pyproject.toml` table both present, `repo_root` resolution failure (no `.git` found, fell back to `cwd`), and any promoted value that was invalid and fell back to default. These are warnings, not exit-1 failures |
 | `build` | Generate `docs/catalog.jsonl` from `docs/wiki/` notes, including each page's `aliases:` frontmatter and outbound `[[wikilink]]` targets as `links` (both empty lists if absent/none) (no `index.md`/per-folder index generation). Also recomputes `covered_by` in `docs/source-manifest.jsonl` by inverting each note's `sources:` frontmatter into per-source citing-page lists, full overwrite each run (no incremental state). A `sources:` id absent from the manifest is skipped here — `lint` already flags it as an unresolved source reference |
 | `lint` | Validate wiki note frontmatter, allowed tags, source links, `source_count`; flags a `relationships:` entry whose `target` doesn't resolve to an existing page, and drift between a page's `confidence:` block and its recomputed marker counts. Flagged, not rejected — the write gate's PR review is the enforcement point |
 | `source-scan [--update] [--accept-covered] [--source <id>]` | Walk `docs/sources/`; classify each file `new` / `update` / `duplicate` (absorbs the old `source-match` and base-spec `source-delta` meaning — "not in the manifest" is just "unprocessed"). Classification is always full (cheap, read-only, needed for accurate `needs_attention`/backlog reporting). With `--update`, write/stamp results into `docs/source-manifest.jsonl` and stage the touched files (see Write gate); `--source <id>` narrows that write/stage step to a single classified source, leaving every other classified source unwritten until a later unscoped call (e.g. `maintain`'s sweep) catches it up. Skips version-controlled source types (no Raw file to scan) |
@@ -280,7 +310,7 @@ No adapter arguments yet.
 | `start-branch --frame routine\|needs-review` | Open a session's local branch up front, before any pages are committed — used by a batch coordinator so streaming `commit-pages` calls and the closing `propose-pr` call land on the same branch |
 | `commit-pages --pages <list> --message <str>` | Commit exactly what's currently staged onto the currently checked-out branch — `pages` is informational (goes into the commit message), not a git pathspec filter. Every command that mutates a `docs_dir` file (`build`, `cross-linker`, `log`, `source-scan --update`) stages its own output as it writes, so by the time `commit-pages` runs, the git index already holds `pages` plus whatever else that source's producer commands touched. A batch coordinator calls this once per source, as soon as that source's subagent reports back, rather than waiting for the whole batch to finish |
 | `propose-pr --pages <list> --frame routine\|needs-review` | Branch + commit locally, framed per mutation type that triggered it (no real GitHub PR yet). Same self-staging contract as `commit-pages`: commits exactly what's staged, `pages` informational only. Because producer commands self-stage at write time rather than `propose-pr` scanning `docs_dir` for dirty files afterward, only what the session's own commands actually touched ever lands in the commit. If the current branch was already opened by `start-branch`, reuses it instead of creating a new one, and tolerates pages already committed via `commit-pages` |
-| `config show` | Read-only: print the resolved configuration and which source (default/env/`pyproject.toml`/flag) each value came from |
+| `config show` | Read-only: print every resolved setting and which source (default/env/`pyproject.toml`/dedicated file/flag) each value came from |
 
 ## Not yet built: adapters
 
