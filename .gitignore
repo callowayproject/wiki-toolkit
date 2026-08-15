@@ -147,6 +147,13 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# Complexipy
+.complexipy_cache
+complexipy-results.json
+
+# Rumdl
+.rumdl_cache
+
 # Mr Developer
 .mr.developer.cfg
 .project
