@@ -2285,14 +2285,69 @@ See <a href="../CONTEXT/">CONTEXT.md</a> for terminology.</p>
 All business logic lives in internal library functions the CLI calls —
 the CLI has no logic worth unit-testing beyond correct delegation.</p>
 <h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
-<p>Settings (currently just the <code>docs</code> root, default <code>docs/</code>) resolve via <code>pydantic-settings</code>, in precedence order:</p>
+<p>Settings resolve via <code>pydantic-settings</code> into a single <code>Context</code> model, in precedence order:</p>
 <ol>
-<li>CLI flag (<code>--docs-dir</code>, per-command where relevant)</li>
-<li>Environment variable (<code>WIKI_TOOLKIT_DOCS_DIR</code>)</li>
+<li>CLI flag (group-level <code>--docs-dir</code>/<code>--repo-root</code>, where a field has one)</li>
+<li>Environment variable (<code>WIKI_TOOLKIT_&lt;UPPER_SNAKE&gt;</code>, uniform across every field)</li>
+<li>Dedicated fallback file (<code>.wiki-toolkit.toml</code> at repo root), if present.
+    Wins over the <code>pyproject.toml</code> table below even when both exist,
+    so a non-Python host repo has a config file that doesn&rsquo;t have to compete with one</li>
 <li><code>[tool.wiki_toolkit]</code> table in the project&rsquo;s <code>pyproject.toml</code>, if present</li>
 <li>Built-in default</li>
 </ol>
-<p>No dedicated config file format — reusing <code>pyproject.toml</code> avoids introducing a new file the user has to know about.</p>
+<p>Resolution never raises: a malformed dedicated file, a malformed <code>pyproject.toml</code> table,
+or an invalid value for a field falls through to the next tier rather than failing the command.
+<code>build_context()</code> is the single entry point performing this resolution for every field at once,
+returning the <code>Context</code> alongside per-field source tracking (<code>flag</code>/<code>env</code>/<code>dedicated_file</code>/<code>pyproject</code>/<code>default</code>)
+so <code>config show</code> and <code>doctor</code> can report exactly where each value came from.
+The CLI group callback calls <code>build_context()</code> once per invocation and assigns the result to <code>ctx.obj</code>;
+every subcommand reads settings off that shared object via <code>@click.pass_obj</code> instead of re-declaring <code>--docs-dir</code>
+and re-resolving it.</p>
+<p>Settings:</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Key (env var suffix / pyproject / dedicated-file field)</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Docs root</td>
+<td><code>docs_dir</code></td>
+<td><code>docs/</code></td>
+</tr>
+<tr>
+<td>Repo root</td>
+<td><code>repo_root</code></td>
+<td>Nearest <code>.git</code> walking up from <code>cwd</code></td>
+</tr>
+<tr>
+<td>Branch prefix</td>
+<td><code>branch_prefix</code></td>
+<td><code>wiki-update/</code></td>
+</tr>
+<tr>
+<td>Batch byte cap</td>
+<td><code>batch_byte_cap</code></td>
+<td><code>100_000</code></td>
+</tr>
+<tr>
+<td>Batch file cap</td>
+<td><code>batch_file_cap</code></td>
+<td><code>20</code></td>
+</tr>
+</tbody>
+</table>
+<p>Wiki layout paths (<code>docs/wiki/</code>, <code>catalog.jsonl</code>, <code>log.jsonl</code>, <code>source-manifest.jsonl</code>) are fixed conventions derived
+from <code>docs_dir</code>, not independently settable.
+The branch-name timestamp format and PR framing labels (<code>write_gate.py</code>) stay internal constants;
+no override use case has come up for either.</p>
+<p>wiki-toolkit requires the wiki to live in the same repo as the code it documents:
+source-linkage timing depends on citing code by <code>{repo, path, commit_sha}</code> pointers,
+which only resolves within one repo.
+A wiki that doesn&rsquo;t track a codebase is a different tool than wiki-toolkit.</p>
 <h2 id="sources">Sources<a class="headerlink" href="#sources" title="Permanent link">&para;</a></h2>
 <p>There are two kinds of sources:</p>
 <p><strong>Version-controlled</strong> (source code, PRs) — never copied into <code>sources/</code>; git already has an immutable history,
@@ -2499,7 +2554,7 @@ No adapter arguments yet.</p>
 </tr>
 <tr>
 <td><code>doctor</code></td>
-<td>Non-mutating health check: <code>docs/</code> folder structure, Python version, catalog/manifest sanity, note counts, shallow-clone warning, resolved configuration and its source, local skills-copy version drift</td>
+<td>Non-mutating health check: <code>docs/</code> folder structure, Python version, catalog/manifest sanity, note counts, shallow-clone warning, resolved configuration and its source for every setting, local skills-copy version drift. Also warns on: <code>.wiki-toolkit.toml</code> and the <code>pyproject.toml</code> table both present, <code>repo_root</code> resolution failure (no <code>.git</code> found, fell back to <code>cwd</code>), and any promoted value that was invalid and fell back to default. These are warnings, not exit-1 failures</td>
 </tr>
 <tr>
 <td><code>build</code></td>
@@ -2563,7 +2618,7 @@ No adapter arguments yet.</p>
 </tr>
 <tr>
 <td><code>config show</code></td>
-<td>Read-only: print the resolved configuration and which source (default/env/<code>pyproject.toml</code>/flag) each value came from</td>
+<td>Read-only: print every resolved setting and which source (default/env/<code>pyproject.toml</code>/dedicated file/flag) each value came from</td>
 </tr>
 </tbody>
 </table>
