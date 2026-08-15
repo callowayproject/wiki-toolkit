@@ -21,7 +21,8 @@ exclude = [
     "LICENSE.md",
     ".claude",
     ".claude-plugin",
-    "tests"
+    "tests",
+    "docs/design/Reference/llm-wiki.md",
 ]
 
 # Respect .gitignore files when scanning directories (default: true)
