@@ -12,10 +12,10 @@ repos:
     hooks:
       - id: rumdl-fmt  # Pure format, always exits 0
         files: ^.*\.md$
-        args: [--config, .rumdl.toml, --verbose]
+        args: [--config, .rumdl.toml]
       - id: rumdl      # Lint + auto-fix, fails if unfixable issues remain
         files: ^.*\.md$
-        args: [--config, .rumdl.toml, --verbose]
+        args: [--config, .rumdl.toml]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
