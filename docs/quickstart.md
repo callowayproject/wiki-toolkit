@@ -24,7 +24,6 @@ To use `Wiki Toolkit` in a project:
 import wiki_toolkit
 ```
 
-
 ## Basic Operations
 
 ## Tips and Tricks

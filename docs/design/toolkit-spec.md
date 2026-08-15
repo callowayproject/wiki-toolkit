@@ -1,12 +1,13 @@
 # LLM Wiki Toolkit — Spec
 
 Specifies `wiki_toolkit`, the AI skills and helper tools that implement [llm-wiki.md](Reference/llm-wiki.md)
-as a general-purpose toolkit. An AI Agent harness operates this toolkit; the toolkit itself is
-domain-agnostic.
+as a general-purpose toolkit.
+An AI Agent harness operates this toolkit; the toolkit itself is domain-agnostic.
 
-This doc merges what shipped (v1 CLI + skills plugin, see [implementation-history.md](implementation-history.md))
-with the still-unbuilt full vision. Content is as-built by default; anything not yet built is called
-out explicitly under **"Not yet built"** headings. See [CONTEXT.md](CONTEXT.md) for terminology.
+This doc merges what shipped (v1 CLI + skills plugin, see [implementation-history.md](implementation-history.md)) with
+the still-unbuilt full vision.
+Content is as-built by default; anything not yet built is called out explicitly under **"Not yet built"** headings.
+See [CONTEXT.md](CONTEXT.md) for terminology.
 
 ## Wiki structure
 
@@ -31,79 +32,78 @@ repo-root/
 - **Other dependencies**: `orjson`, `pydantic-settings`, `pyyaml`
 
 **Architecture constraint**: the CLI is a thin adapter (arg parsing, delegation, output formatting).
-All business logic lives in internal library functions the CLI calls — the CLI has no logic worth
-unit-testing beyond correct delegation.
+All business logic lives in internal library functions the CLI calls —
+the CLI has no logic worth unit-testing beyond correct delegation.
 
 ## Configuration
 
-Settings (currently just the `docs` root, default `docs/`) resolve via `pydantic-settings`, in
-precedence order:
+Settings (currently just the `docs` root, default `docs/`) resolve via `pydantic-settings`, in precedence order:
 
 1. CLI flag (`--docs-dir`, per-command where relevant)
 2. Environment variable (`WIKI_TOOLKIT_DOCS_DIR`)
 3. `[tool.wiki_toolkit]` table in the project's `pyproject.toml`, if present
 4. Built-in default
 
-No dedicated config file format — reusing `pyproject.toml` avoids introducing a new file the user
-has to know about.
+No dedicated config file format — reusing `pyproject.toml` avoids introducing a new file the user has to know about.
 
 ## Sources
 
 There are two kinds of sources:
 
-**Version-controlled** (source code, PRs) — never copied into `sources/`; git already has an
-immutable history, so duplicating it would be pure redundancy. Cited by `{repo, path, commit_sha}`.
-An entry for each file is maintained in `catalog.jsonl`. Out of scope for scanning today —
-`source-scan` skips these, since there are no adapters yet to produce them (see "Not yet built"
-under Adapter interface, below).
+**Version-controlled** (source code, PRs) — never copied into `sources/`; git already has an immutable history,
+so duplicating it would be pure redundancy.
+Cited by `{repo, path, commit_sha}`.
+An entry for each file is maintained in `catalog.jsonl`.
+Out of scope for scanning today — `source-scan` skips these, since there are no adapters yet to produce them
+(see "Not yet built" under Adapter interface, below).
 
-**Snapshot source** (Jira, Slack, Confluence, external wiki pages) — anything without its own
-version history. Markdown versioned snapshots of the content are copied into `sources/`, because
-the toolkit has to create the history the source system doesn't provide.
+**Snapshot source** (Jira, Slack, Confluence, external wiki pages) — anything without its own version history.
+Markdown versioned snapshots of the content are copied into `sources/`,
+because the toolkit has to create the history the source system doesn't provide.
 
-A source type must expose a stable external ID (e.g., a URI, Jira ticket key, Slack permalink, or
-Confluence page ID) to be eligible for snapshot handling. If a source type can't supply one, the
-toolkit refuses automatic ingestion and flags it for manual filing. Fuzzy content-matching is
-deliberately excluded as a dedup mechanism, since a false-positive merge in an unattended,
+A source type must expose a stable external ID
+(e.g., a URI, Jira ticket key, Slack permalink, or Confluence page ID) to be eligible for snapshot handling.
+If a source type can't supply one, the toolkit refuses automatic ingestion and flags it for manual filing.
+Fuzzy content-matching is deliberately excluded as a dedup mechanism, since a false-positive merge in an unattended,
 write-capable agent is worse than a missed source.
 
 Within a snapshot source, two mutation types are handled differently:
 
 - **Comments**: each comment on a source is treated as its own source, with its own stable ID.
-  No diffing: the toolkit tracks the highest processed comment ID per parent source and treats
-  anything newer as new.
-- **Field edits**: changes to a source's fields (status, description, assignee, etc.) mutate in
-  place. The toolkit diffs the full field state against the last snapshot to produce a delta of
-  changed fields.
+  No diffing: the toolkit tracks the highest processed comment ID per parent source and treats anything newer as new.
+- **Field edits**: changes to a source's fields (status, description, assignee, etc.) mutate in place.
+  The toolkit diffs the full field state against the last snapshot to produce a delta of changed fields.
 
 ### Source lifecycle (frontmatter)
 
-Files land directly in `docs/sources/` — no separate staging/inbox directory. State is tracked
-entirely via frontmatter:
+Files land directly in `docs/sources/` — no separate staging/inbox directory.
+State is tracked entirely via frontmatter:
 
-- **`source`** (required): unique identifier for this source. A URI is recommended. This is the
-  only identity field today — no `source_id`/`stable_id` split (that distinction is adapter-era,
-  not yet built).
-- **`processed`** (bool, default `false` / treated as `false` if missing): only the toolkit CLI
-  ever sets this `true`; upstream materializers never do. "Brand-new" vs. "known source needing
-  reprocessing" both read as `processed: false` — telling them apart is `source-scan`'s job, via
-  manifest lookup.
-- **`duplicate`** (bool): set by `source-scan` when a `source` id appears under more than one
-  filename. The first-seen file stays canonical and keeps processing normally; later files with the
-  same `source` are stamped `duplicate: true` and excluded from `source-scan`/`build` until a human
-  resolves them via `source-dedupe`.
+- **`source`** (required): unique identifier for this source.
+  A URI is recommended.
+  This is the only identity field today — no `source_id`/`stable_id` split
+  (that distinction is adapter-era, not yet built).
+- **`processed`** (bool, default `false` / treated as `false` if missing): only the toolkit CLI ever sets this `true`;
+  upstream materializers never do.
+  "Brand-new" vs. "known source needing reprocessing" both read as `processed: false` —
+  telling them apart is `source-scan`'s job, via manifest lookup.
+- **`duplicate`** (bool): set by `source-scan` when a `source` id appears under more than one filename.
+  The first-seen file stays canonical and keeps processing normally;
+  later files with the same `source` are stamped `duplicate: true` and excluded from `source-scan`/`build`
+  until a human resolves them via `source-dedupe`.
 
-**Updates** overwrite the same file path (not a new filename); omitting/resetting `processed` on
-the overwrite signals "needs reprocessing."
+**Updates** overwrite the same file path
+(not a new filename); omitting/resetting `processed` on the overwrite signals "needs reprocessing."
 
 **Processed vs. covered** (distinct states, both legitimate independently):
-- *Processed* — toolkit has scanned it, not a duplicate/error.
-- *Covered* — at least one wiki note's `sources:` frontmatter references it (tracked as
-  `covered_by` in the manifest). Processed-but-not-covered is an expected transient state;
-  `source-lint` flags sources stuck there as a backlog signal, not an ingest-time error.
-  `source-lint` and `source-coverage` read `covered_by` straight from the manifest — coverage
-  is only as fresh as the last `build`, the same staleness tolerance `build_catalog` already
-  applies to a note's `resolved`/`proposed` status.
+
+- _Processed_ — toolkit has scanned it, not a duplicate/error.
+- _Covered_ — at least one wiki note's `sources:` frontmatter references it (tracked as `covered_by` in the manifest).
+  Processed-but-not-covered is an expected transient state; `source-lint` flags sources stuck there as a backlog signal,
+  not an ingest-time error.
+  `source-lint` and `source-coverage` read `covered_by` straight from the manifest —
+  coverage is only as fresh as the last `build`,
+  the same staleness tolerance `build_catalog` already applies to a note's `resolved`/`proposed` status.
 
 ### Deltas and revisions (`source-delta`)
 
@@ -114,8 +114,8 @@ Git history is the storage mechanism for prior states — no separate snapshot s
   current HEAD, not whatever branch is checked out) — so `source-delta` always answers "has the
   canonical (merged) state changed," matching the write gate's "main is truth" model.
 - **Diff scope**: only source-content fields (status, description, assignee, etc.) are compared.
-  CLI-owned bookkeeping fields (`processed`, `duplicate`, `source`) are excluded — they're toolkit
-  noise, not source changes.
+  CLI-owned bookkeeping fields (`processed`, `duplicate`, `source`) are excluded — they're toolkit noise,
+  not source changes.
 - **First-time ingestion** (no prior commit for that path on `main`): synthetic empty baseline —
   every content field reports as new (`(None, current_value)`). `source-delta` always produces a
   `Delta`, no special-case failure.
@@ -141,20 +141,21 @@ The toolkit uses it to determine the potential scope of a change.
 - `status`: `proposed` or `resolved`. `proposed` means the source was ingested ahead of any code
   change (a design doc, a ticket) and its wiki page is speculative; `resolved` means a PR has since
   referenced this source, confirming it against an actual diff.
-- `covered_by`: relative paths of wiki notes that cite this source. Recomputed by `build` from
-  `docs/wiki/` notes' `sources:` frontmatter (see Command surface below) — not hand-edited.
+- `covered_by`: relative paths of wiki notes that cite this source.
+  Recomputed by `build` from `docs/wiki/` notes' `sources:` frontmatter (see Command surface below) — not hand-edited.
 
 ## Catalog
 
-The catalog (`catalog.jsonl`) is an index of all the documents in the wiki (`wiki/`), with
-cross-references to the sources they reference.
+The catalog (`catalog.jsonl`) is an index of all the documents in the wiki (`wiki/`),
+with cross-references to the sources they reference.
 
 ### Catalog schema
 
 - `path`: relative path to the document from the repo root
 - `title`: the document's title
 - `aliases`: list of alternate names for the document, from its frontmatter `aliases:` (empty list if absent)
-- `links`: list of the document's outbound `[[wikilink]]` targets, extracted from its body (empty list if none); feeds `cross-linker`'s co-citation scoring signal
+- `links`: list of the document's outbound `[[wikilink]]` targets, extracted from its body
+    (empty list if none); feeds `cross-linker`'s co-citation scoring signal
 - `sources`: list of `source` ids this document references
 - `updated`: ISO-8601 date-time string when it was updated
 - `status`: `resolved` when all referenced sources are `resolved`; `proposed` if any is `proposed`
@@ -172,10 +173,11 @@ The log (`log.jsonl`) is an append-only chronological list of wiki events.
 
 ## Schema
 
-The schema (`schema.md`) provides instructions to the AI agent on how to manage this wiki. The AI
-agent can modify it. `init` scaffolds it from this built-in template; the toolkit doesn't generate
-or validate its prose beyond keeping referenced fields (`catalog.jsonl`/`log.jsonl` entries) in
-sync.
+The schema (`schema.md`) provides instructions to the AI agent on how to manage this wiki.
+The AI agent can modify it.
+`init` scaffolds it from this built-in template;
+the toolkit doesn't generate or validate its prose beyond keeping referenced fields
+(`catalog.jsonl`/`log.jsonl` entries) in sync.
 
 ````markdown
 # Wiki Schema
@@ -247,18 +249,20 @@ Fixed set — unlike Tag Taxonomy, this list is not per-wiki editable; the same 
 
 ## Write gate
 
-Every wiki write goes through a PR — no exceptions, no direct commits, for either LLM-authored
-content or deterministic tooling output (catalog, manifest, log). One rule, no second write path
-to audit. Today, `propose-pr` stops at a local branch + commit — no real GitHub PR yet (see "Not
-yet built" under Command surface).
+Every wiki write goes through a PR — no exceptions, no direct commits,
+for either LLM-authored content or deterministic tooling output (catalog, manifest, log).
+One rule, no second write path to audit.
+Today, `propose-pr` stops at a local branch + commit — no real GitHub PR yet
+(see "Not yet built" under Command surface).
 
 ## Command surface
 
-All commands are keyed off `source` (frontmatter field, formerly called `source_id`/`stable_id` in
-earlier drafts — see [CONTEXT.md](CONTEXT.md)). No adapter arguments yet.
+All commands are keyed off `source` (frontmatter field, formerly called `source_id`/`stable_id` in earlier drafts —
+see [CONTEXT.md](CONTEXT.md)).
+No adapter arguments yet.
 
 | Command | Contract |
-|---|---|
+| --- | --- |
 | `init` | Scaffold a new wiki: create `docs/{sources,wiki}/`, empty `catalog.jsonl`/`log.jsonl`/`source-manifest.jsonl`, `schema.md` from the built-in template, and a local `docs/.agents/skills/` copy of the skills plugin |
 | `doctor` | Non-mutating health check: `docs/` folder structure, Python version, catalog/manifest sanity, note counts, shallow-clone warning, resolved configuration and its source, local skills-copy version drift |
 | `build` | Generate `docs/catalog.jsonl` from `docs/wiki/` notes, including each page's `aliases:` frontmatter and outbound `[[wikilink]]` targets as `links` (both empty lists if absent/none) (no `index.md`/per-folder index generation). Also recomputes `covered_by` in `docs/source-manifest.jsonl` by inverting each note's `sources:` frontmatter into per-source citing-page lists, full overwrite each run (no incremental state). A `sources:` id absent from the manifest is skipped here — `lint` already flags it as an unresolved source reference |
@@ -282,7 +286,7 @@ earlier drafts — see [CONTEXT.md](CONTEXT.md)). No adapter arguments yet.
 
 Each source type (GitHub, Jira, ...) would implement:
 
-```
+```text
 kind(payload) -> "version_controlled" | "snapshot"
 
 stable_id(payload) -> str | None
@@ -308,17 +312,20 @@ diff(old_snapshot, new_snapshot) -> Delta
 
 ### Planned v1 adapters
 
-- **GitHub** — issues, PRs, Renovate PRs. Already the trigger mechanism per `idea.md`. Dependabot
-  PRs are out of scope for the pilot (see `idea.md` Solution section).
+- **GitHub** — issues, PRs, Renovate PRs.
+  Already the trigger mechanism per `idea.md`.
+  Dependabot PRs are out of scope for the pilot (see `idea.md` Solution section).
 - **Jira** — the concrete comment-chain case that motivated this spec.
-- **Confluence** — design docs. `stable_id` is the Confluence page ID. Ingesting a design doc ahead
-  of any PR produces a `status: proposed` wiki page (see "Write gate" and the source-manifest
-  schema above); a later PR that references the same page ID resolves it via the normal
-  source-linkage flow, flipping `status` to `resolved`.
+- **Confluence** — design docs.
+  `stable_id` is the Confluence page ID.
+  Ingesting a design doc ahead of any PR produces a `status: proposed` wiki page
+  (see "Write gate" and the source-manifest schema above);
+  a later PR that references the same page ID resolves it via the normal source-linkage flow,
+  flipping `status` to `resolved`.
 
-Everything else named in `idea.md`'s "Possible sources" list (Slack, Teams, Azure DevOps, Linear)
-implements this interface later. No stub code is required now — the interface above is the
-contract a future adapter must satisfy.
+Everything else named in `idea.md`'s "Possible sources" list
+(Slack, Teams, Azure DevOps, Linear) implements this interface later.
+No stub code is required now — the interface above is the contract a future adapter must satisfy.
 
 #### GitHub adapter payload shape
 
@@ -330,13 +337,19 @@ Files named by event; `pull_request` events materialize as:
 {body}
 ```
 
-References: [`pull_request`](https://docs.github.com/en/webhooks/webhook-events-and-payloads#pull_request), [`pull_request_review`](https://docs.github.com/en/webhooks/webhook-events-and-payloads#pull_request_review), [`pull_request_review_comment`](https://docs.github.com/en/webhooks/webhook-events-and-payloads#pull_request_review_comment), [`pull_request_review_thread`](https://docs.github.com/en/webhooks/webhook-events-and-payloads#pull_request_review_thread).
+References: [`pull_request`](https://docs.github.com/en/webhooks/webhook-events-and-payloads#pull_request),
+[`pull_request_review`](https://docs.github.com/en/webhooks/webhook-events-and-payloads#pull_request_review),
+[`pull_request_review_comment`](https://docs.github.com/en/webhooks/webhook-events-and-payloads#pull_request_review_comment),
+[`pull_request_review_thread`](https://docs.github.com/en/webhooks/webhook-events-and-payloads#pull_request_review_thread).
 
 #### Jira adapter payload shape
 
-An issue and its properties belong to a single snapshot; each comment is its own snapshot ([webhook reference](https://developer.atlassian.com/cloud/jira/platform/webhooks/)).
+An issue and its properties belong to a single snapshot; each comment is its own snapshot
+([webhook reference](https://developer.atlassian.com/cloud/jira/platform/webhooks/)).
 
-**Issues** — file named `{issue-key}.md`. Webhooks: `jira:issue_created`, `jira:issue_updated`, `jira:issue_deleted`; issue-property webhooks `issue_property_set`, `issue_property_deleted`.
+**Issues** — file named `{issue-key}.md`.
+Webhooks: `jira:issue_created`, `jira:issue_updated`, `jira:issue_deleted`;
+issue-property webhooks `issue_property_set`, `issue_property_deleted`.
 
 ```markdown
 # Main order flow broken
@@ -355,7 +368,8 @@ Fix the order flow
 ...
 ```
 
-**Issue comments** — file named `{issue-key}-comment-{comment-id}.md`. Webhooks: `comment_created`, `comment_updated`, `comment_deleted`.
+**Issue comments** — file named `{issue-key}-comment-{comment-id}.md`.
+Webhooks: `comment_created`, `comment_updated`, `comment_deleted`.
 
 ```markdown
 id: 10000
@@ -368,33 +382,34 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 
 ## Not yet built: adapter-era skills
 
-The shipped skills (`skills/` at the repo root, an installable Claude Code plugin: `ingest`,
-`query`, `lint`, `source-update`, `maintain`) target today's adapter-less, git-history-backed CLI —
-see [implementation-history.md](implementation-history.md) and [ADR-0008 through ADR-0010](../adr/)
-for what was built and why it diverges from `source-update`'s design below, which assumes adapters
-exist:
+The shipped skills (`skills/` at the repo root, an installable Claude Code plugin: `ingest`, `query`, `lint`,
+`source-update`, `maintain`) target today's adapter-less, git-history-backed CLI —
+see [implementation-history.md](implementation-history.md) and [ADR-0008 through ADR-0010](../adr/) for what was built
+and why it diverges from `source-update`'s design below, which assumes adapters exist:
 
-**source-update** (adapter-era design, not what shipped) — separate from `ingest` because the
-judgment calls differ: matching identity, computing a delta, and deciding whether that delta is
-safe to fold in automatically. Triggered by a source-system event (Jira webhook, GitHub event) or
-manual invocation:
+**source-update** (adapter-era design, not what shipped) — separate from `ingest` because the judgment calls differ:
+matching identity, computing a delta, and deciding whether that delta is safe to fold in automatically.
+Triggered by a source-system event (Jira webhook, GitHub event) or manual invocation:
 
-1. Extract `stable_id` via the adapter. If `None`, stop — flag for manual filing, do not proceed.
+1. Extract `stable_id` via the adapter.
+    If `None`, stop — flag for manual filing, do not proceed.
 2. Look up the Raw source manifest for an existing entry with that `stable_id`.
-   - Not found → hand off to `ingest` (this is a first-time source).
-   - Found → `fetch` current state, `diff` against last-known snapshot.
+    - Not found → hand off to `ingest` (this is a first-time source).
+    - Found → `fetch` current state, `diff` against last-known snapshot.
 3. For `new_comment_ids` in the delta: write the new comment snapshot unit(s), invoke `ingest`
    scoped to just the new material, open a PR the same way a routine ingest would (see "Write
    gate").
-4. For `changed_fields` in the delta: write the new field-state snapshot version, then open a PR
-   same as step 3 — but the PR description must explicitly flag which prior wiki claims may now be
-   stale ("underlying ticket status changed from X to Y — verify affected pages still hold"),
-   rather than presenting it as a routine update. The distinction between comments and field edits
-   is in how confidently the PR is framed, not whether a PR exists — see "Write gate."
+4. For `changed_fields` in the delta: write the new field-state snapshot version, then open a PR same as step 3 —
+   but the PR description must explicitly flag which prior wiki claims may now be stale
+   ("underlying ticket status changed from X to Y — verify affected pages still hold"),
+   rather than presenting it as a routine update.
+   The distinction between comments and field edits is in how confidently the PR is framed, not whether a PR exists —
+   see "Write gate."
 5. Append an entry to `log.md` citing the source and summarizing the delta.
 
-This means the "auto re-ingest vs. flag for review" split (per mutation type) was never meant to be
-a split between "PR" and "no PR" — it's a split in how the resulting PR is framed:
+This means the "auto re-ingest vs. flag for review" split
+(per mutation type)
+was never meant to be a split between "PR" and "no PR" — it's a split in how the resulting PR is framed:
 
 - Comment-driven updates: PR reads like a normal ingest PR.
 - Field-edit-driven updates: PR is explicitly labeled/described as needing extra scrutiny, since
@@ -407,20 +422,20 @@ Two required layers, following from the thin-CLI architectural constraint:
 - **Unit tests** on internal functions: source classification (new/update/duplicate), delta
   computation, frontmatter diffing, etc. — where real coverage lives.
 - **CLI-invocation tests** via `click.testing.CliRunner`: assert each command parses args correctly,
-  calls the right internal function, and produces the right exit code/output. No re-testing of
-  business logic already unit-tested.
+  calls the right internal function, and produces the right exit code/output.
+  No re-testing of business logic already unit-tested.
 - No golden-file byte-diff comparisons against `catalog.jsonl`/`log.jsonl` — structured assertions
   on parsed output instead.
 
 **`source-delta` fixture uses real git**: a pytest fixture inits a throwaway repo in `tmp_path`,
-commits an initial source-file version ("last known"), then mutates the file on disk uncommitted
-("current"). Exercises real `git log`/`git show`, including the no-prior-commit and shallow-clone
-edge cases.
+commits an initial source-file version ("last known"), then mutates the file on disk uncommitted ("current").
+Exercises real `git log`/`git show`, including the no-prior-commit and shallow-clone edge cases.
 
-**Fixture strategy**: per-command isolated fixtures via a shared factory helper (e.g.
-`make_source(tmp_path, source, status=..., ...)`) — not one shared "golden wiki" repo.
+**Fixture strategy**: per-command isolated fixtures via a shared factory helper
+(e.g. `make_source(tmp_path, source, status=..., ...)`) — not one shared "golden wiki" repo.
 
 **Definition of Done**:
+
 - Every command above has (a) unit test coverage for its internal logic, (b) a `CliRunner` adapter
   test verifying delegation/exit codes/output.
 - `mypy`, `ruff`, and pre-commit all pass clean.

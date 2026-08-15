@@ -283,6 +283,24 @@ check-return-types = false
 skip-checking-raises = true
 quiet = true
 
+[tool.complexipy]
+paths = ["wiki_toolkiet", "tests"]
+max-complexity-allowed = 15
+snapshot-create = false
+snapshot-ignore = false
+quiet = false
+ignore-complexity = false
+failed = true
+color = "auto"
+sort = "asc"
+exclude = []
+check-script = false
+no-ignore = false
+report-ignored = false
+output-format = ["json"]
+output = "complexipy-results.json"
+
+
 [tool.bumpversion]
 current_version = "0.26.1"
 commit = true

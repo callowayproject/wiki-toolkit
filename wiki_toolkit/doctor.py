@@ -68,6 +68,8 @@ def check_shallow_clone(root: Path) -> bool | None:
 
 def validate_jsonl(path: Path) -> list[str]:
     """Return a list of error messages for malformed lines in a JSONL file, empty if well-formed."""
+    if not path.is_file():
+        return []
     errors = []
     for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
         if not line.strip():
@@ -125,10 +127,9 @@ def run_doctor(docs_dir: Path, root: Path | None = None, docs_dir_source: Config
 
     for name in JSONL_FILES_TO_VALIDATE:
         jsonl_path = docs_dir / name
-        if jsonl_path.is_file():
-            errors = validate_jsonl(jsonl_path)
-            if errors:
-                report.jsonl_errors[name] = errors
+        errors = validate_jsonl(jsonl_path)
+        if errors:
+            report.jsonl_errors[name] = errors
 
     report.is_shallow_clone = check_shallow_clone(root)
     report.skills_version_drift = check_skills_version_drift(docs_dir)
