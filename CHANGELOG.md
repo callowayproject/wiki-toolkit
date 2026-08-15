@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.27.0 (2026-08-15)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.26.1...0.27.0)
+
+### New
+
+- Add `docs/design/Reference/llm-wiki.md` to rumdl ignore list. [038b72e](https://github.com/callowayproject/wiki-toolkit/commit/038b72eac590849db2b3c669b0ab3c018ea0cc16)
+
+### Updates
+
+- Remove `--verbose` flag from `rumdl` hooks in pre-commit config. [ed49efe](https://github.com/callowayproject/wiki-toolkit/commit/ed49efea237ae5c57ab018ffc2cb3c42de0b08f2)
+
+- Refactor JSONL validation and source-scan scoping; add code complexity analysis with `complexipy`. [0fe509f](https://github.com/callowayproject/wiki-toolkit/commit/0fe509f5931c294eda8b5f7bce084c0996dfa141)
+
+- Improve formatting and readability of design and documentation files with `rumdl` in pre-commit. [2d62bd9](https://github.com/callowayproject/wiki-toolkit/commit/2d62bd94e2465c3f63a6e40f75c858b5736f77f3)
+
 ## 0.26.1 (2026-08-13)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.26.0...0.26.1)
