@@ -2245,6 +2245,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#wiki_toolkit.sources.is_canonical_source" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;is_canonical_source
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wiki_toolkit.sources.iter_markdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;iter_markdown
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#wiki_toolkit.sources.last_known_revision" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2845,6 +2867,22 @@
               <td class="doc-function-details">
                 <div class="doc-md-description">
                   <p>Diff two frontmatter metadata dicts, excluding CLI bookkeeping fields (<code>processed</code>, <code>duplicate</code>, <code>source</code>).</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            is_canonical_source (wiki_toolkit.sources.is_canonical_source)" href="#wiki_toolkit.sources.is_canonical_source">is_canonical_source</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>True if <code>post</code> is the first-seen, non-duplicate-flagged file for its <code>source</code> id.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            iter_markdown (wiki_toolkit.sources.iter_markdown)" href="#wiki_toolkit.sources.iter_markdown">iter_markdown</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Walk <code>dir_path</code> for <code>*.md</code> files in sorted order, parsing each file&rsquo;s frontmatter.</p>
                 </div>
               </td>
             </tr>
@@ -4287,6 +4325,56 @@ as new) rather than erroring.</p>
 
         <p>Diff two frontmatter metadata dicts, excluding CLI bookkeeping fields (<code>processed</code>, <code>duplicate</code>, <code>source</code>).</p>
 <p>Returns <code>{field: (old_value, new_value)}</code> for every field that was added, removed, or changed.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wiki_toolkit.sources.is_canonical_source" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">is_canonical_source</span>
+
+
+<a href="#wiki_toolkit.sources.is_canonical_source" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">is_canonical_source</span><span class="p">(</span><span class="n">post</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Post (wiki_toolkit.frontmatter.Post)" href="../frontmatter/#wiki_toolkit.frontmatter.Post">Post</a></span><span class="p">,</span> <span class="n">seen</span><span class="p">:</span> <span class="n"><span title="set">set</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="bool">bool</span></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>True if <code>post</code> is the first-seen, non-duplicate-flagged file for its <code>source</code> id.</p>
+<p>Mutates <code>seen</code> by recording the source id when canonical. A file stamped
+<code>duplicate: true</code>, or a later file sharing an id already in <code>seen</code>, is not
+canonical.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wiki_toolkit.sources.iter_markdown" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">iter_markdown</span>
+
+
+<a href="#wiki_toolkit.sources.iter_markdown" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">iter_markdown</span><span class="p">(</span><span class="n">dir_path</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="collections.abc.Iterator">Iterator</span></span><span class="p">[</span><span class="n"><span title="tuple">tuple</span></span><span class="p">[</span><span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            Post (wiki_toolkit.frontmatter.Post)" href="../frontmatter/#wiki_toolkit.frontmatter.Post">Post</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            LoadError
+
+
+  
+      dataclass
+   (wiki_toolkit.sources.LoadError)" href="#wiki_toolkit.sources.LoadError">LoadError</a></span><span class="p">]]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Walk <code>dir_path</code> for <code>*.md</code> files in sorted order, parsing each file&rsquo;s frontmatter.</p>
+<p>Yields <code>(path, post)</code> for well-formed files, <code>(path, LoadError)</code> for files whose
+YAML frontmatter fails to parse. Yields nothing if <code>dir_path</code> doesn&rsquo;t exist.</p>
 
 
     </div>
