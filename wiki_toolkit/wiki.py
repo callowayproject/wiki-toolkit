@@ -8,7 +8,7 @@ from typing import Literal
 
 from wiki_toolkit._io import read_jsonl
 from wiki_toolkit.frontmatter import Post
-from wiki_toolkit.sources import SOURCE_MANIFEST_FILENAME, LintViolation, LoadError, SourceManifest, _iter_markdown
+from wiki_toolkit.sources import SOURCE_MANIFEST_FILENAME, LintViolation, LoadError, SourceManifest, iter_markdown
 
 _BULLET_RE = re.compile(r"^\s*[-*]\s+(.*)$")
 _WIKILINK_RE = re.compile(r"\[\[([^\]|]+)(?:\|[^\]]*)?\]\]")
@@ -65,7 +65,7 @@ def build_catalog(docs_dir: Path) -> CatalogResult:
     manifest = SourceManifest(docs_dir / SOURCE_MANIFEST_FILENAME)
     result = CatalogResult()
 
-    for path, post in _iter_markdown(docs_dir / "wiki"):
+    for path, post in iter_markdown(docs_dir / "wiki"):
         rel_path = str(path.relative_to(docs_dir.parent))
 
         if isinstance(post, LoadError):
@@ -241,7 +241,7 @@ def lint_wiki(docs_dir: Path) -> LintResult:
     schema_path = docs_dir / "schema.md"
     allowed_tags = parse_tag_taxonomy(schema_path.read_text(encoding="utf-8")) if schema_path.is_file() else None
 
-    entries = list(_iter_markdown(docs_dir / "wiki"))
+    entries = list(iter_markdown(docs_dir / "wiki"))
     known_targets: set[str] = set()
     for path, post in entries:
         if isinstance(post, LoadError):
