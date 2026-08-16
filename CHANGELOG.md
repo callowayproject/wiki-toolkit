@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.29.1 (2026-08-16)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.29.0...0.29.1)
+
+### Other
+
+- Move calculate_scan_scope from cli.py into sources.py. [229b1c0](https://github.com/callowayproject/wiki-toolkit/commit/229b1c076038e1f73caa1f4de18bbd02146ba5c0)
+
+  Restores the ADR-0002 thin-CLI seam: the scope/unmatched-id
+  computation is now a plain function next to SourceScanResult,
+  directly unit-tested in test_sources.py instead of only exercised
+  through Click's CliRunner. cli.py keeps only the click.echo loop.
+
+  Closes #167
+
 ## 0.29.0 (2026-08-16)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.28.3...0.29.0)
