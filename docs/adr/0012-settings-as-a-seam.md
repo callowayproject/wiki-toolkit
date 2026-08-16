@@ -53,3 +53,4 @@ for Python tooling.
 - `resolve_docs_dir()` (ADR-0007's four-tier, `docs_dir`-only function) stays in `settings.py` unused by the CLI;
     nothing currently calls it outside tests.
     It is not removed by this decision, since removing it is out of scope for the settings-seam work.
+    (Removed later by issue #166.)
