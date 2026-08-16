@@ -1,13 +1,10 @@
 """Shared JSONL read/write helpers, internal to wiki_toolkit."""
 
-from typing import TYPE_CHECKING
+from pathlib import Path
 
 import orjson
 
 from wiki_toolkit.write_gate import stage_best_effort
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 
 def write_jsonl(path: Path, records: list[dict], *, stage_root: Path | None = None) -> None:

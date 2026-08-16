@@ -3,14 +3,12 @@
 import re
 from dataclasses import dataclass, field
 from decimal import ROUND_HALF_UP, Decimal
-from typing import TYPE_CHECKING, Literal
+from pathlib import Path
+from typing import Literal
 
 from wiki_toolkit._io import read_jsonl
 from wiki_toolkit.frontmatter import Post
 from wiki_toolkit.sources import SOURCE_MANIFEST_FILENAME, LintViolation, LoadError, SourceManifest, _iter_markdown
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 _BULLET_RE = re.compile(r"^\s*[-*]\s+(.*)$")
 _WIKILINK_RE = re.compile(r"\[\[([^\]|]+)(?:\|[^\]]*)?\]\]")

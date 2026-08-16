@@ -3,10 +3,12 @@
 import hashlib
 import shutil
 import subprocess
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from difflib import SequenceMatcher
-from typing import TYPE_CHECKING, Any, Literal, overload
+from pathlib import Path
+from typing import Any, Literal, overload
 
 import orjson
 import yaml
@@ -14,10 +16,6 @@ import yaml
 from wiki_toolkit._io import read_jsonl, write_jsonl
 from wiki_toolkit.frontmatter import Post
 from wiki_toolkit.write_gate import stage_best_effort
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
-    from pathlib import Path
 
 SOURCE_MANIFEST_FILENAME = "source-manifest.jsonl"
 

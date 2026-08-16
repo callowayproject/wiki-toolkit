@@ -5,10 +5,8 @@ import shutil
 import subprocess
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Literal
-
-if TYPE_CHECKING:
-    from pathlib import Path
+from pathlib import Path
+from typing import Literal
 
 Frame = Literal["routine", "needs-review"]
 ALLOWED_FRAMES: tuple[Frame, ...] = ("routine", "needs-review")

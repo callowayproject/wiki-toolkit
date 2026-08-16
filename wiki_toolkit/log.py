@@ -2,14 +2,12 @@
 
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Literal
+from pathlib import Path
+from typing import Literal
 
 import orjson
 
 from wiki_toolkit.write_gate import stage_best_effort
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 LogAction = Literal["ingest", "update", "lint", "create", "archive", "delete"]
 ALLOWED_LOG_ACTIONS: tuple[LogAction, ...] = ("ingest", "update", "lint", "create", "archive", "delete")

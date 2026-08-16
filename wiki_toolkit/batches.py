@@ -6,10 +6,7 @@ Splits raw files under a source directory into size/count-bounded batches for pa
 """
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from pathlib import Path
+from pathlib import Path
 
 BATCH_BYTE_CAP = 100_000
 BATCH_FILE_CAP = 20
