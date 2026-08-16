@@ -1969,7 +1969,12 @@ this tutorial sticks to the by-hand CLI flow, so it&rsquo;s not covered further 
 <p>Check that it&rsquo;s recognized:</p>
 <div class="highlight"><pre><span></span><code><span class="gp">$ </span>wiki-toolkit<span class="w"> </span>doctor
 <span class="go">Python: 3.14.0</span>
-<span class="go">Config: docs_dir=/path/to/repo/docs (source: default)</span>
+<span class="go">Config:</span>
+<span class="go">  docs_dir=/path/to/repo/docs (source: default)</span>
+<span class="go">  repo_root=/path/to/repo (source: default)</span>
+<span class="go">  branch_prefix=wiki-update/ (source: default)</span>
+<span class="go">  batch_byte_cap=100000 (source: default)</span>
+<span class="go">  batch_file_cap=20 (source: default)</span>
 <span class="go">Notes in docs/wiki/: 0</span>
 <span class="go">  [ok] docs/catalog.jsonl</span>
 <span class="go">  [ok] docs/log.jsonl</span>
