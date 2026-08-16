@@ -2209,7 +2209,7 @@
               <td><code><a class="autorefs autorefs-internal" title="            plan_batches (wiki_toolkit.batches.plan_batches)" href="#wiki_toolkit.batches.plan_batches">plan_batches</a></code></td>
               <td class="doc-function-details">
                 <div class="doc-md-description">
-                  <p>Split the files under <code>source_dir</code> into batches of at most <code>BATCH_BYTE_CAP</code> bytes or <code>BATCH_FILE_CAP</code> files.</p>
+                  <p>Split the files under <code>source_dir</code> into batches of at most <code>batch_byte_cap</code> bytes or <code>batch_file_cap</code> files.</p>
                 </div>
               </td>
             </tr>
@@ -2417,7 +2417,9 @@
 
 
 <a href="#wiki_toolkit.batches.plan_batches" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">plan_batches</span><span class="p">(</span><span class="n">source_dir</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            BatchPlan
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">plan_batches</span><span class="p">(</span>
+    <span class="n">source_dir</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span><span class="p">,</span> <span class="n">batch_byte_cap</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">batch_file_cap</span><span class="p">:</span> <span class="n"><span title="int">int</span></span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            BatchPlan
 
 
   
@@ -2427,9 +2429,9 @@
 
     <div class="doc doc-contents ">
 
-        <p>Split the files under <code>source_dir</code> into batches of at most <code>BATCH_BYTE_CAP</code> bytes or <code>BATCH_FILE_CAP</code> files.</p>
+        <p>Split the files under <code>source_dir</code> into batches of at most <code>batch_byte_cap</code> bytes or <code>batch_file_cap</code> files.</p>
 <p>Files are visited in sorted order for determinism. A batch closes as soon as adding the next
-file would cross either cap; a single file larger than <code>BATCH_BYTE_CAP</code> still gets its own
+file would cross either cap; a single file larger than <code>batch_byte_cap</code> still gets its own
 batch rather than being split. Reports zero files if <code>source_dir</code> doesn&rsquo;t exist.</p>
 
 
