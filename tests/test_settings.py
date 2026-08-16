@@ -238,3 +238,28 @@ def test_build_context_invalid_env_value_falls_through(tmp_path: Path, monkeypat
 
     assert context.batch_byte_cap == 100_000
     assert sources["batch_byte_cap"] == "default"
+
+
+def test_build_context_invalid_field_does_not_discard_valid_siblings(tmp_path: Path) -> None:
+    """An invalid batch_byte_cap in the dedicated file doesn't discard a valid docs_dir from the same tier."""
+    (tmp_path / ".wiki-toolkit.toml").write_text('docs_dir = "custom-docs"\nbatch_byte_cap = -5\n')
+
+    context, sources = build_context(cwd=tmp_path)
+
+    assert context.docs_dir == tmp_path / "custom-docs"
+    assert sources["docs_dir"] == "dedicated_file"
+    assert context.batch_byte_cap == 100_000
+    assert sources["batch_byte_cap"] == "default"
+
+
+def test_build_context_invalid_env_value_does_not_discard_valid_siblings(tmp_path: Path, monkeypatch) -> None:
+    """An invalid WIKI_TOOLKIT_BATCH_BYTE_CAP doesn't discard a valid WIKI_TOOLKIT_DOCS_DIR."""
+    monkeypatch.setenv("WIKI_TOOLKIT_DOCS_DIR", str(tmp_path / "env-docs"))
+    monkeypatch.setenv("WIKI_TOOLKIT_BATCH_BYTE_CAP", "not-a-number")
+
+    context, sources = build_context(cwd=tmp_path)
+
+    assert context.docs_dir == tmp_path / "env-docs"
+    assert sources["docs_dir"] == "env"
+    assert context.batch_byte_cap == 100_000
+    assert sources["batch_byte_cap"] == "default"

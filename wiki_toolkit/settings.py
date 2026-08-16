@@ -18,9 +18,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ValidationError, field_validator
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
-from pydantic_settings.sources import PyprojectTomlConfigSettingsSource, TomlConfigSettingsSource
+from pydantic_settings.sources import (
+    EnvSettingsSource,
+    PyprojectTomlConfigSettingsSource,
+    TomlConfigSettingsSource,
+)
 
 ConfigSource = Literal["flag", "env", "pyproject", "default"]
 ContextConfigSource = Literal["flag", "env", "dedicated_file", "pyproject", "default"]
@@ -150,9 +154,26 @@ class _ContextFieldsSettings(BaseSettings):
 
 
 class _ContextEnvSettings(_ContextFieldsSettings):
-    """Reads context fields from `WIKI_TOOLKIT_*` environment variables."""
+    """Field-shape for reading `WIKI_TOOLKIT_*` env vars; env is read separately via `EnvSettingsSource`."""
 
     model_config = SettingsConfigDict(env_prefix="WIKI_TOOLKIT_")
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        """Restrict validation (`model_validate`) to init kwargs only.
+
+        Without this, `model_validate` re-triggers the default env source and
+        silently re-merges the *original* (possibly invalid) environment on
+        top of the already-filtered dict passed to it.
+        """
+        return (init_settings,)
 
 
 class _ContextDedicatedFileSettings(_ContextFieldsSettings):
@@ -172,7 +193,7 @@ class _ContextDedicatedFileSettings(_ContextFieldsSettings):
 
 
 class _ContextPyprojectSettings(_ContextFieldsSettings):
-    """Reads context fields from a `pyproject.toml`'s `[tool.wiki_toolkit]` table."""
+    """Field-shape for reading a `pyproject.toml`'s `[tool.wiki_toolkit]` table, read separately."""
 
     model_config = SettingsConfigDict(pyproject_toml_table_header=("tool", "wiki_toolkit"))
 
@@ -185,8 +206,14 @@ class _ContextPyprojectSettings(_ContextFieldsSettings):
         dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
-        """Restrict this settings class to init kwargs and `pyproject.toml`, no env/dotenv/secrets."""
-        return (init_settings, PyprojectTomlConfigSettingsSource(settings_cls))
+        """Restrict validation (`model_validate`) to init kwargs only.
+
+        `pyproject.toml` is read separately via an explicit `toml_file` path (the
+        directory found by `_find_upward`); the default `PyprojectTomlConfigSettingsSource`
+        resolves relative to the actual process cwd and would re-merge whatever it
+        finds there on top of the already-filtered dict passed to `model_validate`.
+        """
+        return (init_settings,)
 
 
 def _find_upward(start: Path, filename: str) -> Path | None:
@@ -197,37 +224,55 @@ def _find_upward(start: Path, filename: str) -> Path | None:
     return None
 
 
-def _env_context_fields() -> _ContextFieldsSettings | None:
-    """Read context fields from `WIKI_TOOLKIT_*` env vars, or `None` if any value is invalid."""
-    try:
-        return _ContextEnvSettings()
-    except ValueError:
-        return None
+def _validate_dropping_invalid(cls: type[_ContextFieldsSettings], data: dict[str, object]) -> _ContextFieldsSettings:
+    """Validate `data` against `cls`, dropping only the individually-invalid fields.
+
+    One bad field (e.g. a negative `batch_byte_cap`) must not discard its
+    valid siblings (e.g. a well-formed `docs_dir`) from the same tier.
+    """
+    remaining = dict(data)
+    while True:
+        try:
+            return cls.model_validate(remaining)
+        except ValidationError as exc:
+            bad_fields = {str(err["loc"][0]) for err in exc.errors() if err["loc"]}
+            if not bad_fields & remaining.keys():
+                # ponytail: safety net against an infinite loop if a future validator
+                # raises without loc matching a known field; not reachable today
+                return cls.model_construct()
+            for field in bad_fields:
+                remaining.pop(field, None)
+
+
+def _env_context_fields() -> _ContextFieldsSettings:
+    """Read context fields from `WIKI_TOOLKIT_*` env vars, dropping any individually-invalid value."""
+    data = EnvSettingsSource(_ContextEnvSettings, env_prefix="WIKI_TOOLKIT_")()
+    return _validate_dropping_invalid(_ContextEnvSettings, data)
 
 
 def _dedicated_file_context_fields(directory: Path | None) -> _ContextFieldsSettings | None:
-    """Read context fields from `directory`'s `.wiki-toolkit.toml`, or `None` if missing/invalid."""
+    """Read context fields from `directory`'s `.wiki-toolkit.toml`, or `None` if missing/unparseable."""
     if directory is None:
         return None
     toml_file = directory / DEDICATED_FILENAME
     try:
         data = TomlConfigSettingsSource(_ContextDedicatedFileSettings, toml_file=toml_file)()
-        return _ContextDedicatedFileSettings(**data)
     except ValueError:
-        # ponytail: tomllib.TOMLDecodeError and pydantic's ValidationError both subclass ValueError
+        # ponytail: tomllib.TOMLDecodeError subclasses ValueError
         return None
+    return _validate_dropping_invalid(_ContextDedicatedFileSettings, data)
 
 
 def _pyproject_context_fields(directory: Path | None) -> _ContextFieldsSettings | None:
-    """Read context fields from `directory`'s `pyproject.toml` table, or `None` if missing/invalid."""
+    """Read context fields from `directory`'s `pyproject.toml` table, or `None` if missing/unparseable."""
     if directory is None:
         return None
     toml_file = directory / "pyproject.toml"
     try:
         data = PyprojectTomlConfigSettingsSource(_ContextPyprojectSettings, toml_file=toml_file)()
-        return _ContextPyprojectSettings.model_validate(data)
     except ValueError:
         return None
+    return _validate_dropping_invalid(_ContextPyprojectSettings, data)
 
 
 def _find_repo_root(cwd: Path) -> Path:
