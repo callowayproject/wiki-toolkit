@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.28.2 (2026-08-16)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.28.1...0.28.2)
+
+### Other
+
+- Make branch_prefix and batch caps live, configurable settings (#158). [cc9a1c6](https://github.com/callowayproject/wiki-toolkit/commit/cc9a1c63682eeed44d74f3498b5536bf852de66b)
+
+  write_gate.py's branch-name builders and batches.py's plan_batches now take
+  branch_prefix/batch_byte_cap/batch_file_cap as parameters instead of reading
+  hardcoded module constants, sourced from ctx.obj at the start-branch,
+  propose-pr, and batch-plan CLI call sites.
+
 ## 0.28.1 (2026-08-16)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.28.0...0.28.1)
