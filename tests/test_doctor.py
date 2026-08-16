@@ -14,6 +14,7 @@ from wiki_toolkit.doctor import (
     validate_jsonl,
 )
 from wiki_toolkit.init import PROVENANCE_FILENAME
+from wiki_toolkit.settings import build_context
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -173,3 +174,105 @@ def test_check_shallow_clone_true_for_depth_one_clone(tmp_path: Path) -> None:
     )
 
     assert check_shallow_clone(clone) is True
+
+
+def test_run_doctor_without_sources_reports_only_docs_dir(tmp_path: Path, make_docs_tree: Callable[[], Path]) -> None:
+    """No `sources` given: report.sources holds only docs_dir, and no settings warnings fire."""
+    make_docs_tree()
+
+    report = run_doctor(tmp_path / "docs", docs_dir_source="env")
+
+    assert report.sources == {"docs_dir": "env"}
+    assert report.dual_config_files is False
+    assert report.repo_root_fallback is False
+    assert report.invalid_sources == {}
+
+
+def test_run_doctor_reports_all_five_settings_sources(tmp_path: Path, make_docs_tree: Callable[[], Path]) -> None:
+    """With `sources` given, report.sources carries all five settings, not just docs_dir."""
+    make_docs_tree()
+    (tmp_path / ".git").mkdir()
+    _, sources = build_context(cwd=tmp_path)
+
+    report = run_doctor(tmp_path / "docs", root=tmp_path, sources=sources, cwd=tmp_path)
+
+    assert set(report.sources) == {"docs_dir", "repo_root", "branch_prefix", "batch_byte_cap", "batch_file_cap"}
+
+
+def test_run_doctor_warns_on_dual_config_files(tmp_path: Path, make_docs_tree: Callable[[], Path]) -> None:
+    """Both a dedicated file and a pyproject.toml table present is a warning, not a failure."""
+    make_docs_tree()
+    (tmp_path / ".git").mkdir()
+    (tmp_path / ".wiki-toolkit.toml").write_text('branch_prefix = "dedicated/"\n')
+    (tmp_path / "pyproject.toml").write_text('[tool.wiki_toolkit]\nbranch_prefix = "py/"\n')
+    _, sources = build_context(cwd=tmp_path)
+
+    report = run_doctor(tmp_path / "docs", root=tmp_path, sources=sources, cwd=tmp_path)
+
+    assert report.dual_config_files is True
+    assert report.ok is True
+
+
+def test_run_doctor_no_dual_config_warning_with_only_dedicated_file(
+    tmp_path: Path, make_docs_tree: Callable[[], Path]
+) -> None:
+    """Only the dedicated file present (no pyproject.toml table) is not a dual-config warning."""
+    make_docs_tree()
+    (tmp_path / ".git").mkdir()
+    (tmp_path / ".wiki-toolkit.toml").write_text('branch_prefix = "dedicated/"\n')
+    _, sources = build_context(cwd=tmp_path)
+
+    report = run_doctor(tmp_path / "docs", root=tmp_path, sources=sources, cwd=tmp_path)
+
+    assert report.dual_config_files is False
+
+
+def test_run_doctor_warns_on_repo_root_fallback(tmp_path: Path, make_docs_tree: Callable[[], Path]) -> None:
+    """No `.git` found walking up from cwd: repo_root fell back to cwd, reported as a warning."""
+    make_docs_tree()
+    _, sources = build_context(cwd=tmp_path)
+
+    report = run_doctor(tmp_path / "docs", root=tmp_path, sources=sources, cwd=tmp_path)
+
+    assert report.repo_root_fallback is True
+    assert report.ok is True
+
+
+def test_run_doctor_no_repo_root_fallback_warning_when_git_found(
+    tmp_path: Path, make_docs_tree: Callable[[], Path]
+) -> None:
+    """A `.git` found while walking up from cwd means repo_root's default is not a fallback."""
+    make_docs_tree()
+    (tmp_path / ".git").mkdir()
+    _, sources = build_context(cwd=tmp_path)
+
+    report = run_doctor(tmp_path / "docs", root=tmp_path, sources=sources, cwd=tmp_path)
+
+    assert report.repo_root_fallback is False
+
+
+def test_run_doctor_warns_on_invalid_promoted_value(tmp_path: Path, make_docs_tree: Callable[[], Path]) -> None:
+    """A non-positive batch_byte_cap in the dedicated file falls back to default; doctor names the source."""
+    make_docs_tree()
+    (tmp_path / ".git").mkdir()
+    (tmp_path / ".wiki-toolkit.toml").write_text("batch_byte_cap = -5\n")
+    _, sources = build_context(cwd=tmp_path)
+
+    report = run_doctor(tmp_path / "docs", root=tmp_path, sources=sources, cwd=tmp_path)
+
+    assert report.invalid_sources == {"batch_byte_cap": "dedicated_file"}
+    assert report.ok is True
+
+
+def test_run_doctor_no_invalid_source_warning_when_value_is_valid(
+    tmp_path: Path, make_docs_tree: Callable[[], Path]
+) -> None:
+    """A valid dedicated-file value resolving normally produces no invalid_sources entry."""
+    make_docs_tree()
+    (tmp_path / ".git").mkdir()
+    (tmp_path / ".wiki-toolkit.toml").write_text('batch_byte_cap = "5000"\n')
+    _, sources = build_context(cwd=tmp_path)
+
+    report = run_doctor(tmp_path / "docs", root=tmp_path, sources=sources, cwd=tmp_path)
+
+    assert report.invalid_sources == {}

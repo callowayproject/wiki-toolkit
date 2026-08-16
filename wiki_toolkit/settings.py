@@ -15,8 +15,9 @@ continuing to search further up). CLI-flag overrides are currently only wired
 up for `docs_dir` and `repo_root`; the other three fields start at the env tier.
 """
 
+import tomllib
 import warnings
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
@@ -59,8 +60,8 @@ def _find_pyproject_docs_dir(start: Path) -> Path | None:
     directory = _find_upward(start, "pyproject.toml")
     if directory is None:
         return None
-    fields = _pyproject_context_fields(directory)
-    docs_dir = fields.docs_dir if fields is not None else None
+    result = _pyproject_context_fields(directory)
+    docs_dir = result[0].docs_dir if result is not None else None
     if docs_dir is None:
         return None
     return docs_dir if docs_dir.is_absolute() else directory / docs_dir
@@ -168,33 +169,40 @@ def _find_upward(start: Path, filename: str) -> Path | None:
     return None
 
 
-def _validate_dropping_invalid(cls: type[_ContextFieldsSettings], data: dict[str, object]) -> _ContextFieldsSettings:
+_FieldsAndDropped = tuple[_ContextFieldsSettings, frozenset[str]]
+
+
+def _validate_dropping_invalid(cls: type[_ContextFieldsSettings], data: dict[str, object]) -> _FieldsAndDropped:
     """Validate `data` against `cls`, dropping only the individually-invalid fields.
 
     One bad field (e.g. a negative `batch_byte_cap`) must not discard its
     valid siblings (e.g. a well-formed `docs_dir`) from the same tier.
+    Also returns the set of field names dropped this way, so callers can
+    tell an absent value apart from a present-but-invalid one.
     """
     remaining = dict(data)
+    dropped: set[str] = set()
     while True:
         try:
-            return cls.model_validate(remaining)
+            return cls.model_validate(remaining), frozenset(dropped)
         except ValidationError as exc:
             bad_fields = {str(err["loc"][0]) for err in exc.errors() if err["loc"]}
             if not bad_fields & remaining.keys():
                 # ponytail: safety net against an infinite loop if a future validator
                 # raises without loc matching a known field; not reachable today
-                return cls.model_construct()
-            for field in bad_fields:
-                remaining.pop(field, None)
+                return cls.model_construct(), frozenset(dropped)
+            for bad_field in bad_fields:
+                remaining.pop(bad_field, None)
+                dropped.add(bad_field)
 
 
-def _env_context_fields() -> _ContextFieldsSettings:
+def _env_context_fields() -> _FieldsAndDropped:
     """Read context fields from `WIKI_TOOLKIT_*` env vars, dropping any individually-invalid value."""
     data = EnvSettingsSource(_ContextEnvSettings)()
     return _validate_dropping_invalid(_ContextEnvSettings, data)
 
 
-def _dedicated_file_context_fields(directory: Path | None) -> _ContextFieldsSettings | None:
+def _dedicated_file_context_fields(directory: Path | None) -> _FieldsAndDropped | None:
     """Read context fields from `directory`'s `.wiki-toolkit.toml`, or `None` if missing/unreadable."""
     if directory is None:
         return None
@@ -207,7 +215,7 @@ def _dedicated_file_context_fields(directory: Path | None) -> _ContextFieldsSett
     return _validate_dropping_invalid(_ContextDedicatedFileSettings, data)
 
 
-def _pyproject_context_fields(directory: Path | None) -> _ContextFieldsSettings | None:
+def _pyproject_context_fields(directory: Path | None) -> _FieldsAndDropped | None:
     """Read context fields from `directory`'s `pyproject.toml` table, or `None` if missing/unreadable."""
     if directory is None:
         return None
@@ -223,12 +231,29 @@ def _pyproject_context_fields(directory: Path | None) -> _ContextFieldsSettings 
         return _validate_dropping_invalid(_ContextPyprojectSettings, data)
 
 
-def _find_repo_root(cwd: Path) -> Path:
-    """Walk upward from `cwd` for the nearest `.git`; fall back to `cwd` itself."""
+def _pyproject_has_wiki_toolkit_table(directory: Path | None) -> bool:
+    """True if `directory`'s `pyproject.toml` has a `[tool.wiki_toolkit]` table, however malformed its values."""
+    if directory is None:
+        return False
+    try:
+        data = tomllib.loads((directory / "pyproject.toml").read_text(encoding="utf-8"))
+    except (OSError, tomllib.TOMLDecodeError):
+        return False
+    tool = data.get("tool")
+    return isinstance(tool, dict) and "wiki_toolkit" in tool
+
+
+def _find_git_root(cwd: Path) -> Path | None:
+    """Walk upward from `cwd` for the nearest `.git`, or `None` if none is found."""
     for directory in (cwd, *cwd.parents):
         if (directory / ".git").exists():
             return directory
-    return cwd
+    return None
+
+
+def _find_repo_root(cwd: Path) -> Path:
+    """Walk upward from `cwd` for the nearest `.git`; fall back to `cwd` itself."""
+    return _find_git_root(cwd) or cwd
 
 
 def _default_value(field: str, cwd: Path) -> Path | str | int:
@@ -281,15 +306,71 @@ def build_context(
 
     dedicated_dir = _find_upward(cwd, DEDICATED_FILENAME)
     pyproject_dir = _find_upward(cwd, "pyproject.toml")
+    env_settings, _ = _env_context_fields()
+    dedicated_settings = _dedicated_file_context_fields(dedicated_dir)
+    pyproject_settings = _pyproject_context_fields(pyproject_dir)
     tiers: tuple[_Tier, ...] = (
-        ("env", _env_context_fields(), cwd),
-        ("dedicated_file", _dedicated_file_context_fields(dedicated_dir), dedicated_dir),
-        ("pyproject", _pyproject_context_fields(pyproject_dir), pyproject_dir),
+        ("env", env_settings, cwd),
+        ("dedicated_file", dedicated_settings[0] if dedicated_settings else None, dedicated_dir),
+        ("pyproject", pyproject_settings[0] if pyproject_settings else None, pyproject_dir),
     )
 
     values: dict[str, object] = {}
     sources: dict[str, ContextConfigSource] = {}
-    for field in _CONTEXT_FIELDS:
-        values[field], sources[field] = _resolve_field(field, flags.get(field), tiers, cwd)
+    for context_field in _CONTEXT_FIELDS:
+        flag_value = flags.get(context_field)
+        values[context_field], sources[context_field] = _resolve_field(context_field, flag_value, tiers, cwd)
 
     return Context.model_validate(values), sources
+
+
+@dataclass
+class SettingsDiagnostics:
+    """Non-fatal settings-resolution problems, surfaced by `doctor` as warnings (never as failures)."""
+
+    dual_config_files: bool = False
+    repo_root_fallback: bool = False
+    invalid_sources: dict[str, ContextConfigSource] = field(default_factory=dict)
+
+
+def diagnose_settings(sources: dict[str, ContextConfigSource], cwd: Path | None = None) -> SettingsDiagnostics:
+    """Diagnose non-fatal problems in settings resolution.
+
+    `sources` is the per-field source mapping from `build_context()`, used to tell which
+    fields ultimately fell back to `default` -- the only case where a dropped invalid
+    value upstream is worth naming.
+    """
+    # ponytail: re-reads env/dedicated-file/pyproject.toml already read once by build_context();
+    # doctor is a manually-run, non-hot-path command, so the extra I/O isn't worth threading
+    # dropped-field tracking through build_context()'s stable public signature to avoid.
+    cwd = cwd or Path.cwd()
+
+    dedicated_dir = _find_upward(cwd, DEDICATED_FILENAME)
+    pyproject_dir = _find_upward(cwd, "pyproject.toml")
+    dual_config_files = dedicated_dir is not None and _pyproject_has_wiki_toolkit_table(pyproject_dir)
+
+    repo_root_fallback = sources.get("repo_root") == "default" and _find_git_root(cwd) is None
+
+    _, env_dropped = _env_context_fields()
+    dedicated_result = _dedicated_file_context_fields(dedicated_dir)
+    pyproject_result = _pyproject_context_fields(pyproject_dir)
+    tiers: tuple[tuple[ContextConfigSource, frozenset[str]], ...] = (
+        ("env", env_dropped),
+        ("dedicated_file", dedicated_result[1] if dedicated_result else frozenset()),
+        ("pyproject", pyproject_result[1] if pyproject_result else frozenset()),
+    )
+
+    invalid_sources: dict[str, ContextConfigSource] = {}
+    for context_field in _CONTEXT_FIELDS:
+        if sources.get(context_field) != "default":
+            continue
+        for source_name, dropped in tiers:
+            if context_field in dropped:
+                invalid_sources[context_field] = source_name
+                break
+
+    return SettingsDiagnostics(
+        dual_config_files=dual_config_files,
+        repo_root_fallback=repo_root_fallback,
+        invalid_sources=invalid_sources,
+    )

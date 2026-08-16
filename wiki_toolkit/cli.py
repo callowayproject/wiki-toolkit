@@ -3,6 +3,7 @@
 Commands parse arguments and delegate to wiki_toolkit's domain modules; no business logic lives here.
 """
 
+from collections.abc import Mapping
 from dataclasses import asdict
 from pathlib import Path
 
@@ -11,7 +12,7 @@ import orjson
 
 from wiki_toolkit._io import read_jsonl, write_jsonl
 from wiki_toolkit.batches import plan_batches
-from wiki_toolkit.doctor import run_doctor
+from wiki_toolkit.doctor import DoctorReport, run_doctor
 from wiki_toolkit.init import run_init
 from wiki_toolkit.log import ALLOWED_LOG_ACTIONS, append_log_entry, build_log_entry
 from wiki_toolkit.settings import Context, build_context
@@ -59,14 +60,19 @@ def config() -> None:
     """Inspect wiki_toolkit's resolved configuration."""
 
 
+def _echo_config(context: Context, sources: Mapping[str, str], *, indent: str = "") -> None:
+    """Print each of `context`'s fields as `field=value (source: ...)`, one per line."""
+    for field in Context.model_fields:
+        click.echo(f"{indent}{field}={getattr(context, field)} (source: {sources[field]})")
+
+
 @config.command("show")
 @click.pass_context
 def config_show(ctx: click.Context) -> None:
     """Print the resolved settings and which source (flag/env/dedicated_file/pyproject/default) each came from."""
     context: Context = ctx.obj
     sources = ctx.meta[_SOURCES_META_KEY]
-    for field in Context.model_fields:
-        click.echo(f"{field}={getattr(context, field)} (source: {sources[field]})")
+    _echo_config(context, sources)
 
 
 @cli.command()
@@ -81,16 +87,32 @@ def init(context: Context) -> None:
         click.echo(f"  [already present] docs/{name}")
 
 
+def _echo_settings_warnings(report: DoctorReport) -> None:
+    """Print doctor's settings-resolution warnings (never gate `report.ok`)."""
+    if report.dual_config_files:
+        click.echo(
+            "  [warn] both .wiki-toolkit.toml and pyproject.toml's [tool.wiki_toolkit] table are present; "
+            ".wiki-toolkit.toml wins, pyproject.toml edits are silently ignored"
+        )
+
+    if report.repo_root_fallback:
+        click.echo("  [warn] no .git found walking up from cwd; repo_root fell back to cwd")
+
+    for field, source in report.invalid_sources.items():
+        click.echo(f"  [warn] {field}'s value from {source} was invalid; fell back to default")
+
+
 @cli.command()
 @click.pass_context
 def doctor(ctx: click.Context) -> None:
     """Non-mutating health check of the wiki's docs/ structure and git clone."""
     context: Context = ctx.obj
-    docs_dir_source = ctx.meta[_SOURCES_META_KEY]["docs_dir"]
-    report = run_doctor(context.docs_dir, root=context.repo_root, docs_dir_source=docs_dir_source)
+    sources = ctx.meta[_SOURCES_META_KEY]
+    report = run_doctor(context.docs_dir, root=context.repo_root, sources=sources)
 
     click.echo(f"Python: {report.python_version}")
-    click.echo(f"Config: docs_dir={report.docs_dir} (source: {report.docs_dir_source})")
+    click.echo("Config:")
+    _echo_config(context, report.sources, indent="  ")
     click.echo(f"Notes in docs/wiki/: {report.note_count}")
 
     for name in report.present_structure:
@@ -113,6 +135,8 @@ def doctor(ctx: click.Context) -> None:
             f"  [warn] docs/.agents/skills copy ({local_version}) and installed wiki_toolkit "
             f"({installed_version}) are out of sync; remove docs/.agents/skills/ and re-run init to refresh"
         )
+
+    _echo_settings_warnings(report)
 
     if not report.ok:
         raise SystemExit(1)
