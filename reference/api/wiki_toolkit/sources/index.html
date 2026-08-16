@@ -2212,6 +2212,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#wiki_toolkit.sources.calculate_scan_scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;calculate_scan_scope
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#wiki_toolkit.sources.compute_source_delta" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2810,6 +2821,14 @@
               <td class="doc-function-details">
                 <div class="doc-md-description">
                   <p>Write a <code>scan_sources</code> result: stamp source frontmatter, update the manifest.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            calculate_scan_scope (wiki_toolkit.sources.calculate_scan_scope)" href="#wiki_toolkit.sources.calculate_scan_scope">calculate_scan_scope</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Return the scope of sources to update and the set of unmatched source IDs.</p>
                 </div>
               </td>
             </tr>
@@ -4192,6 +4211,33 @@ every other classified entry is skipped, unwritten until a later unscoped call.
 If <code>stage_root</code> is given, every file this writes is best-effort git-staged — one
 <code>git add</code> per touched file rather than a single batched call, trading a few extra
 subprocess spawns for staging that can&rsquo;t drift out of sync with the write.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wiki_toolkit.sources.calculate_scan_scope" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">calculate_scan_scope</span>
+
+
+<a href="#wiki_toolkit.sources.calculate_scan_scope" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">calculate_scan_scope</span><span class="p">(</span>
+    <span class="n">result</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            SourceScanResult
+
+
+  
+      dataclass
+   (wiki_toolkit.sources.SourceScanResult)" href="#wiki_toolkit.sources.SourceScanResult">SourceScanResult</a></span><span class="p">,</span> <span class="n">source_ids</span><span class="p">:</span> <span class="n"><span title="tuple">tuple</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="tuple">tuple</span></span><span class="p">[</span><span class="n"><span title="set">set</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n"><span title="set">set</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">]]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the scope of sources to update and the set of unmatched source IDs.</p>
 
 
     </div>
