@@ -43,7 +43,12 @@ Check that it's recognized:
 ```console
 $ wiki-toolkit doctor
 Python: 3.14.0
-Config: docs_dir=/path/to/repo/docs (source: default)
+Config:
+  docs_dir=/path/to/repo/docs (source: default)
+  repo_root=/path/to/repo (source: default)
+  branch_prefix=wiki-update/ (source: default)
+  batch_byte_cap=100000 (source: default)
+  batch_file_cap=20 (source: default)
 Notes in docs/wiki/: 0
   [ok] docs/catalog.jsonl
   [ok] docs/log.jsonl

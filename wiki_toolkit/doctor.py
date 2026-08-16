@@ -10,7 +10,7 @@ from pathlib import Path
 import orjson
 
 from wiki_toolkit.init import PROVENANCE_FILENAME
-from wiki_toolkit.settings import ContextConfigSource
+from wiki_toolkit.settings import ContextConfigSource, diagnose_settings
 from wiki_toolkit.sources import SOURCE_MANIFEST_FILENAME
 
 DOCS_DIRS = ("sources", "wiki")
@@ -32,6 +32,10 @@ class DoctorReport:
     is_shallow_clone: bool | None = None
     jsonl_errors: dict[str, list[str]] = field(default_factory=dict)
     skills_version_drift: tuple[str, str] | None = None
+    sources: dict[str, ContextConfigSource] = field(default_factory=dict)
+    dual_config_files: bool = False
+    repo_root_fallback: bool = False
+    invalid_sources: dict[str, ContextConfigSource] = field(default_factory=dict)
 
     @property
     def ok(self) -> bool:
@@ -96,18 +100,8 @@ def check_skills_version_drift(docs_dir: Path) -> tuple[str, str] | None:
     return (local_version, installed_version)
 
 
-def run_doctor(
-    docs_dir: Path, root: Path | None = None, docs_dir_source: ContextConfigSource = "default"
-) -> DoctorReport:
-    """Run the non-mutating `doctor` health check against `docs_dir`.
-
-    `root` is the git repository root used for the shallow-clone check; it
-    defaults to `docs_dir`'s parent, the common case where `docs_dir` is a
-    `docs/` subdirectory of the repo.
-    """
-    root = root if root is not None else docs_dir.parent
-    report = DoctorReport(python_version=sys.version.split()[0], docs_dir=docs_dir, docs_dir_source=docs_dir_source)
-
+def _check_structure(docs_dir: Path, report: DoctorReport) -> None:
+    """Populate `report`'s present/missing structure, note count, and JSONL validity."""
     for name in DOCS_FILES:
         if (docs_dir / name).is_file():
             report.present_structure.append(name)
@@ -124,10 +118,46 @@ def run_doctor(
         report.note_count = sum(1 for _ in wiki_dir.rglob("*.md"))
 
     for name in JSONL_FILES_TO_VALIDATE:
-        jsonl_path = docs_dir / name
-        errors = validate_jsonl(jsonl_path)
+        errors = validate_jsonl(docs_dir / name)
         if errors:
             report.jsonl_errors[name] = errors
+
+
+def run_doctor(
+    docs_dir: Path,
+    root: Path | None = None,
+    docs_dir_source: ContextConfigSource = "default",
+    sources: dict[str, ContextConfigSource] | None = None,
+    cwd: Path | None = None,
+) -> DoctorReport:
+    """Run the non-mutating `doctor` health check against `docs_dir`.
+
+    `root` is the git repository root used for the shallow-clone check; it
+    defaults to `docs_dir`'s parent, the common case where `docs_dir` is a
+    `docs/` subdirectory of the repo.
+
+    `sources` is the full per-field source mapping from `build_context()` (docs_dir,
+    repo_root, branch_prefix, batch_byte_cap, batch_file_cap); when given, the report
+    also carries settings-resolution warnings (dual config files, a `repo_root` that
+    fell back to cwd, any field whose resolved value fell back to default because an
+    upstream tier's value was invalid). When omitted, only `docs_dir_source` is tracked,
+    matching the tool's pre-settings-diagnostics behavior.
+    """
+    root = root if root is not None else docs_dir.parent
+    report = DoctorReport(
+        python_version=sys.version.split()[0],
+        docs_dir=docs_dir,
+        docs_dir_source=sources["docs_dir"] if sources is not None else docs_dir_source,
+        sources=sources if sources is not None else {"docs_dir": docs_dir_source},
+    )
+
+    if sources is not None:
+        diagnostics = diagnose_settings(sources, cwd=cwd)
+        report.dual_config_files = diagnostics.dual_config_files
+        report.repo_root_fallback = diagnostics.repo_root_fallback
+        report.invalid_sources = diagnostics.invalid_sources
+
+    _check_structure(docs_dir, report)
 
     report.is_shallow_clone = check_shallow_clone(root)
     report.skills_version_drift = check_skills_version_drift(docs_dir)

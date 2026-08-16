@@ -156,7 +156,9 @@ def test_doctor_reports_resolved_config_and_source(tmp_path: Path, monkeypatch) 
 
     result = CliRunner().invoke(cli, ["doctor"])
 
-    assert f"Config: docs_dir={tmp_path / 'docs'} (source: default)" in result.output
+    assert "Config:" in result.output
+    assert f"docs_dir={tmp_path / 'docs'} (source: default)" in result.output
+    assert "branch_prefix=wiki-update/ (source: default)" in result.output
 
 
 def test_doctor_docs_dir_flag_is_reported_as_source(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
@@ -166,7 +168,7 @@ def test_doctor_docs_dir_flag_is_reported_as_source(tmp_path: Path, monkeypatch,
 
     result = CliRunner().invoke(cli, ["--docs-dir", str(docs_dir), "doctor"])
 
-    assert f"Config: docs_dir={docs_dir} (source: flag)" in result.output
+    assert f"docs_dir={docs_dir} (source: flag)" in result.output
     assert result.exit_code == 0
 
 
@@ -181,6 +183,45 @@ def test_doctor_reports_skills_version_drift(tmp_path: Path, monkeypatch, make_d
     assert result.exit_code == 1
     assert "0.0.1" in result.output
     assert "re-run init" in result.output
+
+
+def test_doctor_warns_on_dual_config_files(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
+    """`doctor` warns when both .wiki-toolkit.toml and pyproject.toml's table are present."""
+    make_docs_tree()
+    _init_git(tmp_path)
+    (tmp_path / ".wiki-toolkit.toml").write_text('branch_prefix = "dedicated/"\n')
+    (tmp_path / "pyproject.toml").write_text('[tool.wiki_toolkit]\nbranch_prefix = "py/"\n')
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["doctor"])
+
+    assert "[warn]" in result.output
+    assert ".wiki-toolkit.toml wins" in result.output
+    assert result.exit_code == 0
+
+
+def test_doctor_warns_on_repo_root_fallback(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
+    """`doctor` warns when no .git is found and repo_root fell back to cwd."""
+    make_docs_tree()
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["doctor"])
+
+    assert "repo_root fell back to cwd" in result.output
+    assert result.exit_code == 0
+
+
+def test_doctor_warns_on_invalid_promoted_value(tmp_path: Path, monkeypatch, make_docs_tree) -> None:
+    """`doctor` warns when a promoted value was invalid and fell back to default, naming the source."""
+    make_docs_tree()
+    _init_git(tmp_path)
+    (tmp_path / ".wiki-toolkit.toml").write_text("batch_byte_cap = -5\n")
+    monkeypatch.chdir(tmp_path)
+
+    result = CliRunner().invoke(cli, ["doctor"])
+
+    assert "batch_byte_cap's value from dedicated_file was invalid" in result.output
+    assert result.exit_code == 0
 
 
 def test_config_show_prints_resolved_docs_dir_and_source(tmp_path: Path, monkeypatch) -> None:
