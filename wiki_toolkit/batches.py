@@ -8,9 +8,6 @@ Splits raw files under a source directory into size/count-bounded batches for pa
 from dataclasses import dataclass, field
 from pathlib import Path
 
-BATCH_BYTE_CAP = 100_000
-BATCH_FILE_CAP = 20
-
 
 @dataclass
 class Batch:
@@ -38,11 +35,11 @@ class BatchPlan:
     stats: BatchStats
 
 
-def plan_batches(source_dir: Path) -> BatchPlan:
-    """Split the files under `source_dir` into batches of at most `BATCH_BYTE_CAP` bytes or `BATCH_FILE_CAP` files.
+def plan_batches(source_dir: Path, batch_byte_cap: int, batch_file_cap: int) -> BatchPlan:
+    """Split the files under `source_dir` into batches of at most `batch_byte_cap` bytes or `batch_file_cap` files.
 
     Files are visited in sorted order for determinism. A batch closes as soon as adding the next
-    file would cross either cap; a single file larger than `BATCH_BYTE_CAP` still gets its own
+    file would cross either cap; a single file larger than `batch_byte_cap` still gets its own
     batch rather than being split. Reports zero files if `source_dir` doesn't exist.
     """
     files = sorted(p for p in source_dir.rglob("*") if p.is_file()) if source_dir.is_dir() else []
@@ -51,7 +48,7 @@ def plan_batches(source_dir: Path) -> BatchPlan:
     current: Batch | None = None
     for path in files:
         size = path.stat().st_size
-        if current is None or len(current.files) >= BATCH_FILE_CAP or current.total_bytes + size > BATCH_BYTE_CAP:
+        if current is None or len(current.files) >= batch_file_cap or current.total_bytes + size > batch_byte_cap:
             current = Batch(id=str(len(batches)))
             batches.append(current)
         current.files.append(str(path.relative_to(source_dir)))

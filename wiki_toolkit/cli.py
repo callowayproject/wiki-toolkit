@@ -148,9 +148,10 @@ def lint(context: Context) -> None:
 @cli.command("batch-plan")
 @click.argument("vault", type=click.Path(path_type=Path))
 @click.argument("source_dir", type=click.Path(path_type=Path))
-def batch_plan_cmd(vault: Path, source_dir: Path) -> None:
+@click.pass_obj
+def batch_plan_cmd(context: Context, vault: Path, source_dir: Path) -> None:
     """Split the files under SOURCE_DIR into batches for parallel wiki-ingest dispatch."""
-    plan = plan_batches(source_dir)
+    plan = plan_batches(source_dir, context.batch_byte_cap, context.batch_file_cap)
     click.echo(orjson.dumps(asdict(plan)).decode())
 
 
@@ -323,7 +324,7 @@ def cross_link_candidates_cmd(context: Context, page_paths: tuple[str, ...]) -> 
 def start_branch_cmd(context: Context, frame: str) -> None:
     """Open a new local git branch for a batch coordinator session, before any source commits."""
     try:
-        branch = start_wiki_branch(context.repo_root, frame)
+        branch = start_wiki_branch(context.repo_root, frame, context.branch_prefix)
     except ValueError as e:
         raise click.UsageError(str(e)) from e
 
@@ -353,7 +354,7 @@ def commit_pages_cmd(context: Context, pages: tuple[str, ...], message: str) -> 
 def propose_pr_cmd(context: Context, pages: tuple[str, ...], frame: str) -> None:
     """Stage a wiki change as a local git branch + commit. Never pushes or opens a real PR."""
     try:
-        result = propose_pr(context.repo_root, list(pages), frame)
+        result = propose_pr(context.repo_root, list(pages), frame, context.branch_prefix)
     except ValueError as e:
         raise click.UsageError(str(e)) from e
 

@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING
 
 from wiki_toolkit.write_gate import commit_pages, propose_pr, stage_paths, start_wiki_branch
 
+BRANCH_PREFIX = "wiki-update/"
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -38,7 +40,7 @@ def test_propose_pr_creates_branch_and_commits_listed_pages(tmp_path: Path) -> N
     root = _make_propose_pr_repo(tmp_path)
     (root / "docs" / "wiki" / "note.md").write_text("updated\n")
 
-    result = propose_pr(root, ["docs/wiki/note.md"], "routine")
+    result = propose_pr(root, ["docs/wiki/note.md"], "routine", BRANCH_PREFIX)
 
     assert result.frame == "routine"
     assert result.pages == ["docs/wiki/note.md"]
@@ -57,7 +59,7 @@ def test_propose_pr_needs_review_reflects_frame_in_commit_message(tmp_path: Path
     root = _make_propose_pr_repo(tmp_path)
     (root / "docs" / "wiki" / "note.md").write_text("updated\n")
 
-    result = propose_pr(root, ["docs/wiki/note.md"], "needs-review")
+    result = propose_pr(root, ["docs/wiki/note.md"], "needs-review", BRANCH_PREFIX)
 
     commit_message = _git(root, "log", "-1", "--format=%s", result.commit_sha).stdout.strip()
     assert "needs review" in commit_message.lower()
@@ -69,7 +71,7 @@ def test_propose_pr_never_touches_main_or_a_remote(tmp_path: Path) -> None:
     main_sha_before = _git(root, "rev-parse", "main").stdout.strip()
     (root / "docs" / "wiki" / "note.md").write_text("updated\n")
 
-    propose_pr(root, ["docs/wiki/note.md"], "routine")
+    propose_pr(root, ["docs/wiki/note.md"], "routine", BRANCH_PREFIX)
 
     assert _git(root, "rev-parse", "main").stdout.strip() == main_sha_before
     assert not _git(root, "remote").stdout.strip()
@@ -83,7 +85,7 @@ def test_propose_pr_includes_other_already_staged_files(tmp_path: Path) -> None:
     other.write_text("catalog\n")
     _git(root, "add", "docs/catalog.jsonl")
 
-    result = propose_pr(root, ["docs/wiki/note.md"], "routine")
+    result = propose_pr(root, ["docs/wiki/note.md"], "routine", BRANCH_PREFIX)
 
     committed_files = _git(root, "show", "--name-only", "--format=", "HEAD").stdout.split()
     assert committed_files == ["docs/catalog.jsonl", "docs/wiki/note.md"]
@@ -95,7 +97,7 @@ def test_propose_pr_restores_original_branch_on_failure(tmp_path: Path) -> None:
     root = _make_propose_pr_repo(tmp_path)
 
     try:
-        propose_pr(root, ["docs/wiki/does-not-exist.md"], "routine")
+        propose_pr(root, ["docs/wiki/does-not-exist.md"], "routine", BRANCH_PREFIX)
     except ValueError:
         pass
     else:
@@ -111,7 +113,7 @@ def test_propose_pr_invalid_frame_raises(tmp_path: Path) -> None:
     root = _make_propose_pr_repo(tmp_path)
 
     try:
-        propose_pr(root, ["docs/wiki/note.md"], "bogus")
+        propose_pr(root, ["docs/wiki/note.md"], "bogus", BRANCH_PREFIX)
     except ValueError:
         pass
     else:
@@ -123,7 +125,7 @@ def test_propose_pr_empty_pages_raises(tmp_path: Path) -> None:
     root = _make_propose_pr_repo(tmp_path)
 
     try:
-        propose_pr(root, [], "routine")
+        propose_pr(root, [], "routine", BRANCH_PREFIX)
     except ValueError:
         pass
     else:
@@ -135,7 +137,7 @@ def test_start_wiki_branch_creates_and_checks_out_branch(tmp_path: Path) -> None
     root = _make_propose_pr_repo(tmp_path)
     main_sha = _git(root, "rev-parse", "main").stdout.strip()
 
-    branch = start_wiki_branch(root, "routine")
+    branch = start_wiki_branch(root, "routine", BRANCH_PREFIX)
 
     assert branch.startswith("wiki-update/routine-")
     assert _git(root, "branch", "--show-current").stdout.strip() == branch
@@ -145,7 +147,7 @@ def test_start_wiki_branch_creates_and_checks_out_branch(tmp_path: Path) -> None
 def test_commit_pages_lands_on_current_branch(tmp_path: Path) -> None:
     """commit_pages adds and commits the given pages onto whatever branch is checked out."""
     root = _make_propose_pr_repo(tmp_path)
-    branch = start_wiki_branch(root, "routine")
+    branch = start_wiki_branch(root, "routine", BRANCH_PREFIX)
     (root / "docs" / "wiki" / "note.md").write_text("from batch\n")
 
     commit_sha = commit_pages(root, ["docs/wiki/note.md"], "Ingest source-1: update note.md")
@@ -159,7 +161,7 @@ def test_commit_pages_lands_on_current_branch(tmp_path: Path) -> None:
 def test_commit_pages_includes_other_already_staged_files(tmp_path: Path) -> None:
     """commit_pages commits the given pages plus any other file already `git add`-ed (self-staged state files)."""
     root = _make_propose_pr_repo(tmp_path)
-    start_wiki_branch(root, "routine")
+    start_wiki_branch(root, "routine", BRANCH_PREFIX)
     (root / "docs" / "wiki" / "note.md").write_text("from batch\n")
     other = root / "docs" / "catalog.jsonl"
     other.write_text("catalog\n")
@@ -198,7 +200,7 @@ def test_streaming_batch_commits_land_on_one_branch_without_waiting(tmp_path: Pa
     _git(root, "add", ".")
     _git(root, "commit", "-m", "add second page")
 
-    branch = start_wiki_branch(root, "routine")
+    branch = start_wiki_branch(root, "routine", BRANCH_PREFIX)
 
     # Batch "b" (dispatched second) reports back before batch "a" — the coordinator commits
     # it immediately rather than waiting for "a".
@@ -217,11 +219,11 @@ def test_streaming_batch_commits_land_on_one_branch_without_waiting(tmp_path: Pa
 def test_propose_pr_reuses_existing_session_branch(tmp_path: Path) -> None:
     """A closing propose_pr call on a branch opened by start_wiki_branch reuses it, no second branch."""
     root = _make_propose_pr_repo(tmp_path)
-    branch = start_wiki_branch(root, "routine")
+    branch = start_wiki_branch(root, "routine", BRANCH_PREFIX)
     (root / "docs" / "wiki" / "note.md").write_text("from batch\n")
     commit_pages(root, ["docs/wiki/note.md"], "Ingest source-1: update note.md")
 
-    result = propose_pr(root, ["docs/wiki/note.md"], "routine")
+    result = propose_pr(root, ["docs/wiki/note.md"], "routine", BRANCH_PREFIX)
 
     assert result.branch == branch
     branches = _git(root, "branch", "--list").stdout
@@ -231,26 +233,45 @@ def test_propose_pr_reuses_existing_session_branch(tmp_path: Path) -> None:
 def test_propose_pr_tolerates_pages_already_committed_upstream(tmp_path: Path) -> None:
     """The closing propose_pr call succeeds even when every listed page was already committed by commit_pages."""
     root = _make_propose_pr_repo(tmp_path)
-    start_wiki_branch(root, "routine")
+    start_wiki_branch(root, "routine", BRANCH_PREFIX)
     (root / "docs" / "wiki" / "note.md").write_text("from batch\n")
     already_committed_sha = commit_pages(root, ["docs/wiki/note.md"], "Ingest source-1: update note.md")
 
-    result = propose_pr(root, ["docs/wiki/note.md"], "routine")
+    result = propose_pr(root, ["docs/wiki/note.md"], "routine", BRANCH_PREFIX)
 
     assert result.commit_sha == already_committed_sha
+
+
+def test_start_wiki_branch_respects_non_default_branch_prefix(tmp_path: Path) -> None:
+    """A non-default branch_prefix produces a branch name using that prefix, not wiki-update/."""
+    root = _make_propose_pr_repo(tmp_path)
+
+    branch = start_wiki_branch(root, "routine", "custom-prefix/")
+
+    assert branch.startswith("custom-prefix/routine-")
+
+
+def test_propose_pr_respects_non_default_branch_prefix(tmp_path: Path) -> None:
+    """A non-default branch_prefix produces a branch name using that prefix, not wiki-update/."""
+    root = _make_propose_pr_repo(tmp_path)
+    (root / "docs" / "wiki" / "note.md").write_text("updated\n")
+
+    result = propose_pr(root, ["docs/wiki/note.md"], "routine", "custom-prefix/")
+
+    assert result.branch.startswith("custom-prefix/routine-")
 
 
 def test_propose_pr_commits_other_staged_file_when_reusing_branch(tmp_path: Path) -> None:
     """A closing propose_pr call still commits self-staged state files even when every listed page is done."""
     root = _make_propose_pr_repo(tmp_path)
-    start_wiki_branch(root, "routine")
+    start_wiki_branch(root, "routine", BRANCH_PREFIX)
     (root / "docs" / "wiki" / "note.md").write_text("from batch\n")
     commit_pages(root, ["docs/wiki/note.md"], "Ingest source-1: update note.md")
     other = root / "docs" / "catalog.jsonl"
     other.write_text("catalog\n")
     _git(root, "add", "docs/catalog.jsonl")
 
-    result = propose_pr(root, ["docs/wiki/note.md"], "routine")
+    result = propose_pr(root, ["docs/wiki/note.md"], "routine", BRANCH_PREFIX)
 
     committed_files = _git(root, "show", "--name-only", "--format=", result.commit_sha).stdout.split()
     assert committed_files == ["docs/catalog.jsonl"]

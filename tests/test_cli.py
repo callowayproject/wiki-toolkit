@@ -51,6 +51,23 @@ def test_batch_plan_cmd_prints_json_report(tmp_path: Path) -> None:
     assert report["batches"] == [{"id": "0", "files": ["a.md"], "total_bytes": 5}]
 
 
+def test_batch_plan_cmd_honors_configured_batch_file_cap(tmp_path: Path, monkeypatch) -> None:
+    """A configured batch_file_cap (via env) changes batching output instead of the default of 20."""
+    vault = tmp_path / "vault"
+    vault.mkdir()
+    source_dir = tmp_path / "source"
+    source_dir.mkdir()
+    (source_dir / "a.md").write_text("hello")
+    (source_dir / "b.md").write_text("world")
+    monkeypatch.setenv("WIKI_TOOLKIT_BATCH_FILE_CAP", "1")
+
+    result = CliRunner().invoke(cli, ["batch-plan", str(vault), str(source_dir)])
+
+    assert result.exit_code == 0
+    report = orjson.loads(result.output)
+    assert report["stats"]["batch_count"] == 2
+
+
 def test_make_source_writes_frontmatter(tmp_path: Path, make_source) -> None:
     """make_source writes a frontmatter file keyed on the source id."""
     docs_dir = tmp_path / "docs"
@@ -985,6 +1002,18 @@ def test_start_branch_cmd_prints_branch_name(tmp_path: Path, monkeypatch) -> Non
     branch = result.output.strip()
     assert branch.startswith("wiki-update/routine-")
     assert _git(tmp_path, "branch", "--show-current").stdout.strip() == branch
+
+
+def test_start_branch_cmd_honors_configured_branch_prefix(tmp_path: Path, monkeypatch) -> None:
+    """A configured branch_prefix (via env) is used instead of the wiki-update/ default."""
+    _make_propose_pr_repo(tmp_path)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("WIKI_TOOLKIT_BRANCH_PREFIX", "custom-prefix/")
+
+    result = CliRunner().invoke(cli, ["start-branch", "--frame", "routine"])
+
+    assert result.exit_code == 0
+    assert result.output.strip().startswith("custom-prefix/routine-")
 
 
 def test_start_branch_cmd_rejects_invalid_frame(tmp_path: Path, monkeypatch) -> None:

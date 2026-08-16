@@ -10,7 +10,6 @@ from typing import Literal
 
 Frame = Literal["routine", "needs-review"]
 ALLOWED_FRAMES: tuple[Frame, ...] = ("routine", "needs-review")
-_BRANCH_PREFIX = "wiki-update/"
 
 
 @dataclass
@@ -38,9 +37,9 @@ def _run(git: str, root: Path, *args: str) -> subprocess.CompletedProcess:
     )
 
 
-def _new_branch_name(frame: str) -> str:
-    """Generate a unique `wiki-update/<frame>-<timestamp>` branch name."""
-    return f"{_BRANCH_PREFIX}{frame}-{datetime.now(UTC).strftime('%Y%m%d%H%M%S%f')}"
+def _new_branch_name(frame: str, branch_prefix: str) -> str:
+    """Generate a unique `<branch_prefix><frame>-<timestamp>` branch name."""
+    return f"{branch_prefix}{frame}-{datetime.now(UTC).strftime('%Y%m%d%H%M%S%f')}"
 
 
 def _nothing_staged(git: str, root: Path) -> bool:
@@ -79,7 +78,7 @@ def stage_best_effort(root: Path, paths: list[str]) -> None:
         stage_paths(root, paths)
 
 
-def start_wiki_branch(root: Path, frame: str) -> str:
+def start_wiki_branch(root: Path, frame: str, branch_prefix: str) -> str:
     """Create and check out a new local branch for a wiki-update session, before any pages are committed.
 
     A batch coordinator calls this once, before dispatching any subagents, so every
@@ -89,7 +88,7 @@ def start_wiki_branch(root: Path, frame: str) -> str:
     if frame not in ALLOWED_FRAMES:
         raise ValueError(f"invalid frame {frame!r}; must be one of {ALLOWED_FRAMES}")
     git = _require_git()
-    branch = _new_branch_name(frame)
+    branch = _new_branch_name(frame, branch_prefix)
     _run(git, root, "checkout", "-b", branch)
     return branch
 
@@ -118,7 +117,7 @@ def commit_pages(root: Path, pages: list[str], message: str) -> str:
     return _run(git, root, "rev-parse", "HEAD").stdout.strip()
 
 
-def propose_pr(root: Path, pages: list[str], frame: str) -> ProposePrResult:
+def propose_pr(root: Path, pages: list[str], frame: str, branch_prefix: str) -> ProposePrResult:
     """Stage `pages` as a git branch + commit, framed for review, and return that branch.
 
     This is the one write path every wiki mutation is meant to route through
@@ -143,8 +142,8 @@ def propose_pr(root: Path, pages: list[str], frame: str) -> ProposePrResult:
 
     git = _require_git()
     original_branch = _run(git, root, "branch", "--show-current").stdout.strip()
-    reusing_branch = original_branch.startswith(_BRANCH_PREFIX)
-    branch = original_branch if reusing_branch else _new_branch_name(frame)
+    reusing_branch = original_branch.startswith(branch_prefix)
+    branch = original_branch if reusing_branch else _new_branch_name(frame, branch_prefix)
     label = "Needs review" if frame == "needs-review" else "Routine"
     message = f"{label}: update {', '.join(pages)}"
 
