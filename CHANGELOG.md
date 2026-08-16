@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.28.3 (2026-08-16)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.28.2...0.28.3)
+
+### Other
+
+- Doctor: surface settings resolution problems as warnings (#159). [87395c7](https://github.com/callowayproject/wiki-toolkit/commit/87395c724b12fe721aab4332dac3fd34092f279c)
+
+  Expand doctor's config line to all five settings and their sources,
+  and add three new [warn] conditions: dedicated-file + pyproject table
+  both present, repo_root falling back to cwd with no .git found, and
+  a promoted setting's value being invalid and falling back to default.
+  All are warnings, matching the existing severity split (never gate
+  report.ok / exit 1).
+
 ## 0.28.2 (2026-08-16)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.28.1...0.28.2)
