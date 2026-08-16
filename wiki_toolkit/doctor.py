@@ -10,7 +10,7 @@ from pathlib import Path
 import orjson
 
 from wiki_toolkit.init import PROVENANCE_FILENAME
-from wiki_toolkit.settings import ConfigSource
+from wiki_toolkit.settings import ContextConfigSource
 from wiki_toolkit.sources import SOURCE_MANIFEST_FILENAME
 
 DOCS_DIRS = ("sources", "wiki")
@@ -25,7 +25,7 @@ class DoctorReport:
 
     python_version: str
     docs_dir: Path
-    docs_dir_source: ConfigSource
+    docs_dir_source: ContextConfigSource
     missing_structure: list[str] = field(default_factory=list)
     present_structure: list[str] = field(default_factory=list)
     note_count: int = 0
@@ -96,7 +96,9 @@ def check_skills_version_drift(docs_dir: Path) -> tuple[str, str] | None:
     return (local_version, installed_version)
 
 
-def run_doctor(docs_dir: Path, root: Path | None = None, docs_dir_source: ConfigSource = "default") -> DoctorReport:
+def run_doctor(
+    docs_dir: Path, root: Path | None = None, docs_dir_source: ContextConfigSource = "default"
+) -> DoctorReport:
     """Run the non-mutating `doctor` health check against `docs_dir`.
 
     `root` is the git repository root used for the shallow-clone check; it
