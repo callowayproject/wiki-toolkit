@@ -81,7 +81,7 @@ def test_init_honors_docs_dir_flag(tmp_path: Path, monkeypatch) -> None:
     elsewhere.mkdir()
     monkeypatch.chdir(elsewhere)
 
-    result = CliRunner().invoke(cli, ["init", "--docs-dir", str(override)])
+    result = CliRunner().invoke(cli, ["--docs-dir", str(override), "init"])
 
     assert result.exit_code == 0
     assert (override / "schema.md").is_file()
@@ -147,7 +147,7 @@ def test_doctor_docs_dir_flag_is_reported_as_source(tmp_path: Path, monkeypatch,
     docs_dir = make_docs_tree()
     monkeypatch.chdir(tmp_path)
 
-    result = CliRunner().invoke(cli, ["doctor", "--docs-dir", str(docs_dir)])
+    result = CliRunner().invoke(cli, ["--docs-dir", str(docs_dir), "doctor"])
 
     assert f"Config: docs_dir={docs_dir} (source: flag)" in result.output
     assert result.exit_code == 0
@@ -181,7 +181,7 @@ def test_config_show_honors_docs_dir_flag(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.chdir(tmp_path)
     override = tmp_path / "other-docs"
 
-    result = CliRunner().invoke(cli, ["config", "show", "--docs-dir", str(override)])
+    result = CliRunner().invoke(cli, ["--docs-dir", str(override), "config", "show"])
 
     assert result.exit_code == 0
     assert f"docs_dir={override} (source: flag)" in result.output
@@ -241,7 +241,7 @@ def test_build_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_docs_tree,
     _init_git(tmp_path)
     monkeypatch.chdir(elsewhere)
 
-    result = CliRunner().invoke(cli, ["build", "--docs-dir", str(docs_dir)])
+    result = CliRunner().invoke(cli, ["--docs-dir", str(docs_dir), "build"])
 
     assert result.exit_code == 0
     assert (docs_dir / "catalog.jsonl").exists()
@@ -283,7 +283,7 @@ def test_source_scan_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_docs
     elsewhere.mkdir()
     monkeypatch.chdir(elsewhere)
 
-    result = CliRunner().invoke(cli, ["source-scan", "--docs-dir", str(docs_dir)])
+    result = CliRunner().invoke(cli, ["--docs-dir", str(docs_dir), "source-scan"])
 
     assert result.exit_code == 0
     assert "jira:ABC-1" in result.output
@@ -378,7 +378,7 @@ def test_lint_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_docs_tree, 
     elsewhere.mkdir()
     monkeypatch.chdir(elsewhere)
 
-    result = CliRunner().invoke(cli, ["lint", "--docs-dir", str(docs_dir)])
+    result = CliRunner().invoke(cli, ["--docs-dir", str(docs_dir), "lint"])
 
     assert result.exit_code == 0
 
@@ -433,7 +433,7 @@ def test_source_dedupe_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_do
     elsewhere.mkdir()
     monkeypatch.chdir(elsewhere)
 
-    result = CliRunner().invoke(cli, ["source-dedupe", "--docs-dir", str(docs_dir)])
+    result = CliRunner().invoke(cli, ["--docs-dir", str(docs_dir), "source-dedupe"])
 
     assert result.exit_code == 1
     assert "[GROUP] jira:ABC-1" in result.output
@@ -503,7 +503,7 @@ def test_source_lint_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_docs
     elsewhere.mkdir()
     monkeypatch.chdir(elsewhere)
 
-    result = CliRunner().invoke(cli, ["source-lint", "--docs-dir", str(docs_dir)])
+    result = CliRunner().invoke(cli, ["--docs-dir", str(docs_dir), "source-lint"])
 
     assert result.exit_code == 1
 
@@ -558,7 +558,7 @@ def test_source_coverage_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_
     elsewhere.mkdir()
     monkeypatch.chdir(elsewhere)
 
-    result = CliRunner().invoke(cli, ["source-coverage", "--docs-dir", str(docs_dir)])
+    result = CliRunner().invoke(cli, ["--docs-dir", str(docs_dir), "source-coverage"])
 
     assert result.exit_code == 0
     assert "[COVERED]" in result.output
@@ -593,7 +593,7 @@ def test_search_catalog_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_d
     elsewhere.mkdir()
     monkeypatch.chdir(elsewhere)
 
-    result = CliRunner().invoke(cli, ["search-catalog", "--query", "auth", "--docs-dir", str(docs_dir)])
+    result = CliRunner().invoke(cli, ["--docs-dir", str(docs_dir), "search-catalog", "--query", "auth"])
 
     assert result.exit_code == 0
     assert "Auth Middleware" in result.output
@@ -678,7 +678,7 @@ def test_log_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_docs_tree) -
     monkeypatch.chdir(elsewhere)
 
     result = CliRunner().invoke(
-        cli, ["log", "--title", "x", "--details", "y", "--action", "create", "--docs-dir", str(docs_dir)]
+        cli, ["--docs-dir", str(docs_dir), "log", "--title", "x", "--details", "y", "--action", "create"]
     )
 
     assert result.exit_code == 0
@@ -771,7 +771,7 @@ def test_source_delta_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_doc
     elsewhere.mkdir()
     monkeypatch.chdir(elsewhere)
 
-    result = CliRunner().invoke(cli, ["source-delta", "jira:ABC-1", "--docs-dir", str(docs_dir)])
+    result = CliRunner().invoke(cli, ["--docs-dir", str(docs_dir), "source-delta", "jira:ABC-1"])
 
     assert result.exit_code == 0
     assert "[NEW] status" in result.output
@@ -838,7 +838,7 @@ def test_source_snapshot_honors_docs_dir_flag(tmp_path: Path, monkeypatch, make_
     monkeypatch.chdir(elsewhere)
 
     result = CliRunner().invoke(
-        cli, ["source-snapshot", "jira:ABC-1", "--units", "fields", "--docs-dir", str(docs_dir)]
+        cli, ["--docs-dir", str(docs_dir), "source-snapshot", "jira:ABC-1", "--units", "fields"]
     )
 
     assert result.exit_code == 0

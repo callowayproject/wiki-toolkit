@@ -14,7 +14,7 @@ from wiki_toolkit.batches import plan_batches
 from wiki_toolkit.doctor import run_doctor
 from wiki_toolkit.init import run_init
 from wiki_toolkit.log import ALLOWED_LOG_ACTIONS, append_log_entry, build_log_entry
-from wiki_toolkit.settings import resolve_docs_dir
+from wiki_toolkit.settings import Context, build_context
 from wiki_toolkit.sources import (
     ALLOWED_SNAPSHOT_UNITS,
     SourceScanResult,
@@ -29,11 +29,29 @@ from wiki_toolkit.sources import (
 from wiki_toolkit.wiki import build_catalog, find_cross_link_candidates, lint_wiki, search_catalog
 from wiki_toolkit.write_gate import ALLOWED_FRAMES, commit_pages, propose_pr, start_wiki_branch
 
+_SOURCES_META_KEY = "wiki_toolkit.sources"
+
 
 @click.group()
+@click.option(
+    "--docs-dir",
+    type=click.Path(path_type=Path, resolve_path=True),
+    default=None,
+    help="Override the resolved docs/ directory.",
+)
+@click.option(
+    "--repo-root",
+    type=click.Path(path_type=Path, resolve_path=True),
+    default=None,
+    help="Override the resolved repo root.",
+)
 @click.version_option()
-def cli() -> None:
+@click.pass_context
+def cli(ctx: click.Context, docs_dir: Path | None, repo_root: Path | None) -> None:
     """AI skills and helper tools that implement and maintain an LLM Wiki."""
+    context, sources = build_context(docs_dir_flag=docs_dir, repo_root_flag=repo_root)
+    ctx.obj = context
+    ctx.meta[_SOURCES_META_KEY] = sources
 
 
 @cli.group()
@@ -42,23 +60,20 @@ def config() -> None:
 
 
 @config.command("show")
-@click.option(
-    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
-)
-def config_show(docs_dir: Path | None) -> None:
-    """Print the resolved docs_dir and which source (flag/env/pyproject/default) it came from."""
-    resolved = resolve_docs_dir(flag=docs_dir)
-    click.echo(f"docs_dir={resolved.docs_dir} (source: {resolved.source})")
+@click.pass_context
+def config_show(ctx: click.Context) -> None:
+    """Print the resolved settings and which source (flag/env/dedicated_file/pyproject/default) each came from."""
+    context: Context = ctx.obj
+    sources = ctx.meta[_SOURCES_META_KEY]
+    for field in Context.model_fields:
+        click.echo(f"{field}={getattr(context, field)} (source: {sources[field]})")
 
 
 @cli.command()
-@click.option(
-    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
-)
-def init(docs_dir: Path | None) -> None:
+@click.pass_obj
+def init(context: Context) -> None:
     """Scaffold a docs/ tree: sources/, wiki/, catalog.jsonl, log.jsonl, source-manifest.jsonl, schema.md."""
-    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
-    report = run_init(docs_dir)
+    report = run_init(context.docs_dir)
 
     for name in report.created:
         click.echo(f"  [created] docs/{name}")
@@ -67,13 +82,12 @@ def init(docs_dir: Path | None) -> None:
 
 
 @cli.command()
-@click.option(
-    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
-)
-def doctor(docs_dir: Path | None) -> None:
+@click.pass_context
+def doctor(ctx: click.Context) -> None:
     """Non-mutating health check of the wiki's docs/ structure and git clone."""
-    resolved = resolve_docs_dir(flag=docs_dir)
-    report = run_doctor(resolved.docs_dir, root=Path.cwd(), docs_dir_source=resolved.source)
+    context: Context = ctx.obj
+    docs_dir_source = ctx.meta[_SOURCES_META_KEY]["docs_dir"]
+    report = run_doctor(context.docs_dir, root=context.repo_root, docs_dir_source=docs_dir_source)
 
     click.echo(f"Python: {report.python_version}")
     click.echo(f"Config: docs_dir={report.docs_dir} (source: {report.docs_dir_source})")
@@ -105,28 +119,22 @@ def doctor(docs_dir: Path | None) -> None:
 
 
 @cli.command()
-@click.option(
-    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
-)
-def build(docs_dir: Path | None) -> None:
+@click.pass_obj
+def build(context: Context) -> None:
     """Regenerate docs/catalog.jsonl from the current docs/wiki/ notes."""
-    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
-    result = build_catalog(docs_dir)
+    result = build_catalog(context.docs_dir)
 
-    catalog_path = docs_dir / "catalog.jsonl"
-    write_jsonl(catalog_path, [asdict(entry) for entry in result.entries], stage_root=Path.cwd())
+    catalog_path = context.docs_dir / "catalog.jsonl"
+    write_jsonl(catalog_path, [asdict(entry) for entry in result.entries], stage_root=context.repo_root)
 
     click.echo(f"Wrote {len(result.entries)} entries to docs/catalog.jsonl")
 
 
 @cli.command()
-@click.option(
-    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
-)
-def lint(docs_dir: Path | None) -> None:
+@click.pass_obj
+def lint(context: Context) -> None:
     """Validate wiki note frontmatter, allowed tags, source links, and source_count."""
-    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
-    result = lint_wiki(docs_dir)
+    result = lint_wiki(context.docs_dir)
 
     for violation in result.violations:
         click.echo(f"[VIOLATION] {violation.path}: {violation.message}")
@@ -155,15 +163,10 @@ def batch_plan_cmd(vault: Path, source_dir: Path) -> None:
     multiple=True,
     help="Limit --update's write/stage step to this source id (repeatable). Omit to write every classified source.",
 )
-@click.option(
-    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
-)
-def source_scan(
-    update_manifest: bool, accept_covered: bool, source_ids: tuple[str, ...], docs_dir: Path | None
-) -> None:
+@click.pass_obj
+def source_scan(context: Context, update_manifest: bool, accept_covered: bool, source_ids: tuple[str, ...]) -> None:
     """Classify docs/sources/ files as new, update, or duplicate."""
-    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
-    result = scan_sources(docs_dir, accept_covered=accept_covered)
+    result = scan_sources(context.docs_dir, accept_covered=accept_covered)
 
     for entry in result.entries:
         click.echo(f"[{entry.classification.upper()}] {entry.path} ({entry.source})")
@@ -177,7 +180,7 @@ def source_scan(
     if update_manifest:
         scope, unmatched = calculate_scan_scope(result, source_ids)
 
-        apply_result = apply_source_scan(docs_dir, result, source_ids=scope, stage_root=Path.cwd())
+        apply_result = apply_source_scan(context.docs_dir, result, source_ids=scope, stage_root=context.repo_root)
         click.echo(f"Wrote {apply_result.written} entries to docs/source-manifest.jsonl")
 
     if result.needs_attention or unmatched:
@@ -196,13 +199,10 @@ def calculate_scan_scope(result: SourceScanResult, source_ids: tuple[str, ...]) 
 
 
 @cli.command("source-lint")
-@click.option(
-    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
-)
-def source_lint(docs_dir: Path | None) -> None:
+@click.pass_obj
+def source_lint(context: Context) -> None:
     """Validate docs/sources/ frontmatter and report processed-but-uncovered sources."""
-    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
-    result = lint_sources(docs_dir)
+    result = lint_sources(context.docs_dir)
 
     for violation in result.violations:
         click.echo(f"[VIOLATION] {violation.path}: {violation.message}")
@@ -219,13 +219,10 @@ def source_lint(docs_dir: Path | None) -> None:
 
 
 @cli.command("source-coverage")
-@click.option(
-    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
-)
-def source_coverage_cmd(docs_dir: Path | None) -> None:
+@click.pass_obj
+def source_coverage_cmd(context: Context) -> None:
     """Show which docs/sources/ files are covered by at least one wiki note."""
-    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
-    result = source_coverage(docs_dir)
+    result = source_coverage(context.docs_dir)
 
     for entry in result.covered:
         click.echo(f"[COVERED] {entry.path} ({entry.source})")
@@ -236,13 +233,10 @@ def source_coverage_cmd(docs_dir: Path | None) -> None:
 
 
 @cli.command("source-dedupe")
-@click.option(
-    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
-)
-def source_dedupe(docs_dir: Path | None) -> None:
+@click.pass_obj
+def source_dedupe(context: Context) -> None:
     """Suggest which docs/sources/ file to keep per group sharing a source id with a duplicate: true file."""
-    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
-    result = suggest_dedupe(docs_dir)
+    result = suggest_dedupe(context.docs_dir)
 
     for violation in result.violations:
         click.echo(f"[VIOLATION] {violation.path}: {violation.message}")
@@ -261,14 +255,11 @@ def source_dedupe(docs_dir: Path | None) -> None:
 
 @cli.command("source-delta")
 @click.argument("source")
-@click.option(
-    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
-)
-def source_delta(source: str, docs_dir: Path | None) -> None:
+@click.pass_obj
+def source_delta(context: Context, source: str) -> None:
     """Diff a source's current content against its last-known revision on main."""
-    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
     try:
-        delta = compute_source_delta(docs_dir, source)
+        delta = compute_source_delta(context.docs_dir, source)
     except ValueError as e:
         raise click.UsageError(str(e)) from e
 
@@ -288,14 +279,11 @@ def source_delta(source: str, docs_dir: Path | None) -> None:
 @click.option(
     "--units", type=click.Choice(ALLOWED_SNAPSHOT_UNITS), required=True, help="Mutation type driving this snapshot."
 )
-@click.option(
-    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
-)
-def source_snapshot(source: str, units: str, docs_dir: Path | None) -> None:
+@click.pass_obj
+def source_snapshot(context: Context, source: str, units: str) -> None:
     """Write a new Raw snapshot unit for SOURCE, for a comments or fields mutation."""
-    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
     try:
-        result = write_source_snapshot(docs_dir, source, units, stage_root=Path.cwd())
+        result = write_source_snapshot(context.docs_dir, source, units, stage_root=context.repo_root)
     except ValueError as e:
         raise click.UsageError(str(e)) from e
 
@@ -304,13 +292,10 @@ def source_snapshot(source: str, units: str, docs_dir: Path | None) -> None:
 
 @cli.command("search-catalog")
 @click.option("--query", required=True, help="Text to search for in catalog entry titles and paths.")
-@click.option(
-    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
-)
-def search_catalog_cmd(query: str, docs_dir: Path | None) -> None:
+@click.pass_obj
+def search_catalog_cmd(context: Context, query: str) -> None:
     """Search docs/catalog.jsonl for entries matching --query."""
-    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
-    entries = read_jsonl(docs_dir / "catalog.jsonl")
+    entries = read_jsonl(context.docs_dir / "catalog.jsonl")
     matches = search_catalog(query, entries)
 
     if not matches:
@@ -323,13 +308,10 @@ def search_catalog_cmd(query: str, docs_dir: Path | None) -> None:
 
 @cli.command("cross-link-candidates")
 @click.argument("page_paths", nargs=-1, required=True)
-@click.option(
-    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
-)
-def cross_link_candidates_cmd(page_paths: tuple[str, ...], docs_dir: Path | None) -> None:
+@click.pass_obj
+def cross_link_candidates_cmd(context: Context, page_paths: tuple[str, ...]) -> None:
     """Find literal title/alias mentions of other catalog pages inside PAGE_PATHS' bodies (JSONL output)."""
-    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
-    candidates = find_cross_link_candidates(docs_dir, list(page_paths))
+    candidates = find_cross_link_candidates(context.docs_dir, list(page_paths))
 
     for candidate in candidates:
         click.echo(orjson.dumps(asdict(candidate)).decode())
@@ -337,10 +319,11 @@ def cross_link_candidates_cmd(page_paths: tuple[str, ...], docs_dir: Path | None
 
 @cli.command("start-branch")
 @click.option("--frame", type=click.Choice(ALLOWED_FRAMES), required=True, help="Reviewer framing for this session.")
-def start_branch_cmd(frame: str) -> None:
+@click.pass_obj
+def start_branch_cmd(context: Context, frame: str) -> None:
     """Open a new local git branch for a batch coordinator session, before any source commits."""
     try:
-        branch = start_wiki_branch(Path.cwd(), frame)
+        branch = start_wiki_branch(context.repo_root, frame)
     except ValueError as e:
         raise click.UsageError(str(e)) from e
 
@@ -350,10 +333,11 @@ def start_branch_cmd(frame: str) -> None:
 @cli.command("commit-pages")
 @click.option("--pages", required=True, multiple=True, help="Page path to commit. Repeat for multiple pages.")
 @click.option("--message", required=True, help="Commit message, e.g. naming the source that was just ingested.")
-def commit_pages_cmd(pages: tuple[str, ...], message: str) -> None:
+@click.pass_obj
+def commit_pages_cmd(context: Context, pages: tuple[str, ...], message: str) -> None:
     """Commit PAGES onto the currently checked-out branch (a batch coordinator's per-source streaming commit)."""
     try:
-        commit_sha = commit_pages(Path.cwd(), list(pages), message)
+        commit_sha = commit_pages(context.repo_root, list(pages), message)
     except ValueError as e:
         raise click.UsageError(str(e)) from e
 
@@ -365,10 +349,11 @@ def commit_pages_cmd(pages: tuple[str, ...], message: str) -> None:
 @cli.command("propose-pr")
 @click.option("--pages", required=True, multiple=True, help="Page path to stage. Repeat for multiple pages.")
 @click.option("--frame", type=click.Choice(ALLOWED_FRAMES), required=True, help="Reviewer framing for this change.")
-def propose_pr_cmd(pages: tuple[str, ...], frame: str) -> None:
+@click.pass_obj
+def propose_pr_cmd(context: Context, pages: tuple[str, ...], frame: str) -> None:
     """Stage a wiki change as a local git branch + commit. Never pushes or opens a real PR."""
     try:
-        result = propose_pr(Path.cwd(), list(pages), frame)
+        result = propose_pr(context.repo_root, list(pages), frame)
     except ValueError as e:
         raise click.UsageError(str(e)) from e
 
@@ -381,13 +366,10 @@ def propose_pr_cmd(pages: tuple[str, ...], frame: str) -> None:
 @click.option("--title", "message", required=True, help="Short message describing the event.")
 @click.option("--details", required=True, help="Additional detail about the event.")
 @click.option("--action", type=click.Choice(ALLOWED_LOG_ACTIONS), required=True, help="Event category.")
-@click.option(
-    "--docs-dir", type=click.Path(path_type=Path), default=None, help="Override the resolved docs/ directory."
-)
-def log(message: str, details: str, action: str, docs_dir: Path | None) -> None:
+@click.pass_obj
+def log(context: Context, message: str, details: str, action: str) -> None:
     """Append a structured entry to docs/log.jsonl."""
-    docs_dir = resolve_docs_dir(flag=docs_dir).docs_dir
     entry = build_log_entry(action, message, details)
-    append_log_entry(docs_dir, entry, stage_root=Path.cwd())
+    append_log_entry(context.docs_dir, entry, stage_root=context.repo_root)
 
     click.echo(f"Appended {action} entry to docs/log.jsonl")
