@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.28.1 (2026-08-16)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.28.0...0.28.1)
+
+### Other
+
+- Hoist --docs-dir/--repo-root to group-level options on ctx.obj. [a6c9e71](https://github.com/callowayproject/wiki-toolkit/commit/a6c9e7111cc8e0195835d8982a0800b87f93f187)
+
+  build_context() now runs once per CLI invocation in the cli() group
+  callback; every subcommand reads docs_dir/repo_root off the injected
+  Context via @click.pass_obj instead of re-declaring --docs-dir and
+  resolving it locally. config show dumps all five resolved settings
+  and their sources. --docs-dir/--repo-root resolve to absolute paths
+  so self-staging still works when repo_root differs from cwd.
+
+  Fixes #157
+
 ## 0.28.0 (2026-08-16)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.27.0...0.28.0)
