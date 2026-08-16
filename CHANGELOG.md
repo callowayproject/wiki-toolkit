@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.29.2 (2026-08-16)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.29.1...0.29.2)
+
+### Other
+
+- Un-privatize iter_markdown and is_canonical_source (#169). [a18d567](https://github.com/callowayproject/wiki-toolkit/commit/a18d5671c527ed6f739e04df02f658e25855bfa3)
+
+  wiki.py imported an underscore-prefixed "private" name from sources.py
+  across a real module seam. Rename both to public names to make the
+  shared interface explicit.
+
 ## 0.29.1 (2026-08-16)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.29.0...0.29.1)
