@@ -37,10 +37,6 @@ _DEFAULT_BRANCH_PREFIX = "wiki-update/"
 _DEFAULT_BATCH_BYTE_CAP = 100_000
 _DEFAULT_BATCH_FILE_CAP = 20
 
-_TOML_READ_ERRORS = (ValueError, OSError)
-"""ponytail: kept as a named tuple, not an inline `except (...)`, to dodge a ruff-format
-bug in this project's config that corrupts parenthesized multi-exception tuples."""
-
 
 class _EnvSettings(BaseSettings):
     """Reads `docs_dir` from the `WIKI_TOOLKIT_DOCS_DIR` environment variable."""
@@ -205,7 +201,7 @@ def _dedicated_file_context_fields(directory: Path | None) -> _ContextFieldsSett
     toml_file = directory / DEDICATED_FILENAME
     try:
         data = TomlConfigSettingsSource(_ContextDedicatedFileSettings, toml_file=toml_file)()
-    except _TOML_READ_ERRORS:
+    except (ValueError, OSError):
         # ponytail: tomllib.TOMLDecodeError subclasses ValueError; OSError covers permission/lock errors
         return None
     return _validate_dropping_invalid(_ContextDedicatedFileSettings, data)
@@ -218,7 +214,7 @@ def _pyproject_context_fields(directory: Path | None) -> _ContextFieldsSettings 
     toml_file = directory / "pyproject.toml"
     try:
         data = PyprojectTomlConfigSettingsSource(_ContextPyprojectSettings, toml_file=toml_file)()
-    except _TOML_READ_ERRORS:
+    except (ValueError, OSError):
         return None
     with warnings.catch_warnings():
         # ponytail: pyproject_toml_table_header is read directly above, not via

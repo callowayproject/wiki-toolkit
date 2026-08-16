@@ -157,6 +157,7 @@ color = true
 line-length = 119
 
 [tool.ruff]
+target-version = "py313"  # Issue regarding catching multiple exceptions in 3.14
 exclude = [
     ".bzr",
     ".direnv",
