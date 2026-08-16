@@ -11,9 +11,11 @@ flat top-level keys) > nearest `pyproject.toml`'s `[tool.wiki_toolkit]` table >
 built-in default. Each file tier is found by walking upward from cwd, same
 convention as ruff/mypy; once found, it's authoritative for that tier (a broken
 file or an invalid field value there falls through to the next tier rather than
-continuing to search further up).
+continuing to search further up). CLI-flag overrides are currently only wired
+up for `docs_dir` and `repo_root`; the other three fields start at the env tier.
 """
 
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
@@ -35,6 +37,10 @@ _DEFAULT_BRANCH_PREFIX = "wiki-update/"
 _DEFAULT_BATCH_BYTE_CAP = 100_000
 _DEFAULT_BATCH_FILE_CAP = 20
 
+_TOML_READ_ERRORS = (ValueError, OSError)
+"""ponytail: kept as a named tuple, not an inline `except (...)`, to dodge a ruff-format
+bug in this project's config that corrupts parenthesized multi-exception tuples."""
+
 
 class _EnvSettings(BaseSettings):
     """Reads `docs_dir` from the `WIKI_TOOLKIT_DOCS_DIR` environment variable."""
@@ -42,26 +48,6 @@ class _EnvSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="WIKI_TOOLKIT_")
 
     docs_dir: Path | None = None
-
-
-class _PyprojectSettings(BaseSettings):
-    """Reads `docs_dir` from a `pyproject.toml`'s `[tool.wiki_toolkit]` table."""
-
-    model_config = SettingsConfigDict(pyproject_toml_table_header=("tool", "wiki_toolkit"))
-
-    docs_dir: Path | None = None
-
-    @classmethod
-    def settings_customise_sources(
-        cls,
-        settings_cls: type[BaseSettings],
-        init_settings: PydanticBaseSettingsSource,
-        env_settings: PydanticBaseSettingsSource,
-        dotenv_settings: PydanticBaseSettingsSource,
-        file_secret_settings: PydanticBaseSettingsSource,
-    ) -> tuple[PydanticBaseSettingsSource, ...]:
-        """Restrict this settings class to init kwargs and `pyproject.toml`, no env/dotenv/secrets."""
-        return (init_settings, PyprojectTomlConfigSettingsSource(settings_cls))
 
 
 @dataclass
@@ -73,26 +59,15 @@ class ResolvedConfig:
 
 
 def _find_pyproject_docs_dir(start: Path) -> Path | None:
-    """Walk upward from `start` for the nearest pyproject.toml's `[tool.wiki_toolkit].docs_dir`.
-
-    Once a pyproject.toml is found, it is authoritative (matches ruff/mypy
-    convention) — a missing table, missing key, or unparseable file there
-    means "no pyproject source", not "keep looking further up".
-    """
-    for directory in (start, *start.parents):
-        pyproject = directory / "pyproject.toml"
-        if not pyproject.is_file():
-            continue
-        try:
-            data = PyprojectTomlConfigSettingsSource(_PyprojectSettings, toml_file=pyproject)()
-            docs_dir = _PyprojectSettings.model_validate(data).docs_dir
-        except ValueError:
-            # ponytail: both tomllib.TOMLDecodeError and pydantic's ValidationError subclass ValueError
-            return None
-        if docs_dir is None:
-            return None
-        return docs_dir if docs_dir.is_absolute() else directory / docs_dir
-    return None
+    """Walk upward from `start` for the nearest pyproject.toml's `[tool.wiki_toolkit].docs_dir`."""
+    directory = _find_upward(start, "pyproject.toml")
+    if directory is None:
+        return None
+    fields = _pyproject_context_fields(directory)
+    docs_dir = fields.docs_dir if fields is not None else None
+    if docs_dir is None:
+        return None
+    return docs_dir if docs_dir.is_absolute() else directory / docs_dir
 
 
 def resolve_docs_dir(flag: Path | None = None, cwd: Path | None = None) -> ResolvedConfig:
@@ -123,12 +98,20 @@ class Context(BaseModel):
     batch_file_cap: int
 
 
-_CONTEXT_FIELDS = ("docs_dir", "repo_root", "branch_prefix", "batch_byte_cap", "batch_file_cap")
+_CONTEXT_FIELDS = tuple(Context.model_fields)
 _PATH_FIELDS = ("docs_dir", "repo_root")
 
 
 class _ContextFieldsSettings(BaseSettings):
-    """Base for the optional per-tier settings sources: any field may be absent."""
+    """Base for the optional per-tier settings sources: any field may be absent.
+
+    Each tier reads its raw source (env, a dedicated file, or `pyproject.toml`)
+    separately and passes the resulting dict to `model_validate`. Restricting
+    sources to init kwargs here keeps that re-validation from re-triggering
+    the class's own env/file discovery and re-merging the *original*
+    (possibly invalid, possibly differently-located) source on top of the
+    already-filtered dict.
+    """
 
     docs_dir: Path | None = None
     repo_root: Path | None = None
@@ -152,68 +135,33 @@ class _ContextFieldsSettings(BaseSettings):
             raise ValueError("must be positive")
         return value
 
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        """Restrict every tier's validation (`model_validate`) to init kwargs only."""
+        return (init_settings,)
+
 
 class _ContextEnvSettings(_ContextFieldsSettings):
     """Field-shape for reading `WIKI_TOOLKIT_*` env vars; env is read separately via `EnvSettingsSource`."""
 
     model_config = SettingsConfigDict(env_prefix="WIKI_TOOLKIT_")
 
-    @classmethod
-    def settings_customise_sources(
-        cls,
-        settings_cls: type[BaseSettings],
-        init_settings: PydanticBaseSettingsSource,
-        env_settings: PydanticBaseSettingsSource,
-        dotenv_settings: PydanticBaseSettingsSource,
-        file_secret_settings: PydanticBaseSettingsSource,
-    ) -> tuple[PydanticBaseSettingsSource, ...]:
-        """Restrict validation (`model_validate`) to init kwargs only.
-
-        Without this, `model_validate` re-triggers the default env source and
-        silently re-merges the *original* (possibly invalid) environment on
-        top of the already-filtered dict passed to it.
-        """
-        return (init_settings,)
-
 
 class _ContextDedicatedFileSettings(_ContextFieldsSettings):
     """Reads context fields from a dedicated `.wiki-toolkit.toml` file's flat top-level keys."""
-
-    @classmethod
-    def settings_customise_sources(
-        cls,
-        settings_cls: type[BaseSettings],
-        init_settings: PydanticBaseSettingsSource,
-        env_settings: PydanticBaseSettingsSource,
-        dotenv_settings: PydanticBaseSettingsSource,
-        file_secret_settings: PydanticBaseSettingsSource,
-    ) -> tuple[PydanticBaseSettingsSource, ...]:
-        """Restrict this settings class to init kwargs, no env/dotenv/secrets/toml-file discovery."""
-        return (init_settings,)
 
 
 class _ContextPyprojectSettings(_ContextFieldsSettings):
     """Field-shape for reading a `pyproject.toml`'s `[tool.wiki_toolkit]` table, read separately."""
 
     model_config = SettingsConfigDict(pyproject_toml_table_header=("tool", "wiki_toolkit"))
-
-    @classmethod
-    def settings_customise_sources(
-        cls,
-        settings_cls: type[BaseSettings],
-        init_settings: PydanticBaseSettingsSource,
-        env_settings: PydanticBaseSettingsSource,
-        dotenv_settings: PydanticBaseSettingsSource,
-        file_secret_settings: PydanticBaseSettingsSource,
-    ) -> tuple[PydanticBaseSettingsSource, ...]:
-        """Restrict validation (`model_validate`) to init kwargs only.
-
-        `pyproject.toml` is read separately via an explicit `toml_file` path (the
-        directory found by `_find_upward`); the default `PyprojectTomlConfigSettingsSource`
-        resolves relative to the actual process cwd and would re-merge whatever it
-        finds there on top of the already-filtered dict passed to `model_validate`.
-        """
-        return (init_settings,)
 
 
 def _find_upward(start: Path, filename: str) -> Path | None:
@@ -246,33 +194,37 @@ def _validate_dropping_invalid(cls: type[_ContextFieldsSettings], data: dict[str
 
 def _env_context_fields() -> _ContextFieldsSettings:
     """Read context fields from `WIKI_TOOLKIT_*` env vars, dropping any individually-invalid value."""
-    data = EnvSettingsSource(_ContextEnvSettings, env_prefix="WIKI_TOOLKIT_")()
+    data = EnvSettingsSource(_ContextEnvSettings)()
     return _validate_dropping_invalid(_ContextEnvSettings, data)
 
 
 def _dedicated_file_context_fields(directory: Path | None) -> _ContextFieldsSettings | None:
-    """Read context fields from `directory`'s `.wiki-toolkit.toml`, or `None` if missing/unparseable."""
+    """Read context fields from `directory`'s `.wiki-toolkit.toml`, or `None` if missing/unreadable."""
     if directory is None:
         return None
     toml_file = directory / DEDICATED_FILENAME
     try:
         data = TomlConfigSettingsSource(_ContextDedicatedFileSettings, toml_file=toml_file)()
-    except ValueError:
-        # ponytail: tomllib.TOMLDecodeError subclasses ValueError
+    except _TOML_READ_ERRORS:
+        # ponytail: tomllib.TOMLDecodeError subclasses ValueError; OSError covers permission/lock errors
         return None
     return _validate_dropping_invalid(_ContextDedicatedFileSettings, data)
 
 
 def _pyproject_context_fields(directory: Path | None) -> _ContextFieldsSettings | None:
-    """Read context fields from `directory`'s `pyproject.toml` table, or `None` if missing/unparseable."""
+    """Read context fields from `directory`'s `pyproject.toml` table, or `None` if missing/unreadable."""
     if directory is None:
         return None
     toml_file = directory / "pyproject.toml"
     try:
         data = PyprojectTomlConfigSettingsSource(_ContextPyprojectSettings, toml_file=toml_file)()
-    except ValueError:
+    except _TOML_READ_ERRORS:
         return None
-    return _validate_dropping_invalid(_ContextPyprojectSettings, data)
+    with warnings.catch_warnings():
+        # ponytail: pyproject_toml_table_header is read directly above, not via
+        # settings_customise_sources, so pydantic-settings warns it looks unused
+        warnings.filterwarnings("ignore", message=r"Config key `pyproject_toml_table_header`", category=UserWarning)
+        return _validate_dropping_invalid(_ContextPyprojectSettings, data)
 
 
 def _find_repo_root(cwd: Path) -> Path:
@@ -334,7 +286,7 @@ def build_context(
     dedicated_dir = _find_upward(cwd, DEDICATED_FILENAME)
     pyproject_dir = _find_upward(cwd, "pyproject.toml")
     tiers: tuple[_Tier, ...] = (
-        ("env", _env_context_fields(), None),
+        ("env", _env_context_fields(), cwd),
         ("dedicated_file", _dedicated_file_context_fields(dedicated_dir), dedicated_dir),
         ("pyproject", _pyproject_context_fields(pyproject_dir), pyproject_dir),
     )

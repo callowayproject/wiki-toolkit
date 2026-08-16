@@ -1,6 +1,11 @@
 """Unit tests for wiki_toolkit.settings."""
 
+import os
+import stat
+import warnings
 from typing import TYPE_CHECKING
+
+import pytest
 
 from wiki_toolkit.settings import build_context, resolve_docs_dir
 
@@ -263,3 +268,40 @@ def test_build_context_invalid_env_value_does_not_discard_valid_siblings(tmp_pat
     assert sources["docs_dir"] == "env"
     assert context.batch_byte_cap == 100_000
     assert sources["batch_byte_cap"] == "default"
+
+
+def test_build_context_relative_env_docs_dir_resolves_against_cwd(tmp_path: Path, monkeypatch) -> None:
+    """A relative WIKI_TOOLKIT_DOCS_DIR resolves to an absolute path under cwd, like every other tier."""
+    monkeypatch.setenv("WIKI_TOOLKIT_DOCS_DIR", "relative-docs")
+
+    context, sources = build_context(cwd=tmp_path)
+
+    assert context.docs_dir == tmp_path / "relative-docs"
+    assert context.docs_dir.is_absolute()
+    assert sources["docs_dir"] == "env"
+
+
+@pytest.mark.skipif(hasattr(os, "geteuid") and os.geteuid() == 0, reason="root ignores file permissions")
+def test_build_context_unreadable_dedicated_file_falls_through(tmp_path: Path) -> None:
+    """A `.wiki-toolkit.toml` that can't be read (permission denied) falls through, not raising."""
+    dedicated_file = tmp_path / ".wiki-toolkit.toml"
+    dedicated_file.write_text('docs_dir = "dedicated-docs"\n')
+    dedicated_file.chmod(0)
+    (tmp_path / "pyproject.toml").write_text('[tool.wiki_toolkit]\ndocs_dir = "py-docs"\n')
+
+    try:
+        context, sources = build_context(cwd=tmp_path)
+    finally:
+        dedicated_file.chmod(stat.S_IRUSR | stat.S_IWUSR)
+
+    assert context.docs_dir == tmp_path / "py-docs"
+    assert sources["docs_dir"] == "pyproject"
+
+
+def test_build_context_emits_no_warnings(tmp_path: Path) -> None:
+    """Resolving a pyproject.toml table doesn't emit pydantic-settings' unused-config-key warning."""
+    (tmp_path / "pyproject.toml").write_text('[tool.wiki_toolkit]\ndocs_dir = "py-docs"\n')
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        build_context(cwd=tmp_path)
