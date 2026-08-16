@@ -1,5 +1,81 @@
 # Changelog
 
+## 0.28.0 (2026-08-16)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.27.0...0.28.0)
+
+### Fixes
+
+- Fix settings-seam bugs and reduce duplication in build_context. [01342a7](https://github.com/callowayproject/wiki-toolkit/commit/01342a720119a229c2efc0d0e50dad43d24125c3)
+
+  Relative env-tier paths (docs_dir/repo_root) now resolve against cwd
+  like every other tier, unreadable config files fall through instead
+  of crashing, and a spurious pydantic-settings warning is suppressed.
+  Also consolidates the duplicated pyproject/dedicated-file resolution
+  logic that resolve_docs_dir() and build_context() had drifted apart
+  on, and removes several smaller code duplications flagged in review.
+
+- Fix invalid field discarding valid siblings in the same settings tier. [7554a37](https://github.com/callowayproject/wiki-toolkit/commit/7554a37ffe27a02bca038284877d372c06137bf8)
+
+  model_validate() on a BaseSettings subclass re-triggers its full source
+  pipeline (env/pyproject), so a partial dict with the bad field dropped
+  was still getting the original invalid value merged back in from the
+  live environment/file. Each per-tier settings class now restricts
+  settings_customise_sources to init kwargs only, since the raw dict is
+  already fetched explicitly via the source objects beforehand.
+
+  Addresses a code-review finding on 156-settings-context-model.
+
+### New
+
+- Add Context model and build_context() settings resolution seam. [eb9c768](https://github.com/callowayproject/wiki-toolkit/commit/eb9c76872f9bf7281856ea30ca3d78c9981f6861)
+
+  Adds a five-tier precedence chain (flag > env > .wiki-toolkit.toml >
+  pyproject.toml > default) for docs_dir, repo_root, branch_prefix,
+  batch_byte_cap, and batch_file_cap, with per-field source tracking.
+  Resolution never raises: malformed files or invalid field values fall
+  through to the next tier. resolve_docs_dir() is left in place for
+  existing callers; later tickets swap them over.
+
+  Part of #154, closes #156.
+
+### Other
+
+- Simplify TOML exception handling and update Ruff target-version to py313. [f7539d8](https://github.com/callowayproject/wiki-toolkit/commit/f7539d884d18cb1461917dca387ed8babe936ac7)
+
+- Revise Configuration and Command surface for the settings seam. [af869d5](https://github.com/callowayproject/wiki-toolkit/commit/af869d50db6b2ef43c9a851bb62fff7b52ea0fe7)
+
+  Documents the settings-as-a-seam design from issue #143's map: five
+  settings (docs_dir, repo_root, branch_prefix, batch_byte_cap,
+  batch_file_cap), the .wiki-toolkit.toml dedicated fallback file's
+  precedence slot, non-raising resolution, and doctor's new settings
+  warnings. Full decisions and spec at issue #154.
+
+- Deepen the ingest evals grading/fixture module. [e255634](https://github.com/callowayproject/wiki-toolkit/commit/e25563422fdc4179da5fa233c8ea9947d777b972)
+
+  Removes three sources of duplication surfaced in an architecture review:
+
+  - evals.json expectations are now {key, text} objects, the single source
+    of truth for check wording; grade.py resolves labels via expect()
+    instead of retyping them, and main() asserts each grader's result
+    count matches evals.json to catch future drift immediately. Also
+    rewords eval 1's previously-unsatisfiable inline-citation expectation
+    to state its 3+-source condition explicitly, instead of grade.py
+    silently overriding it with a comment.
+  - grade.py's three grade\_\* functions shared near-identical fixture
+    loading, lint, and commit-counting boilerplate; that's now
+    load_fixture_state()/FixtureState plus check_lint_clean()/
+    check_single_commit() helpers, leaving each grader with only its
+    eval-specific assertions.
+  - build_fixture.py's two commit call sites (add -A + commit with the
+    fixed fixture identity) are now one \_commit(dest, message) helper.
+
+### Updates
+
+- Remove unused TYPE_CHECKING imports and consolidate Path imports. [7d8b354](https://github.com/callowayproject/wiki-toolkit/commit/7d8b354ec35aaf6a0b5ec106fa82f1119a6048a9)
+
+- Remove unused TYPE_CHECKING imports and simplify imports across modules. [c04683b](https://github.com/callowayproject/wiki-toolkit/commit/c04683b821143bfad36ea42314b2173df8b8b60f)
+
 ## 0.27.0 (2026-08-15)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.26.1...0.27.0)

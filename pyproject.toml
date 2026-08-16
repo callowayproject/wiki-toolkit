@@ -303,7 +303,7 @@ output = "complexipy-results.json"
 
 
 [tool.bumpversion]
-current_version = "0.27.0"
+current_version = "0.28.0"
 commit = true
 commit_args = "--no-verify"
 tag = true
