@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.29.3 (2026-08-16)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.29.2...0.29.3)
+
+### Other
+
+- Collapse ctx.obj/ctx.meta settings split in cli.py (#168). [e0e4e59](https://github.com/callowayproject/wiki-toolkit/commit/e0e4e598ad35070901a151650b5e77cbac64e940)
+
+  config_show and doctor read the per-field source map via Context.sources
+  now, alongside the rest of the resolved settings on ctx.obj, instead of
+  a second ctx.meta lookup.
+
 ## 0.29.2 (2026-08-16)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.29.1...0.29.2)
