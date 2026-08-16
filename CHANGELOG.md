@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.29.0 (2026-08-16)
+
+[Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.28.3...0.29.0)
+
+### New
+
+- Add ADR-0012 recording the settings-as-a-seam decisions. [6185eb7](https://github.com/callowayproject/wiki-toolkit/commit/6185eb7510936d8cc9c191f6b3694d0bd4b3cc8b)
+
+  Records the Context model, build_context() entry point, dedicated
+  .wiki-toolkit.toml precedence tier, and doctor's new settings
+  warnings, superseding ADR-0007's docs_dir-only precedence chain and
+  config show/doctor contracts. toolkit-spec.md's Configuration and
+  Command surface sections were already revised in af869d5; the
+  to_explore/settings-changes.md source doc never existed in this repo.
+
+  Closes #160
+
+### Updates
+
+- Delete dead resolve_docs_dir() cluster from settings.py. [d64822a](https://github.com/callowayproject/wiki-toolkit/commit/d64822a22d0178724e03170b94931ce946891bf7)
+
+  ADR-0012 superseded this ADR-0007 resolver with build_context() and
+  named it as debt to remove separately. Nothing outside tests called it.
+
+  Fixes #166
+
 ## 0.28.3 (2026-08-16)
 
 [Compare the full difference.](https://github.com/callowayproject/wiki-toolkit/compare/0.28.2...0.28.3)
