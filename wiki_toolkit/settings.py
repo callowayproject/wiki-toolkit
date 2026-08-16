@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, ValidationError, field_validator
+from pydantic import BaseModel, PrivateAttr, ValidationError, field_validator
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
 from pydantic_settings.sources import (
     EnvSettingsSource,
@@ -42,6 +42,12 @@ class Context(BaseModel):
     branch_prefix: str
     batch_byte_cap: int
     batch_file_cap: int
+    _sources: dict[str, ContextConfigSource] = PrivateAttr(default_factory=dict)
+
+    @property
+    def sources(self) -> dict[str, ContextConfigSource]:
+        """Per-field source (flag/env/dedicated_file/pyproject/default), set by `build_context()`."""
+        return self._sources
 
 
 _CONTEXT_FIELDS = tuple(Context.model_fields)
@@ -270,7 +276,9 @@ def build_context(
         flag_value = flags.get(context_field)
         values[context_field], sources[context_field] = _resolve_field(context_field, flag_value, tiers, cwd)
 
-    return Context.model_validate(values), sources
+    context = Context.model_validate(values)
+    context._sources = sources
+    return context, sources
 
 
 @dataclass
