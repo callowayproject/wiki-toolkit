@@ -38,7 +38,7 @@ class LoadError:
     message: str
 
 
-def _iter_markdown(dir_path: Path) -> Iterator[tuple[Path, Post | LoadError]]:
+def iter_markdown(dir_path: Path) -> Iterator[tuple[Path, Post | LoadError]]:
     """Walk `dir_path` for `*.md` files in sorted order, parsing each file's frontmatter.
 
     Yields `(path, post)` for well-formed files, `(path, LoadError)` for files whose
@@ -64,7 +64,7 @@ def _load_or_record_violation(
     return post
 
 
-def _is_canonical_source(post: Post, seen: set[str]) -> bool:
+def is_canonical_source(post: Post, seen: set[str]) -> bool:
     """True if `post` is the first-seen, non-duplicate-flagged file for its `source` id.
 
     Mutates `seen` by recording the source id when canonical. A file stamped
@@ -185,7 +185,7 @@ def scan_sources(docs_dir: Path, *, accept_covered: bool = False) -> SourceScanR
     result = SourceScanResult()
     seen: set[str] = set()
 
-    for path, raw_post in _iter_markdown(sources_dir):
+    for path, raw_post in iter_markdown(sources_dir):
         post = _load_or_record_violation(path, raw_post, result.violations, docs_dir)
         if post is None:
             continue
@@ -199,7 +199,7 @@ def scan_sources(docs_dir: Path, *, accept_covered: bool = False) -> SourceScanR
         if not source_id:
             continue
 
-        canonical = _is_canonical_source(post, seen)
+        canonical = is_canonical_source(post, seen)
         if not canonical:
             classification: SourceClassification = "duplicate"
         elif source_id in manifest:
@@ -320,7 +320,7 @@ def lint_sources(docs_dir: Path) -> SourceLintResult:
     result = SourceLintResult()
     manifest = SourceManifest(docs_dir / SOURCE_MANIFEST_FILENAME)
 
-    for path, raw_post in _iter_markdown(docs_dir / "sources"):
+    for path, raw_post in iter_markdown(docs_dir / "sources"):
         post = _load_or_record_violation(path, raw_post, result.violations, docs_dir)
         if post is None:
             continue
@@ -390,7 +390,7 @@ def source_coverage(docs_dir: Path) -> SourceCoverageResult:
 
     result = SourceCoverageResult()
     seen: set[str] = set()
-    for path, raw_post in _iter_markdown(docs_dir / "sources"):
+    for path, raw_post in iter_markdown(docs_dir / "sources"):
         post = _load_or_record_violation(path, raw_post, result.violations, docs_dir)
         if post is None:
             continue
@@ -399,7 +399,7 @@ def source_coverage(docs_dir: Path) -> SourceCoverageResult:
         if post.get("kind") == "version_controlled":
             continue
 
-        if not _is_canonical_source(post, seen):
+        if not is_canonical_source(post, seen):
             continue
 
         source_id = post.get("source")
@@ -540,7 +540,7 @@ def suggest_dedupe(docs_dir: Path) -> DedupeResult:
 
     groups: dict[str, list[Path]] = {}
     flagged: set[str] = set()
-    for path, raw_post in _iter_markdown(docs_dir / "sources"):
+    for path, raw_post in iter_markdown(docs_dir / "sources"):
         post = _load_or_record_violation(path, raw_post, result.violations, docs_dir)
         if post is None:
             continue
