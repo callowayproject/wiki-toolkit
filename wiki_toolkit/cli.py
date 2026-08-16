@@ -30,8 +30,6 @@ from wiki_toolkit.sources import (
 from wiki_toolkit.wiki import build_catalog, find_cross_link_candidates, lint_wiki, search_catalog
 from wiki_toolkit.write_gate import ALLOWED_FRAMES, commit_pages, propose_pr, start_wiki_branch
 
-_SOURCES_META_KEY = "wiki_toolkit.sources"
-
 
 @click.group()
 @click.option(
@@ -50,9 +48,8 @@ _SOURCES_META_KEY = "wiki_toolkit.sources"
 @click.pass_context
 def cli(ctx: click.Context, docs_dir: Path | None, repo_root: Path | None) -> None:
     """AI skills and helper tools that implement and maintain an LLM Wiki."""
-    context, sources = build_context(docs_dir_flag=docs_dir, repo_root_flag=repo_root)
+    context, _ = build_context(docs_dir_flag=docs_dir, repo_root_flag=repo_root)
     ctx.obj = context
-    ctx.meta[_SOURCES_META_KEY] = sources
 
 
 @cli.group()
@@ -67,12 +64,10 @@ def _echo_config(context: Context, sources: Mapping[str, str], *, indent: str = 
 
 
 @config.command("show")
-@click.pass_context
-def config_show(ctx: click.Context) -> None:
+@click.pass_obj
+def config_show(context: Context) -> None:
     """Print the resolved settings and which source (flag/env/dedicated_file/pyproject/default) each came from."""
-    context: Context = ctx.obj
-    sources = ctx.meta[_SOURCES_META_KEY]
-    _echo_config(context, sources)
+    _echo_config(context, context.sources)
 
 
 @cli.command()
@@ -103,12 +98,10 @@ def _echo_settings_warnings(report: DoctorReport) -> None:
 
 
 @cli.command()
-@click.pass_context
-def doctor(ctx: click.Context) -> None:
+@click.pass_obj
+def doctor(context: Context) -> None:
     """Non-mutating health check of the wiki's docs/ structure and git clone."""
-    context: Context = ctx.obj
-    sources = ctx.meta[_SOURCES_META_KEY]
-    report = run_doctor(context.docs_dir, root=context.repo_root, sources=sources)
+    report = run_doctor(context.docs_dir, root=context.repo_root, sources=context.sources)
 
     click.echo(f"Python: {report.python_version}")
     click.echo("Config:")
