@@ -1746,6 +1746,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#wiki_toolkit.settings.Context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Context
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#wiki_toolkit.settings.ResolvedConfig" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1772,6 +1783,17 @@
   
     <nav class="md-nav" aria-label="Functions:">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#wiki_toolkit.settings.build_context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;build_context
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#wiki_toolkit.settings.resolve_docs_dir" class="md-nav__link">
@@ -2108,10 +2130,18 @@
 <a id="wiki_toolkit.settings"></a>
     <div class="doc doc-contents first">
 
-        <p>Resolves wiki_toolkit configuration (currently just <code>docs_dir</code>).</p>
-<p>Precedence: CLI flag &gt; <code>WIKI_TOOLKIT_DOCS_DIR</code> env var &gt; nearest <code>pyproject.toml</code>&rsquo;s
-<code>[tool.wiki_toolkit]</code> table (found by walking upward from cwd, same convention as
-ruff/mypy) &gt; built-in default (<code>docs/</code> relative to cwd).</p>
+        <p>Resolves wiki_toolkit configuration.</p>
+<p><code>resolve_docs_dir()</code> resolves just <code>docs_dir</code> (precedence: CLI flag &gt;
+<code>WIKI_TOOLKIT_DOCS_DIR</code> env var &gt; nearest <code>pyproject.toml</code>&rsquo;s <code>[tool.wiki_toolkit]</code>
+table &gt; built-in default).</p>
+<p><code>build_context()</code> resolves the full <code>Context</code> (docs_dir, repo_root, branch_prefix,
+batch_byte_cap, batch_file_cap) through a five-tier precedence chain: CLI flag &gt;
+<code>WIKI_TOOLKIT_&lt;UPPER_SNAKE&gt;</code> env var &gt; nearest <code>.wiki-toolkit.toml</code> (dedicated file,
+flat top-level keys) &gt; nearest <code>pyproject.toml</code>&rsquo;s <code>[tool.wiki_toolkit]</code> table &gt;
+built-in default. Each file tier is found by walking upward from cwd, same
+convention as ruff/mypy; once found, it&rsquo;s authoritative for that tier (a broken
+file or an invalid field value there falls through to the next tier rather than
+continuing to search further up).</p>
 
 
 
@@ -2130,6 +2160,19 @@ ruff/mypy) &gt; built-in default (<code>docs/</code> relative to cwd).</p>
         </tr>
       </thead>
       <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            Context
+
+
+  
+      pydantic-model
+   (wiki_toolkit.settings.Context)" href="#wiki_toolkit.settings.Context">Context</a></code></td>
+            <td class="doc-class-details">
+              <div class="doc-md-description">
+                <p>The full resolved wiki_toolkit configuration.</p>
+              </div>
+            </td>
+          </tr>
           <tr class="doc-section-item">
             <td><code><a class="autorefs autorefs-internal" title="            ResolvedConfig
 
@@ -2158,6 +2201,14 @@ ruff/mypy) &gt; built-in default (<code>docs/</code> relative to cwd).</p>
       </thead>
       <tbody>
             <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            build_context (wiki_toolkit.settings.build_context)" href="#wiki_toolkit.settings.build_context">build_context</a></code></td>
+              <td class="doc-function-details">
+                <div class="doc-md-description">
+                  <p>Resolve the full <code>Context</code> per field, tracking which tier produced each value.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
               <td><code><a class="autorefs autorefs-internal" title="            resolve_docs_dir (wiki_toolkit.settings.resolve_docs_dir)" href="#wiki_toolkit.settings.resolve_docs_dir">resolve_docs_dir</a></code></td>
               <td class="doc-function-details">
                 <div class="doc-md-description">
@@ -2181,6 +2232,114 @@ ruff/mypy) &gt; built-in default (<code>docs/</code> relative to cwd).</p>
 
 
 <h2 id="wiki_toolkit.settings-classes">Classes<a href="#wiki_toolkit.settings-classes" class="headerlink" title="Permanent link">&para;</a></h2>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="wiki_toolkit.settings.Context" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">Context</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-pydantic-model"><code>pydantic-model</code></small>
+  </span>
+
+<a href="#wiki_toolkit.settings.Context" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+        <p>The full resolved wiki_toolkit configuration.</p>
+
+      <details><summary>Show JSON schema:</summary>
+        <div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;The full resolved wiki_toolkit configuration.&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;docs_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;path&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Docs Dir&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;repo_root&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;path&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Repo Root&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;branch_prefix&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Branch Prefix&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;batch_byte_cap&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Batch Byte Cap&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;integer&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;batch_file_cap&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Batch File Cap&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;integer&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="s2">&quot;docs_dir&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;repo_root&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;branch_prefix&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;batch_byte_cap&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;batch_file_cap&quot;</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Context&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+      </details>
+    
+
+        <p>Fields:</p>
+        <ul>
+            <li>
+              <code><span title="wiki_toolkit.settings.Context.docs_dir">docs_dir</span></code>
+                (<code><span title="pathlib.Path">Path</span></code>)
+            </li>
+            <li>
+              <code><span title="wiki_toolkit.settings.Context.repo_root">repo_root</span></code>
+                (<code><span title="pathlib.Path">Path</span></code>)
+            </li>
+            <li>
+              <code><span title="wiki_toolkit.settings.Context.branch_prefix">branch_prefix</span></code>
+                (<code><span title="str">str</span></code>)
+            </li>
+            <li>
+              <code><span title="wiki_toolkit.settings.Context.batch_byte_cap">batch_byte_cap</span></code>
+                (<code><span title="int">int</span></code>)
+            </li>
+            <li>
+              <code><span title="wiki_toolkit.settings.Context.batch_file_cap">batch_file_cap</span></code>
+                (<code><span title="int">int</span></code>)
+            </li>
+        </ul>
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-class">
 
@@ -2238,6 +2397,36 @@ ruff/mypy) &gt; built-in default (<code>docs/</code> relative to cwd).</p>
 
 </div>
 <h2 id="wiki_toolkit.settings-functions">Functions:<a href="#wiki_toolkit.settings-functions" class="headerlink" title="Permanent link">&para;</a></h2>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="wiki_toolkit.settings.build_context" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">build_context</span>
+
+
+<a href="#wiki_toolkit.settings.build_context" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">build_context</span><span class="p">(</span>
+    <span class="n">docs_dir_flag</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">repo_root_flag</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cwd</span><span class="p">:</span> <span class="n"><span title="pathlib.Path">Path</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="tuple">tuple</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Context
+
+
+  
+      pydantic-model
+   (wiki_toolkit.settings.Context)" href="#wiki_toolkit.settings.Context">Context</a></span><span class="p">,</span> <span class="n"><span title="dict">dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="wiki_toolkit.settings.ContextConfigSource">ContextConfigSource</span></span><span class="p">]]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Resolve the full <code>Context</code> per field, tracking which tier produced each value.</p>
+<p>Precedence per field: CLI flag &gt; env var &gt; dedicated file &gt; pyproject.toml &gt; default.</p>
+
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-function">
 
