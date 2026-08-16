@@ -2141,7 +2141,8 @@ flat top-level keys) &gt; nearest <code>pyproject.toml</code>&rsquo;s <code>[too
 built-in default. Each file tier is found by walking upward from cwd, same
 convention as ruff/mypy; once found, it&rsquo;s authoritative for that tier (a broken
 file or an invalid field value there falls through to the next tier rather than
-continuing to search further up).</p>
+continuing to search further up). CLI-flag overrides are currently only wired
+up for <code>docs_dir</code> and <code>repo_root</code>; the other three fields start at the env tier.</p>
 
 
 
