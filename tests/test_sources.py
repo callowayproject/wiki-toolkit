@@ -12,7 +12,10 @@ import pytest
 
 from wiki_toolkit.sources import (
     SourceManifest,
+    SourceScanEntry,
+    SourceScanResult,
     apply_source_scan,
+    calculate_scan_scope,
     compute_source_delta,
     diff_content_fields,
     lint_sources,
@@ -33,6 +36,22 @@ def _git(root: Path, *args: str) -> subprocess.CompletedProcess:
     return subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
         [GIT, *args], cwd=root, capture_output=True, text=True, check=True
     )
+
+
+def test_calculate_scan_scope_empty_source_ids_returns_no_scope() -> None:
+    """No `--source` filters means scope is None (update everything) and nothing is unmatched."""
+    result = SourceScanResult(entries=[SourceScanEntry(source="a", path="a.md", title="A", classification="new")])
+    scope, unmatched = calculate_scan_scope(result, ())
+    assert scope is None
+    assert unmatched == set()
+
+
+def test_calculate_scan_scope_reports_unmatched_source_ids() -> None:
+    """A `--source` id with no matching classified entry is reported as unmatched."""
+    result = SourceScanResult(entries=[SourceScanEntry(source="a", path="a.md", title="A", classification="new")])
+    scope, unmatched = calculate_scan_scope(result, ("a", "missing"))
+    assert scope == {"a", "missing"}
+    assert unmatched == {"missing"}
 
 
 def test_scan_classifies_unknown_source_as_new(make_docs_tree: Callable[[], Path], make_source) -> None:

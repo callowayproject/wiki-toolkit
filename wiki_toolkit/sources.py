@@ -109,6 +109,15 @@ class SourceScanResult:
         return any(e.classification == "duplicate" or not e.accepted for e in self.entries)
 
 
+def calculate_scan_scope(result: SourceScanResult, source_ids: tuple[str, ...]) -> tuple[set[str] | None, set[str]]:
+    """Return the scope of sources to update and the set of unmatched source IDs."""
+    scope = set(source_ids) or None
+    unmatched = set()
+    if scope is not None:
+        unmatched = scope - {entry.source for entry in result.entries}
+    return scope, unmatched
+
+
 class SourceManifest:
     """A `source`-keyed view over `source-manifest.jsonl`, loaded once and saved explicitly."""
 

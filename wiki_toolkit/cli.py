@@ -18,8 +18,8 @@ from wiki_toolkit.log import ALLOWED_LOG_ACTIONS, append_log_entry, build_log_en
 from wiki_toolkit.settings import Context, build_context
 from wiki_toolkit.sources import (
     ALLOWED_SNAPSHOT_UNITS,
-    SourceScanResult,
     apply_source_scan,
+    calculate_scan_scope,
     compute_source_delta,
     lint_sources,
     scan_sources,
@@ -204,23 +204,14 @@ def source_scan(context: Context, update_manifest: bool, accept_covered: bool, s
     unmatched: set[str] = set()
     if update_manifest:
         scope, unmatched = calculate_scan_scope(result, source_ids)
+        for source_id in sorted(unmatched):
+            click.echo(f"[ERROR] --source {source_id} matched no classified entry")
 
         apply_result = apply_source_scan(context.docs_dir, result, source_ids=scope, stage_root=context.repo_root)
         click.echo(f"Wrote {apply_result.written} entries to docs/source-manifest.jsonl")
 
     if result.needs_attention or unmatched:
         raise SystemExit(1)
-
-
-def calculate_scan_scope(result: SourceScanResult, source_ids: tuple[str, ...]) -> tuple[set[str] | None, set[str]]:
-    """Return the scope of sources to update and the set of unmatched source IDs."""
-    scope = set(source_ids) or None
-    unmatched = set()
-    if scope is not None:
-        unmatched = scope - {entry.source for entry in result.entries}
-        for source_id in sorted(unmatched):
-            click.echo(f"[ERROR] --source {source_id} matched no classified entry")
-    return scope, unmatched
 
 
 @cli.command("source-lint")
