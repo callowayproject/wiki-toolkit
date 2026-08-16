@@ -5,17 +5,13 @@ import subprocess
 import sys
 from dataclasses import dataclass, field
 from importlib.metadata import PackageNotFoundError, version
-from typing import TYPE_CHECKING
+from pathlib import Path
 
 import orjson
 
 from wiki_toolkit.init import PROVENANCE_FILENAME
+from wiki_toolkit.settings import ConfigSource
 from wiki_toolkit.sources import SOURCE_MANIFEST_FILENAME
-
-if TYPE_CHECKING:
-    from pathlib import Path
-
-    from wiki_toolkit.settings import ConfigSource
 
 DOCS_DIRS = ("sources", "wiki")
 DOCS_FILES = ("catalog.jsonl", "log.jsonl", "schema.md", SOURCE_MANIFEST_FILENAME)
