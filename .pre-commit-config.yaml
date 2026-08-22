@@ -1,14 +1,14 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: 'v0.16.3'
+    rev: 'v0.16.4'
     hooks:
       - id: ruff-format
       - id: ruff-check
         args: [--fix, --exit-non-zero-on-fix]
         exclude: test.*
   - repo: https://github.com/rvben/rumdl-pre-commit
-    rev: v0.2.55  # Use latest version
+    rev: v0.2.60  # Use latest version
     hooks:
       - id: rumdl-fmt  # Pure format, always exits 0
         files: ^.*\.md$
@@ -75,6 +75,13 @@ repos:
           args:
             - "--failed"
             - "--suggest-refactors"
+  - repo: https://github.com/lycheeverse/lychee.git
+    rev: lychee-v0.24.2
+    hooks:
+      - id: lychee
+        # Optionally include additional CLI arguments
+        args: ["--no-progress", "--exclude", "file://"]
+        exclude: test.*
 
 ci:
   autofix_prs: false

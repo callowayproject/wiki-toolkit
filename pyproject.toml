@@ -31,9 +31,9 @@ content-type = "text/markdown"
 
 [project.urls]
 Homepage = "https://github.com/callowayproject/wiki-toolkit"
-Documentation = "https://callowayproject.github.io/wiki_toolkit"
+Documentation = "https://callowayproject.github.io/wiki-toolkit"
 Repository = "https://github.com/callowayproject/wiki-toolkit"
-Changelog = "https://github.com/callowayproject/wiki-toolkit/CHANGELOG.md"
+Changelog = "https://github.com/callowayproject/wiki-toolkit/blob/main/CHANGELOG.md"
 
 [dependency-groups]
 dev = [

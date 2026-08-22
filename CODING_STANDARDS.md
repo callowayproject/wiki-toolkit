@@ -2,7 +2,8 @@
 
 ## Installing from source for development
 
-`uv` is recommended. [Install `uv`](https://docs.astral.sh/uv/getting-started/installation/).
+`uv` is recommended.
+[Install `uv`](https://docs.astral.sh/uv/getting-started/installation/).
 
 Clone the repo:
 

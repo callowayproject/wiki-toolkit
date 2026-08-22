@@ -59,7 +59,7 @@ wiki-toolkit propose-pr --pages docs/wiki/my-note.md --frame routine
 ## Documentation
 
 Full docs, including a walkthrough tutorial, how-to guides, and the command reference, are at
-<https://callowayproject.github.io/wiki_toolkit>.
+<https://callowayproject.github.io/wiki-toolkit>.
 
 ## Contributing
 
